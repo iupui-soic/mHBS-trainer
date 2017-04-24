@@ -73,6 +73,8 @@
 
     <string name="search_results">Search results</string>
     <string name="local_search">Local search</string>
+    <string name="drawer_open">Drawer open</string>
+    <string name="drawer_close">Drawer close</string>
 
 
 
