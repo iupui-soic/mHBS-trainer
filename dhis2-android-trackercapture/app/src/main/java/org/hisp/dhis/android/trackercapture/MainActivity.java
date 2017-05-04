@@ -29,19 +29,30 @@
 
 package org.hisp.dhis.android.trackercapture;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
+import org.apache.commons.jexl2.UnifiedJEXL;
 import org.hisp.dhis.android.sdk.controllers.DhisService;
 import org.hisp.dhis.android.sdk.controllers.LoadingController;
 import org.hisp.dhis.android.sdk.controllers.PeriodicSynchronizerController;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
+import org.hisp.dhis.android.sdk.persistence.models.Dashboard;
 import org.hisp.dhis.android.sdk.persistence.preferences.ResourceType;
 import org.hisp.dhis.android.sdk.ui.activities.INavigationHandler;
 import org.hisp.dhis.android.sdk.ui.activities.OnBackPressedListener;
@@ -52,7 +63,9 @@ import org.hisp.dhis.android.trackercapture.fragments.selectprogram.SelectProgra
 
 public class MainActivity extends AppCompatActivity implements INavigationHandler {
     DrawerLayout drawerLayout;
-    ActionBarDrawerToggle actionBarDrawerToggle;
+    NavigationView navigation;
+    //Button Tracker;
+    //ActionBarDrawerToggle actionBarDrawerToggle;
     public final static String TAG = MainActivity.class.getSimpleName();
     private OnBackPressedListener mBackPressedListener;
 
@@ -75,22 +88,83 @@ public class MainActivity extends AppCompatActivity implements INavigationHandle
 
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout,toolbar, R.string.drawer_open,
-                R.string.drawer_close);
-        drawerLayout.setDrawerListener(actionBarDrawerToggle);
+        //actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout,toolbar, R.string.drawer_open,
+        //        R.string.drawer_close);
+        //drawerLayout.setDrawerListener(actionBarDrawerToggle);
 
         PeriodicSynchronizerController.activatePeriodicSynchronizer(this);
         showSelectProgramFragment();
+
     }
 
+    //private void initInstances(){
+    //    navigation = (NavigationView)findViewById(R.id.navigation_view);
+    //    navigation.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener(){
+
+    //        @Override
+    //        public boolean onNavigationItemSelected(MenuItem menuItem) {
+    //           return false;
+    //        }
+
+
+    //    });
+    //}
+
+    /* Toggle for hamburger
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         actionBarDrawerToggle.syncState();
+    }*/
+
+    //public void openRedCap (View view){
+    //    int id = view.getId();
+    //    if (id == R.id.dashboard_id){
+    //        Intent RedCapapp = getPackageManager().getLaunchIntentForPackage("edu.vanderbilt.redcap");
+    //        startActivity(RedCapapp);
+    //    }
+    //}
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.drawer_menu, menu);
+        return true;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+
+        if (id == R.id.dashboard_id) {
+
+            Intent intent = new Intent(Intent.ACTION_MAIN,null);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            intent.setComponent(new ComponentName("edu.vanderbilt.redcap", "edu.vanderbilt.redcap.App"));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return  true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public static Intent DashboardIntent(Context context, Class<MainActivity> mainActivityClass) {
+
+        try {
+            context.getPackageManager().getPackageInfo("edu.vanderbilt.redcap",0);
+            return new Intent(Intent.ACTION_MAIN,null);
+            //startActivity(intent);
+        } catch (Exception e){
+
+            return new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=org.hisp.dhis.android.dashboard"));
+        }
+    }
+
+
 
     public void loadInitialData() {
         String message = getString(org.hisp.dhis.android.sdk.R.string.finishing_up);
@@ -136,6 +210,12 @@ public class MainActivity extends AppCompatActivity implements INavigationHandle
     public void setBackPressedListener(OnBackPressedListener listener) {
         mBackPressedListener = listener;
     }
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        return false;
+    }
+
 
     @Override
     public void onPause() {

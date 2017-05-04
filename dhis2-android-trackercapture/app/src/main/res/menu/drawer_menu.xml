@@ -8,10 +8,16 @@
         android:title="Redcap"
         android:icon="@drawable/redcap">
        </item>
+
         <item
-            android:id="@+id/Tracker_id"
-            android:title="DHIS2 Dashboard"></item>
+            android:id="@+id/dashboard_id"
+            android:title="DHIS2 Dashboard"
+            android:icon="@color/dark_navy_blue">
+
+        </item>
+
 
     </group>
+
 
 </menu>

@@ -30,6 +30,7 @@
 package org.hisp.dhis.android.sdk.ui.activities;
 
 import android.support.v4.app.Fragment;
+import android.view.MenuItem;
 
 /**
  * Created by araz on 31.03.2015.
@@ -37,5 +38,8 @@ import android.support.v4.app.Fragment;
 public interface INavigationHandler {
     void switchFragment(Fragment fragment, String tag, boolean addToBackStack);
     public void setBackPressedListener(OnBackPressedListener backPressedListener);
+
+    boolean onNavigationItemSelected(MenuItem item);
+
     void onBackPressed();
 }
