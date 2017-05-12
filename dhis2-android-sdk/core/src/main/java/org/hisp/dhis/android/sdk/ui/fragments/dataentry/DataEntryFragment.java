@@ -29,10 +29,9 @@
 
 package org.hisp.dhis.android.sdk.ui.fragments.dataentry;
 
-import android.app.Activity;
 import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
@@ -47,13 +46,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.squareup.otto.Subscribe;
 
 import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.BaseValue;
-import org.hisp.dhis.android.sdk.ui.activities.INavigationHandler;
 import org.hisp.dhis.android.sdk.ui.activities.OnBackPressedListener;
 import org.hisp.dhis.android.sdk.ui.adapters.DataValueAdapter;
 import org.hisp.dhis.android.sdk.ui.adapters.SectionAdapter;
@@ -69,7 +68,8 @@ import org.hisp.dhis.android.sdk.utils.UiUtils;
 import java.util.ArrayList;
 
 public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
-        implements LoaderManager.LoaderCallbacks<D>, AdapterView.OnItemSelectedListener {
+        implements LoaderManager.LoaderCallbacks<D>, AdapterView.OnItemSelectedListener,
+        OnBackPressedListener {
     public static final String TAG = DataEntryFragment.class.getSimpleName();
 
     protected static final int LOADER_ID = 17;
@@ -82,49 +82,15 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
     protected boolean refreshing = false;
     protected ValidationErrorDialog validationErrorDialog;
     private boolean hasDataChanged = false;
-    protected INavigationHandler navigationHandler;
     protected RulesEvaluatorThread rulesEvaluatorThread;
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (activity instanceof AppCompatActivity) {
-            getActionBar().setDisplayShowTitleEnabled(false);
-            getActionBar().setDisplayHomeAsUpEnabled(true);
-            getActionBar().setHomeButtonEnabled(true);
-        }
-        if (activity instanceof INavigationHandler) {
-            navigationHandler = (INavigationHandler) activity;
-        } else {
-            throw new IllegalArgumentException("Activity must implement INavigationHandler interface");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        if (getActivity() != null &&
-                getActivity() instanceof AppCompatActivity) {
-            getActionBar().setDisplayShowTitleEnabled(true);
-            getActionBar().setDisplayHomeAsUpEnabled(false);
-            getActionBar().setHomeButtonEnabled(false);
-        }
-
-        // we need to nullify reference
-        // to parent activity in order not to leak it
-        if (getActivity() != null &&
-                getActivity() instanceof INavigationHandler) {
-            ((INavigationHandler) getActivity()).setBackPressedListener(null);
-        }
-
-        navigationHandler = null;
-        super.onDetach();
-    }
+    private Parcelable listViewState;
+    private Parcelable listViewAdapterState;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        if(rulesEvaluatorThread==null || rulesEvaluatorThread.isKilled()) {
+        if (rulesEvaluatorThread == null || rulesEvaluatorThread.isKilled()) {
             rulesEvaluatorThread = new RulesEvaluatorThread();
             rulesEvaluatorThread.start();
         }
@@ -146,6 +112,7 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
 
     @Override
     public void onPause() {
+        listViewState = listView.onSaveInstanceState();
         super.onPause();
         Dhis2Application.getEventBus().unregister(this);
     }
@@ -158,6 +125,10 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_data_entry, container, false);
+    }
+
+    public ActionBar getActionBar() {
+        return ((AppCompatActivity) getActivity()).getSupportActionBar();
     }
 
     @Override
@@ -175,6 +146,10 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
         listView.setVisibility(View.VISIBLE);
         listView.setAdapter(listViewAdapter);
 
+        if (listViewState != null) {
+            listView.onRestoreInstanceState(listViewState);
+        }
+
         upButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -186,7 +161,7 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         if (menuItem.getItemId() == android.R.id.home) {
-            navigationHandler.onBackPressed();
+            getActivity().finish();
             return true;
         } else if (menuItem.getItemId() == R.id.action_new_event) {
             proceed();
@@ -208,10 +183,11 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> parent) {}
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
 
     public static void resetHidingAndWarnings(DataValueAdapter dataValueAdapter, SectionAdapter sectionAdapter) {
-        if(dataValueAdapter!=null) {
+        if (dataValueAdapter != null) {
             dataValueAdapter.resetHiding();
             dataValueAdapter.resetWarnings();
             dataValueAdapter.resetErrors();
@@ -230,23 +206,8 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
     }
 
     public void updateSections() {
-        UpdateSectionsAsyncTask task = new UpdateSectionsAsyncTask();
-        task.execute();
+        Dhis2Application.getEventBus().post(new UpdateSectionsEvent());
     }
-
-    protected static class UpdateSectionsAsyncTask extends AsyncTask {
-
-        @Override
-        protected Object doInBackground(Object... params) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Object result) {
-            Dhis2Application.getEventBus().post(new UpdateSectionsEvent());
-        }
-    }
-
 
     public DataValueAdapter getListViewAdapter() {
         return listViewAdapter;
@@ -261,14 +222,13 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
     }
 
     public static void refreshListView() {
-        RefreshListViewAsyncTask task = new RefreshListViewAsyncTask();
-        task.execute();
+        Dhis2Application.getEventBus().post(new RefreshListViewEvent());
     }
 
     public void flagDataChanged(boolean changed) {
         if (hasDataChanged != changed) {
             hasDataChanged = changed;
-            if(isAdded()) {
+            if (isAdded()) {
                 getActivity().invalidateOptionsMenu();
             }
         }
@@ -276,19 +236,23 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
 
     protected void showValidationErrorDialog(ArrayList<String> mandatoryFieldsMissingErrors, ArrayList<String> programRulesErrors) {
         ArrayList<String> errors = new ArrayList<>();
-        if(mandatoryFieldsMissingErrors != null) {
-            for(String mandatoryFieldsError : mandatoryFieldsMissingErrors) {
+        if (mandatoryFieldsMissingErrors != null) {
+            for (String mandatoryFieldsError : mandatoryFieldsMissingErrors) {
                 errors.add(getActivity().getString(R.string.missing_mandatory_field) + ": " + mandatoryFieldsError);
             }
         }
-        if(programRulesErrors != null) {
-            for(String programRulesError : programRulesErrors) {
+        if (programRulesErrors != null) {
+            for (String programRulesError : programRulesErrors) {
                 errors.add(getActivity().getString(R.string.error_message) + ": " + programRulesError);
             }
         }
-        validationErrorDialog = ValidationErrorDialog
-                .newInstance(getActivity().getString(R.string.unable_to_complete_registration) + " " + getActivity().getString(R.string.review_errors), errors);
-        validationErrorDialog.show(getChildFragmentManager());
+        if (!errors.isEmpty()) {
+            validationErrorDialog = ValidationErrorDialog
+                    .newInstance(getActivity().getString(R.string.unable_to_complete_registration) + " " + getActivity().getString(R.string.review_errors), errors);
+            validationErrorDialog.show(getChildFragmentManager());
+        } else {
+            Toast.makeText(getContext(), R.string.unable_to_complete_registration, Toast.LENGTH_LONG).show();
+        }
     }
 
     protected boolean haveValuesChanged() {
@@ -300,15 +264,6 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
             return (Toolbar) getActivity().findViewById(R.id.toolbar);
         } else {
             throw new IllegalArgumentException("Fragment should be attached to MainActivity");
-        }
-    }
-
-    private ActionBar getActionBar() {
-        if (getActivity() != null &&
-                getActivity() instanceof AppCompatActivity) {
-            return ((AppCompatActivity) getActivity()).getSupportActionBar();
-        } else {
-            throw new IllegalArgumentException("Fragment should be attached to ActionBarActivity");
         }
     }
 
@@ -347,11 +302,11 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
     {
         String message = "";
 
-        if(eventClick.getRow() instanceof CoordinatesRow)
+        if (eventClick.getRow() instanceof CoordinatesRow)
             message = getResources().getString(R.string.detailed_info_coordinate_row);
-        else if(eventClick.getRow() instanceof StatusRow)
+        else if (eventClick.getRow() instanceof StatusRow)
             message = getResources().getString(R.string.detailed_info_status_row);
-        else if(eventClick.getRow() instanceof IndicatorRow)
+        else if (eventClick.getRow() instanceof IndicatorRow)
             message = ""; // need to change ProgramIndicator to extend BaseValue for this to work
         else         // rest of the rows can either be of data element or tracked entity instance attribute
             message = eventClick.getRow().getDescription();
@@ -372,19 +327,6 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
         hideLoadingDialog();
     }
 
-    private static class RefreshListViewAsyncTask extends AsyncTask {
-
-        @Override
-        protected Object doInBackground(Object[] params) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Object result) {
-            Dhis2Application.getEventBus().post(new RefreshListViewEvent());
-        }
-    }
-
     public abstract SectionAdapter getSpinnerAdapter();
 
     protected abstract ArrayList<String> getValidationErrors();
@@ -397,4 +339,12 @@ public abstract class DataEntryFragment<D> extends AbsProgramRuleFragment<D>
 
     @Override
     public abstract void onLoadFinished(Loader<D> loader, D data);
+
+    @Override
+    public boolean doBack() {
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
+        return false;
+    }
 }

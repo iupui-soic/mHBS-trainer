@@ -42,6 +42,7 @@ import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
 import org.hisp.dhis.android.sdk.persistence.models.Event;
 import org.hisp.dhis.android.sdk.persistence.models.Interpretation;
 import org.hisp.dhis.android.sdk.persistence.models.OptionSet;
+import org.hisp.dhis.android.sdk.persistence.models.OrganisationUnit;
 import org.hisp.dhis.android.sdk.persistence.models.Program;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramRule;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramRuleAction;
@@ -49,6 +50,8 @@ import org.hisp.dhis.android.sdk.persistence.models.ProgramRuleVariable;
 import org.hisp.dhis.android.sdk.persistence.models.RelationshipType;
 import org.hisp.dhis.android.sdk.persistence.models.SystemInfo;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeGeneratedValue;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeGroup;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityInstance;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
@@ -211,14 +214,20 @@ public interface DhisApi {
     @GET("/me/programs/")
     Response getAssignedPrograms(@QueryMap Map<String, String> queryMap);
 
-    @GET("/me?fields=organisationUnits[id,displayName,programs[id]],userCredentials[userRoles[programs[id]]]")
+    @GET("/me?fields=organisationUnits[id,displayName,programs[id]],userCredentials[userRoles[programs[id]]],teiSearchOrganisationUnits")
     UserAccount getUserAccount();
+
+    @GET("/" + ApiEndpointContainer.ORGANISATIONUNITS + "?paging=false")
+    Map<String,List<OrganisationUnit>> getOrganisationUnits(@QueryMap(encodeValues = false) Map<String,String> queryMap);
 
     @GET("/" + ApiEndpointContainer.PROGRAMS + "/{programUid}")
     Program getProgram(@Path("programUid") String programUid, @QueryMap Map<String, String> queryMap);
 
     @GET("/" + ApiEndpointContainer.OPTION_SETS + "?paging=false")
     Map<String, List<OptionSet>> getOptionSets(@QueryMap Map<String, String> queryParams);
+
+    @GET("/" + ApiEndpointContainer.TRACKED_ENTITY_ATTRIBUTE_GROUPS + "?paging=false")
+    Map<String, List<TrackedEntityAttributeGroup>> getTrackedEntityAttributeGroups(@QueryMap Map<String, String> queryParams);
 
     @GET("/" + ApiEndpointContainer.TRACKED_ENTITY_ATTRIBUTES + "?paging=false")
     Map<String, List<TrackedEntityAttribute>> getTrackedEntityAttributes(@QueryMap Map<String, String> queryParams);
@@ -247,6 +256,10 @@ public interface DhisApi {
                                        @Query("orgUnit") String organisationUnitUid,
                                        @Query("pageSize") int eventLimit,
                                        @QueryMap Map<String, String> queryParams);
+
+    @GET("/" + ApiEndpointContainer.EVENTS + "skipPaging=true&ouMode=ACCESSIBLE")
+                List<Event> getEventsForTrackedEntityInstance(@Query("program") String programUid,
+                                                              @QueryMap Map<String, String> queryParams);
 
     @GET("/" + ApiEndpointContainer.EVENTS + "?skipPaging=true&ouMode=ACCESSIBLE")
     JsonNode getEventsForEnrollment(@Query("program") String programUid,
@@ -285,8 +298,12 @@ public interface DhisApi {
     @GET("/"+ApiEndpointContainer.TRACKED_ENTITY_INSTANCES+"/{trackedEntityInstanceUid}")
     TrackedEntityInstance getTrackedEntityInstance(@Path("trackedEntityInstanceUid") String trackedEntityInstanceUid, @QueryMap Map<String, String> queryMap);
 
+
     @GET("/"+ApiEndpointContainer.TRACKED_ENTITY_INSTANCES+"?skipPaging=true")
-    Map<String, List<TrackedEntityInstance>> getTrackedEntityInstances(@Query("ou") String organisationUnitUid, @QueryMap Map<String, String> queryMap);
+    Map<String, List<TrackedEntityInstance>> getTrackedEntityInstances(@Query("ou") String organisationUnitUid, @QueryMap(encodeValues = false) Map<String, String> queryMap);
+
+    @GET("/"+ApiEndpointContainer.TRACKED_ENTITY_INSTANCES+"?skipPaging=true&ouMode=ACCESSIBLE")
+    Map<String, List<TrackedEntityInstance>> getTrackedEntityInstancesFromAllAccessibleOrgUnits(@Query("ou") String organisationUnitUid, @QueryMap(encodeValues = false) Map<String, String> queryMap);
 
     @POST("/"+ApiEndpointContainer.TRACKED_ENTITY_INSTANCES+"/")
     Response postTrackedEntityInstance(@Body TrackedEntityInstance trackedEntityInstance);
@@ -296,5 +313,9 @@ public interface DhisApi {
 
     @POST("/"+ApiEndpointContainer.TRACKED_ENTITY_INSTANCES+"/" + "?strategy=CREATE_AND_UPDATE")
     ApiResponse2 postTrackedEntityInstances(@Body Map<String, List<TrackedEntityInstance>> trackedEntityInstances);
+
+//    @GET("/" + ApiEndpointContainer.TRACKED_ENTITY_ATTRIBUTES + "/{trackedEntityAttribute}" + "/generate")
+    @GET("/"+ApiEndpointContainer.TRACKED_ENTITY_ATTRIBUTES+"/{trackedEntityAttribute}/generateAndReserve")
+    List<TrackedEntityAttributeGeneratedValue> getTrackedEntityAttributeGeneratedValues(@Path("trackedEntityAttribute") String trackedEntityAttribute, @Query("numberToReserve") long numberOfIdsToGenerate);
 
 }

@@ -29,14 +29,25 @@
 
 package org.hisp.dhis.android.sdk.utils.services;
 
+import android.util.Log;
+
+import com.raizlabs.android.dbflow.sql.builder.Condition;
+import com.raizlabs.android.dbflow.sql.language.Select;
+import com.raizlabs.android.dbflow.sql.queriable.StringQuery;
+
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.persistence.models.Constant;
 import org.hisp.dhis.android.sdk.persistence.models.DataElement;
+import org.hisp.dhis.android.sdk.persistence.models.DataElement$Table;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue;
 import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
 import org.hisp.dhis.android.sdk.persistence.models.Event;
+import org.hisp.dhis.android.sdk.persistence.models.Option;
+import org.hisp.dhis.android.sdk.persistence.models.Option$Table;
+import org.hisp.dhis.android.sdk.persistence.models.OptionSet;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramRuleVariable;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute$Table;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.sdk.utils.api.ContextVariableType;
 import org.hisp.dhis.android.sdk.utils.api.ProgramRuleVariableSourceType;
@@ -58,6 +69,8 @@ import static android.text.TextUtils.isEmpty;
  * and {@link org.hisp.dhis.android.sdk.persistence.models.ProgramRule}s
  */
 public class VariableService {
+
+    private static final String CLASS_TAG = VariableService.class.getSimpleName();
 
     private static VariableService variableService;
 
@@ -110,6 +123,12 @@ public class VariableService {
      */
     private Map<Event, Map<String, DataValue>> eventDataValueMaps;
 
+    /**
+     * Map of all {@link TrackedEntityAttributeValue}s for the {@link Enrollment} used in
+     * populating variables
+     */
+    private Map<String, TrackedEntityAttributeValue> trackedEntityAttributeValueMap;
+
     static {
         variableService = new VariableService();
     }
@@ -127,6 +146,7 @@ public class VariableService {
         getInstance().trackedEntityAttributeMap = null;
         getInstance().eventsForEnrollment = null;
         getInstance().eventDataValueMaps = null;
+        getInstance().trackedEntityAttributeValueMap = null;
     }
 
     /**
@@ -134,9 +154,10 @@ public class VariableService {
      * This method generates a set of ProgramRuleVariables, that are later used in expression calculations
      * from {@link org.hisp.dhis.android.sdk.utils.support.math.ExpressionFunctions},
      * {@link ProgramRuleService}, and {@link ProgramIndicatorService}
-     *
+     * <p/>
      * Note that you may have to reset this singleton by calling {@link #reset()}
-     * @param enrollment can be null
+     *
+     * @param enrollment   can be null
      * @param currentEvent can be null
      */
     public static void initialize(Enrollment enrollment, Event currentEvent) {
@@ -144,66 +165,284 @@ public class VariableService {
         getInstance().setCurrentEnrollment(enrollment);
         getInstance().setCurrentEvent(currentEvent);
 
+        initEventsForEnrollment();
+
+        updateListOfEventsWithCurrentEvent(currentEvent);
+
+        List<Event> eventsForEnrollment = sortEventsForEnrollment();
+
+        initDataElementsMap();
+
+        initTrackedEntityMap();
+
+        initEventsForProgramStages(eventsForEnrollment);
+
+        initEventDataValueMaps(eventsForEnrollment);
+        initTrackedEntityAttributeValuesMap(enrollment);
+
+        initProgramRuleVariableMap();
+
+    }
+
+    private static void initEventsForEnrollment() {
         //setting list of events for enrollment
         List<Event> events;
-        if(getInstance().getCurrentEnrollment() != null) {
+        if (getInstance().getCurrentEnrollment() != null) {
             events = getInstance().getCurrentEnrollment().getEvents();
         } else {
             events = new ArrayList<>();
         }
         getInstance().setEventsForEnrollment(events);
-        if(getInstance().getCurrentEvent() != null &&
-                !getInstance().getEventsForEnrollment().contains(getInstance().getCurrentEvent())) {
-            getInstance().getEventsForEnrollment().add(getInstance().getCurrentEvent());
-        }
-        Collections.sort(getInstance().getEventsForEnrollment(), new EventDateComparator());
+    }
 
+    /*
+     *   Refresh list of events for enrollment to reflect changes in the newly edited currentEvent
+     */
+    private static void updateListOfEventsWithCurrentEvent(Event currentEvent) {
+        if (currentEvent != null) {
+            List<Event> eventsForEnrollment = getInstance().getEventsForEnrollment();
+            Event staleEvent = null;
+            for (Event event : eventsForEnrollment) {
+                if (event.getLocalId() == currentEvent.getLocalId()) {
+                    staleEvent = event; // this cached event is stale
+                    break;
+                }
+            }
+            if (staleEvent != null) {
+                // remove stale event and replace it with the new event
+                int index = eventsForEnrollment.indexOf(staleEvent);
+                eventsForEnrollment.remove(staleEvent);
+                eventsForEnrollment.add(index, currentEvent);
+            } else {
+                // cached events did not contain the new event. add it
+                eventsForEnrollment.add(currentEvent);
+            }
+        }
+    }
+
+    private static List<Event> sortEventsForEnrollment() {
+        List<Event> eventsForEnrollment = new ArrayList<>();
+        if (getInstance().getEventsForEnrollment() != null) {
+            Collections.sort(getInstance().getEventsForEnrollment(), new EventDateComparator());
+            eventsForEnrollment = getInstance().getEventsForEnrollment();
+        }
+        return eventsForEnrollment;
+    }
+
+    private static void initDataElementsMap() {
         //setting data elements map
         List<DataElement> dataElements = MetaDataController.getDataElements();
         getInstance().setDataElementMap(new HashMap<String, DataElement>());
-        for(DataElement dataElement : dataElements) {
+        for (DataElement dataElement : dataElements) {
             getInstance().getDataElementMap().put(dataElement.getUid(), dataElement);
         }
+    }
 
+    private static void initTrackedEntityMap() {
         //setting trackedEntityAttribute map
         List<TrackedEntityAttribute> trackedEntityAttributes = MetaDataController.getTrackedEntityAttributes();
         getInstance().setTrackedEntityAttributeMap(new HashMap<String, TrackedEntityAttribute>());
-        for(TrackedEntityAttribute trackedEntityAttribute : trackedEntityAttributes) {
+        for (TrackedEntityAttribute trackedEntityAttribute : trackedEntityAttributes) {
             getInstance().getTrackedEntityAttributeMap().put(trackedEntityAttribute.getUid(), trackedEntityAttribute);
         }
+    }
 
+    private static void initEventsForProgramStages(List<Event> eventsForEnrollment) {
         //setting events in map for each program stage
         getInstance().setEventsForProgramStages(new HashMap<String, List<Event>>());
-        for(Event event : getInstance().getEventsForEnrollment()) {
+        for (Event event : eventsForEnrollment) {
             List<Event> eventsForProgramStage = getInstance().getEventsForProgramStages().get(event.getProgramStageId());
-            if(eventsForProgramStage == null) {
+            if (eventsForProgramStage == null) {
                 eventsForProgramStage = new ArrayList<>();
                 getInstance().getEventsForProgramStages().put(event.getProgramStageId(), eventsForProgramStage);
             }
             eventsForProgramStage.add(event);
         }
+    }
 
+    private static void initEventDataValueMaps(List<Event> eventsForEnrollment) {
         //setting data values in map for each event
         getInstance().setEventDataValueMaps(new HashMap<Event, Map<String, DataValue>>());
-        for(Event event : getInstance().getEventsForEnrollment()) {
+        for (Event event : eventsForEnrollment) {
             Map<String, DataValue> dataValueMap = new HashMap<>();
-            for(DataValue dataValue : event.getDataValues()) {
-                dataValueMap.put(dataValue.getDataElement(), dataValue);
+            for (DataValue dataValue : event.getDataValues()) {
+                DataValue copiedDataValue = new DataValue(dataValue);
+                dataValueMap.put(copiedDataValue.getDataElement(), copiedDataValue);
+            }
+
+            //replacing option code value with option code name as the name is used in expressions
+            StringBuilder stringBuilder = new StringBuilder();
+            for(String dataElement : dataValueMap.keySet()) {
+                stringBuilder.append("'");
+                stringBuilder.append(dataElement);
+                stringBuilder.append("'");
+                stringBuilder.append(',');
+            }
+            if(stringBuilder.length()>0) {
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            }
+            String dataElementListForQuery = stringBuilder.toString();
+            String sqlQuery = "SELECT * FROM " + DataElement.class.getSimpleName() + " WHERE " + DataElement$Table.ID + " IN (" + dataElementListForQuery + ") AND " + DataElement$Table.OPTIONSET + " != '';";
+            List<DataElement> dataElementsWithOptionSets = new StringQuery<>(DataElement.class, sqlQuery).queryList();
+            for(DataElement dataElementWithOptionSet : dataElementsWithOptionSets) {
+                DataValue dataValueToReplaceCodeWithValue = dataValueMap.get(dataElementWithOptionSet.getUid());
+                String optionSetCode = dataValueToReplaceCodeWithValue.getValue();
+                Option option = new Select().from(Option.class).where(Condition.column(Option$Table.OPTIONSET).eq(dataElementWithOptionSet.getOptionSet())).and(Condition.column(Option$Table.CODE).eq(optionSetCode)).querySingle();
+                if(option != null) {
+                    dataValueToReplaceCodeWithValue.setValue(option.getName());
+                }
             }
             getInstance().getEventDataValueMaps().put(event, dataValueMap);
         }
+    }
 
+    private static void initTrackedEntityAttributeValuesMap(Enrollment enrollment) {
+        //setting data values in map for each event
+        Map<String, TrackedEntityAttributeValue> trackedEntityAttributeValueMap = new HashMap<>();
+        getInstance().setTrackedEntityAttributeValueMap(trackedEntityAttributeValueMap);
+
+            for (TrackedEntityAttributeValue trackedEntityAttributeValue : enrollment.getAttributes()) {
+                TrackedEntityAttributeValue copiedTrackedEntityAttributeValue = new TrackedEntityAttributeValue(trackedEntityAttributeValue);
+                trackedEntityAttributeValueMap.put(copiedTrackedEntityAttributeValue.getTrackedEntityAttributeId(), copiedTrackedEntityAttributeValue);
+            }
+
+            //replacing option code value with option code name as the name is used in expressions
+            StringBuilder stringBuilder = new StringBuilder();
+            for(String trackedEntityAttribute : trackedEntityAttributeValueMap.keySet()) {
+                stringBuilder.append("'");
+                stringBuilder.append(trackedEntityAttribute);
+                stringBuilder.append("'");
+                stringBuilder.append(',');
+            }
+            if(stringBuilder.length()>0) {
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            }
+            String trackedEntityAttributeListForQuery = stringBuilder.toString();
+            String sqlQuery = "SELECT * FROM " + TrackedEntityAttribute.class.getSimpleName() + " WHERE " + TrackedEntityAttribute$Table.ID + " IN (" + trackedEntityAttributeListForQuery + ") AND " + TrackedEntityAttribute$Table.OPTIONSET + " != '';";
+            List<TrackedEntityAttribute> trackedEntityAttributesWithOptionSets = new StringQuery<>(TrackedEntityAttribute.class, sqlQuery).queryList();
+            for(TrackedEntityAttribute trackedEntityAttributeWithOptionSet : trackedEntityAttributesWithOptionSets) {
+                TrackedEntityAttributeValue trackedEntityAttributeValueToReplaceCodeWithValue = trackedEntityAttributeValueMap.get(trackedEntityAttributeWithOptionSet.getUid());
+                String optionSetCode = trackedEntityAttributeValueToReplaceCodeWithValue.getValue();
+                Option option = new Select().from(Option.class).where(Condition.column(Option$Table.OPTIONSET).eq(trackedEntityAttributeWithOptionSet.getOptionSet())).and(Condition.column(Option$Table.CODE).eq(optionSetCode)).querySingle();
+                if(option != null) {
+                    trackedEntityAttributeValueToReplaceCodeWithValue.setValue(option.getName());
+                }
+            }
+
+    }
+
+    private static Map<String, Option> getOptionsForOptionSet(String optionSetId) {
+        List<Option> options = MetaDataController.getOptions(optionSetId);
+        Map<String, Option> optionMap = new HashMap<>();
+        if(options != null) {
+            for (Option option : options) {
+                optionMap.put(option.getCode(), option);
+            }
+        }
+        return optionMap;
+    }
+
+//    private static Map<String, Map<String, Option>> getCachedOptionsForOptionSets(List<OptionSet> optionSets) {
+//        Map<String, Map<String, Option>> optionsForOptionSetMap = new HashMap<>();
+//        for(OptionSet optionSet : optionSets) {
+//                if (optionSet == null) {
+//                    continue;
+//                }
+//                List<Option> options = MetaDataController.getOptions(optionSet.getUid());
+//                if (options == null) {
+//                    continue;
+//                }
+//                HashMap<String, Option> optionsHashMap = new HashMap<>();
+//                optionsForOptionSetMap.put(optionSet.getUid(), optionsHashMap);
+//                for (Option option : options) {
+//                    optionsHashMap.put(option.getCode(), option);
+//                }
+//        }
+//        return optionsForOptionSetMap;
+//    }
+
+    private static void initProgramRuleVariableMap() {
         //setting programRuleVariables
         List<ProgramRuleVariable> programRuleVariables = MetaDataController.getProgramRuleVariables();
         populateDataElementAndAttributeVariables(programRuleVariables);
         programRuleVariables.addAll(createContextVariables());
         programRuleVariables.addAll(createConstantVariables());
         Map<String, ProgramRuleVariable> programRuleVariableMap = new HashMap<>();
-        for(ProgramRuleVariable programRuleVariable : programRuleVariables) {
+        for (ProgramRuleVariable programRuleVariable : programRuleVariables) {
             programRuleVariableMap.put(programRuleVariable.getName(), programRuleVariable);
         }
         getInstance().setProgramRuleVariableMap(programRuleVariableMap);
     }
+//    public static void initialize(Enrollment enrollment, Event currentEvent) {
+//        //setting current enrollment and event
+//        getInstance().setCurrentEnrollment(enrollment);
+//        getInstance().setCurrentEvent(currentEvent);
+//
+//        //setting list of events for enrollment
+//        List<Event> events;
+//        if(getInstance().getCurrentEnrollment() != null) {
+//            events = getInstance().getCurrentEnrollment().getEvents();
+//        } else {
+//            events = new ArrayList<>();
+//        }
+//        getInstance().setEventsForEnrollment(events);
+//        if(getInstance().getCurrentEvent() != null &&
+//                !getInstance().getEventsForEnrollment().contains(getInstance().getCurrentEvent())) {
+//            getInstance().getEventsForEnrollment().add(getInstance().getCurrentEvent());
+//        }
+//
+//        List<Event> eventsForEnrollment = new ArrayList<>();
+//        if(getInstance().getEventsForEnrollment() != null) {
+//            eventsForEnrollment = getInstance().getEventsForEnrollment();
+//            Collections.sort(getInstance().getEventsForEnrollment(), new EventDateComparator());
+//        }
+//
+//        //setting data elements map
+//        List<DataElement> dataElements = MetaDataController.getDataElements();
+//        getInstance().setDataElementMap(new HashMap<String, DataElement>());
+//        for(DataElement dataElement : dataElements) {
+//            getInstance().getDataElementMap().put(dataElement.getUid(), dataElement);
+//        }
+//
+//        //setting trackedEntityAttribute map
+//        List<TrackedEntityAttribute> trackedEntityAttributes = MetaDataController.getTrackedEntityAttributes();
+//        getInstance().setTrackedEntityAttributeMap(new HashMap<String, TrackedEntityAttribute>());
+//        for(TrackedEntityAttribute trackedEntityAttribute : trackedEntityAttributes) {
+//            getInstance().getTrackedEntityAttributeMap().put(trackedEntityAttribute.getUid(), trackedEntityAttribute);
+//        }
+//
+//        //setting events in map for each program stage
+//        getInstance().setEventsForProgramStages(new HashMap<String, List<Event>>());
+//        for(Event event : eventsForEnrollment) {
+//            List<Event> eventsForProgramStage = getInstance().getEventsForProgramStages().get(event.getProgramStageId());
+//            if(eventsForProgramStage == null) {
+//                eventsForProgramStage = new ArrayList<>();
+//                getInstance().getEventsForProgramStages().put(event.getProgramStageId(), eventsForProgramStage);
+//            }
+//            eventsForProgramStage.add(event);
+//        }
+//
+//        //setting data values in map for each event
+//        getInstance().setEventDataValueMaps(new HashMap<Event, Map<String, DataValue>>());
+//        for(Event event : eventsForEnrollment) {
+//            Map<String, DataValue> dataValueMap = new HashMap<>();
+//            for(DataValue dataValue : event.getDataValues()) {
+//                dataValueMap.put(dataValue.getDataElement(), dataValue);
+//            }
+//            getInstance().getEventDataValueMaps().put(event, dataValueMap);
+//        }
+//
+//        //setting programRuleVariables
+//        List<ProgramRuleVariable> programRuleVariables = MetaDataController.getProgramRuleVariables();
+//        populateDataElementAndAttributeVariables(programRuleVariables);
+//        programRuleVariables.addAll(createContextVariables());
+//        programRuleVariables.addAll(createConstantVariables());
+//        Map<String, ProgramRuleVariable> programRuleVariableMap = new HashMap<>();
+//        for(ProgramRuleVariable programRuleVariable : programRuleVariables) {
+//            programRuleVariableMap.put(programRuleVariable.getName(), programRuleVariable);
+//        }
+//        getInstance().setProgramRuleVariableMap(programRuleVariableMap);
+//    }
 
     public Map<String, ProgramRuleVariable> getProgramRuleVariableMap() {
         return programRuleVariableMap;
@@ -269,20 +508,29 @@ public class VariableService {
         this.eventDataValueMaps = eventDataValueMaps;
     }
 
+    public Map<String, TrackedEntityAttributeValue> getTrackedEntityAttributeValueMap() {
+        return trackedEntityAttributeValueMap;
+    }
+
+    public void setTrackedEntityAttributeValueMap(Map<String, TrackedEntityAttributeValue> trackedEntityAttributeValueMap) {
+        this.trackedEntityAttributeValueMap = trackedEntityAttributeValueMap;
+    }
+
     /**
      * Processes a value to make sure the actually content corresponds to the {@link ValueType},
      * so that expression calculations can be done without errors.
+     *
      * @param processedValue
      * @param valueType
      * @return
      */
-    public static String processSingleValue(String processedValue, ValueType valueType){
+    public static String processSingleValue(String processedValue, ValueType valueType) {
         switch (valueType) {
             case LONG_TEXT:
             case TEXT:
             case DATE:
                 //Append single quotation marks in case the variable is of text or date type:
-                if(processedValue != null) {
+                if (processedValue != null) {
                     processedValue = "'" + processedValue + "'";
                 } else {
                     processedValue = "''";
@@ -291,7 +539,7 @@ public class VariableService {
 
             case BOOLEAN:
             case TRUE_ONLY:
-                if(processedValue == null || processedValue.isEmpty() || !processedValue.equals("true")) {
+                if (processedValue == null || processedValue.isEmpty() || !processedValue.equals("true")) {
                     processedValue = "false";
                 }
                 break;
@@ -302,7 +550,7 @@ public class VariableService {
             case INTEGER_NEGATIVE:
             case INTEGER_ZERO_OR_POSITIVE:
             case PERCENTAGE:
-                if(processedValue != null) {
+                if (processedValue != null) {
                     processedValue = String.valueOf(Double.valueOf(processedValue));
                 } else {
                     processedValue = "0";
@@ -317,10 +565,11 @@ public class VariableService {
      * Populates the passed {@link ProgramRuleVariable}s with data based on its {@link ProgramRuleVariableSourceType}
      * The values that are populated in the {@link ProgramRuleVariable}s are either taken from a {@link DataValue} or
      * from a {@link TrackedEntityAttributeValue}.
+     *
      * @param programRuleVariables
      */
     private static void populateDataElementAndAttributeVariables(List<ProgramRuleVariable> programRuleVariables) {
-        for(ProgramRuleVariable programRuleVariable : programRuleVariables) {
+        for (ProgramRuleVariable programRuleVariable : programRuleVariables) {
             populateDataElementOrAttributeVariable(programRuleVariable);
         }
     }
@@ -329,13 +578,14 @@ public class VariableService {
      * Populates the passed {@link ProgramRuleVariable} with data based on its {@link ProgramRuleVariableSourceType}
      * The value that is populated in the {@link ProgramRuleVariable} is either taken from a {@link DataValue} or
      * from a {@link TrackedEntityAttributeValue}.
+     *
      * @param programRuleVariable
      */
     private static void populateDataElementOrAttributeVariable(ProgramRuleVariable programRuleVariable) {
         String value = null;
         String defaultValue = "";
         List<String> allValues = new ArrayList<>();
-        if(programRuleVariable.getSourceType() == null) {
+        if (programRuleVariable.getSourceType() == null) {
             return;
         }
 
@@ -345,10 +595,14 @@ public class VariableService {
                 break;
             case DATAELEMENT_NEWEST_EVENT_PROGRAM: {
                 DataValue dataValue;
-                for (Event event : getInstance().getEventsForEnrollment()) {
+                List<Event> eventsForEnrollment = new ArrayList<>();
+                if (getInstance().getEventsForEnrollment() != null) {
+                    eventsForEnrollment = getInstance().getEventsForEnrollment();
+                }
+                for (Event event : eventsForEnrollment) {
                     dataValue = getInstance().getEventDataValueMaps().get(event).get(programRuleVariable.getDataElement());
                     if (dataValue != null) {
-                        if(value == null) {
+                        if (value == null) {
                             value = dataValue.getValue();
                         }
                         allValues.add(dataValue.getValue());
@@ -359,16 +613,16 @@ public class VariableService {
             case DATAELEMENT_NEWEST_EVENT_PROGRAM_STAGE: {
                 DataValue dataValue = null;
                 String programStage = programRuleVariable.getProgramStage();
-                if(programStage != null) {
+                if (programStage != null) {
                     List<Event> eventsForProgramStage = getInstance().getEventsForProgramStages().get(programStage);
                     //in some cases the program stage may not have been loaded onto the device, although all variables have
                     //in this case we the current variable doesn't matter as it is from a different program,
                     //so we can ignore it.
-                    if(eventsForProgramStage != null) {
+                    if (eventsForProgramStage != null) {
                         for (Event event : eventsForProgramStage) {
                             dataValue = getInstance().getEventDataValueMaps().get(event).get(programRuleVariable.getDataElement());
                             if (dataValue != null) {
-                                if(value == null) {
+                                if (value == null) {
                                     value = dataValue.getValue();
                                 }
                                 allValues.add(dataValue.getValue());
@@ -385,14 +639,20 @@ public class VariableService {
                 break;
             }
             case DATAELEMENT_PREVIOUS_EVENT: {
-                if(getInstance().getCurrentEvent() != null) {
+                if (getInstance().getCurrentEvent() != null) {
                     DataValue dataValue;
                     Comparator<Event> comparator = new EventDateComparator();
                     //select a value from an event that precedes 'currentEvent'
-                    for (Event event : getInstance().getEventsForEnrollment()) {
-                        if(event.getUid().equals(getInstance().getCurrentEvent().getUid())) {
+                    List<Event> sortedEvents = getInstance().getEventsForEnrollment();
+                    Collections.sort(sortedEvents, comparator);
+                    Collections.reverse(sortedEvents);
+                    for (Event event : sortedEvents) {
+                        if (event.getUid().equals(getInstance().getCurrentEvent().getUid())) {
                             continue;
                         }
+                        event.getUid();
+                        getInstance().getCurrentEvent().getUid();
+                        boolean as = true;
                         //if currentEvent is later than 'event'
                         if (comparator.compare(getInstance().getCurrentEvent(), event) > 0) {
                             dataValue = getInstance().getEventDataValueMaps().get(event).get(programRuleVariable.getDataElement());
@@ -408,14 +668,18 @@ public class VariableService {
                 break;
             }
             case TEI_ATTRIBUTE: {
-                if(getInstance().getCurrentEnrollment() != null) {
-                    TrackedEntityAttributeValue trackedEntityAttributeValue = null;
-                    for (TrackedEntityAttributeValue storedValue : getInstance().getCurrentEnrollment().getAttributes()) {
-                        if (storedValue.getTrackedEntityAttributeId().equals(programRuleVariable.getTrackedEntityAttribute())) {
-                            trackedEntityAttributeValue = storedValue;
-                            break;
-                        }
+                if (getInstance().getCurrentEnrollment() != null) {
+//                    TrackedEntityAttributeValue trackedEntityAttributeValue = null;
+//                    for (TrackedEntityAttributeValue storedValue : getInstance().getCurrentEnrollment().getAttributes()) {
+//                        if (storedValue.getTrackedEntityAttributeId().equals(programRuleVariable.getTrackedEntityAttribute())) {
+//                            trackedEntityAttributeValue = storedValue;
+//                            break;
+//                        }
+//                    }
+                    if(programRuleVariable.getTrackedEntityAttribute() == null) {
+                        break;
                     }
+                    TrackedEntityAttributeValue trackedEntityAttributeValue = getInstance().getTrackedEntityAttributeValueMap().get(programRuleVariable.getTrackedEntityAttribute());
                     if (trackedEntityAttributeValue != null) {
                         value = trackedEntityAttributeValue.getValue();
                         allValues.add(value);
@@ -425,7 +689,7 @@ public class VariableService {
             }
             default:
             case DATAELEMENT_CURRENT_EVENT: {
-                if(getInstance().getCurrentEvent() != null) {
+                if (getInstance().getCurrentEvent() != null) {
                     DataValue dataValue = getInstance().getEventDataValueMaps().get(getInstance().getCurrentEvent()).get(programRuleVariable.getDataElement());
                     if (dataValue != null) {
                         value = dataValue.getValue();
@@ -435,7 +699,14 @@ public class VariableService {
                 break;
             }
         }
-        if(isEmpty(value)) {
+        boolean hasVal = false;
+        for (String val : allValues) {
+            if (!isEmpty(val)) {
+                hasVal = true;
+            }
+        }
+        if (!hasVal) {
+            // check if allValues is empty
             programRuleVariable.setHasValue(false);
             value = defaultValue;
         } else {
@@ -448,12 +719,13 @@ public class VariableService {
     /**
      * Returns a list of populated {@link ProgramRuleVariable}s based on all {@link Constant}
      * currently stored in the database.
+     *
      * @return
      */
     private static List<ProgramRuleVariable> createConstantVariables() {
         List<Constant> constants = MetaDataController.getConstants();
         List<ProgramRuleVariable> programRuleVariables = new ArrayList<>();
-        for(Constant constant : constants) {
+        for (Constant constant : constants) {
             programRuleVariables.add(createConstantVariable(constant));
         }
         return programRuleVariables;
@@ -461,11 +733,12 @@ public class VariableService {
 
     /**
      * Returns a populated {@link ProgramRuleVariable} based on a {@link Constant}.
+     *
      * @param constant
      * @return
      */
     private static ProgramRuleVariable createConstantVariable(Constant constant) {
-        if(constant != null) {
+        if (constant != null) {
             ProgramRuleVariable programRuleVariable = new ProgramRuleVariable();
             programRuleVariable.setVariableValue(Double.toString(constant.getValue()));
             programRuleVariable.setHasValue(true);
@@ -480,14 +753,19 @@ public class VariableService {
     /**
      * Generates and returns a {@link List} of populated {@link ProgramRuleVariable} for the context set in {@link #initialize(Enrollment, Event)}.
      * Context variables are a set of pre-defined {@link ProgramRuleVariable}s that the user can use when writing expressions.
+     *
      * @return
      */
     private static List<ProgramRuleVariable> createContextVariables() {
         List<ProgramRuleVariable> programRuleVariables = new ArrayList<>();
-        for(ContextVariableType type : ContextVariableType.values()) {
+        List<Event> eventsForEnrollment = new ArrayList<>();
+        if (getInstance().getEventsForEnrollment() != null) {
+            eventsForEnrollment = getInstance().getEventsForEnrollment();
+        }
+        for (ContextVariableType type : ContextVariableType.values()) {
             programRuleVariables.add(createContextVariable(type.toString(),
                     getInstance().getCurrentEvent(), getInstance().getCurrentEnrollment(),
-                    getInstance().getEventsForEnrollment()));
+                    eventsForEnrollment));
         }
         return programRuleVariables;
     }
@@ -495,6 +773,7 @@ public class VariableService {
     /**
      * Generates and returns a populated {@link ProgramRuleVariable} for the context of the passed parameters.
      * Context variables are a set of pre-defined {@link ProgramRuleVariable}s that the user can use when writing expressions.
+     *
      * @param variableName
      * @param executingEvent
      * @param executingEnrollment
@@ -513,7 +792,7 @@ public class VariableService {
                 programRuleVariable.setVariableType(ValueType.DATE);
                 break;
             case EVENT_DATE:
-                if(executingEvent != null) {
+                if (executingEvent != null) {
                     programRuleVariable.setVariableValue(executingEvent.getEventDate());
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.DATE);
@@ -524,7 +803,7 @@ public class VariableService {
                 }
                 break;
             case DUE_DATE:
-                if(executingEvent != null) {
+                if (executingEvent != null) {
                     programRuleVariable.setVariableValue(executingEvent.getDueDate());
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.DATE);
@@ -540,7 +819,7 @@ public class VariableService {
                 programRuleVariable.setVariableType(ValueType.INTEGER);
                 break;
             case ENROLLMENT_DATE:
-                if(executingEnrollment != null) {
+                if (executingEnrollment != null) {
                     programRuleVariable.setVariableValue(executingEnrollment.getEnrollmentDate());
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.DATE);
@@ -551,7 +830,7 @@ public class VariableService {
                 }
                 break;
             case ENROLLMENT_ID:
-                if(executingEnrollment != null) {
+                if (executingEnrollment != null) {
                     programRuleVariable.setVariableValue(executingEnrollment.getEnrollment());
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.TEXT);
@@ -562,7 +841,7 @@ public class VariableService {
                 }
                 break;
             case EVENT_ID:
-                if(executingEvent != null) {
+                if (executingEvent != null) {
                     programRuleVariable.setVariableValue(executingEvent.getEvent());
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.TEXT);
@@ -573,7 +852,7 @@ public class VariableService {
                 }
                 break;
             case INCIDENT_DATE:
-                if(executingEnrollment != null) {
+                if (executingEnrollment != null) {
                     programRuleVariable.setVariableValue(executingEnrollment.getIncidentDate());
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.DATE);
@@ -584,7 +863,7 @@ public class VariableService {
                 }
                 break;
             case ENROLLMENT_COUNT: {
-                if(executingEnrollment != null) {
+                if (executingEnrollment != null) {
                     programRuleVariable.setVariableValue("1");
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.INTEGER);
@@ -596,7 +875,7 @@ public class VariableService {
                 break;
             }
             case TEI_COUNT: {
-                if(executingEnrollment != null) {
+                if (executingEnrollment != null) {
                     programRuleVariable.setVariableValue("1");
                     programRuleVariable.setHasValue(true);
                     programRuleVariable.setVariableType(ValueType.INTEGER);
@@ -613,6 +892,7 @@ public class VariableService {
 
     /**
      * Returns the value of a {@link ProgramRuleVariable}
+     *
      * @param variableName
      * @return
      */
@@ -625,6 +905,7 @@ public class VariableService {
 
     /**
      * Returns the value of a {@link ProgramRuleVariable}
+     *
      * @param programRuleVariable
      * @return
      */
@@ -634,7 +915,7 @@ public class VariableService {
             return defaultValue;
         }
         String value = programRuleVariable.getVariableValue();
-        if(isEmpty(value)) {
+        if (isEmpty(value)) {
             value = defaultValue;
         }
         return value;
@@ -642,6 +923,7 @@ public class VariableService {
 
     /**
      * Returns a valid default value for a given {@link ValueType}
+     *
      * @param valueType
      * @return
      */
@@ -667,7 +949,8 @@ public class VariableService {
             case TEXT:
                 value = "";
                 break;
-            default: value = "";
+            default:
+                value = "";
         }
         return value;
     }

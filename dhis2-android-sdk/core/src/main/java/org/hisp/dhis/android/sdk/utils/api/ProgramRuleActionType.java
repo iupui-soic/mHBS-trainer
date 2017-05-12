@@ -37,9 +37,12 @@ public enum ProgramRuleActionType {
     ASSIGN("assign"),
     SHOWWARNING("showwarning"),
     SHOWERROR("showerror"),
-    HIDEPROGRAMSTAGE("hideprogramstage"),
-    CREATEEVENT("createevent");
+    CREATEEVENT("createevent"),
+    ERRORONCOMPLETE("erroroncomplete"),
+    HIDEPROGRAMSTAGE( "hideprogramstage"),
+    WARNINGONCOMPLETE("warningoncomplete");
 
+    
     final String value;
 
     private ProgramRuleActionType(String value) {

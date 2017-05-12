@@ -82,6 +82,20 @@ public final class DataValueAdapter extends AbsAdapter<Row> {
                     AbsListView.LayoutParams.WRAP_CONTENT));
             view.postInvalidate();
             view.setId(position);
+            View detailedInformationButton = view.findViewById(R.id.detailed_info_button_layout);
+
+            if(dataEntryRow.getDescription() != null && !dataEntryRow.getDescription().isEmpty()) {
+                if(detailedInformationButton != null) {
+                detailedInformationButton.setOnClickListener(new OnDetailedInfoButtonClick(dataEntryRow));
+                detailedInformationButton.setVisibility(View.VISIBLE);
+                }
+
+            }
+            else {
+                if(detailedInformationButton != null) {
+                    detailedInformationButton.setVisibility(View.INVISIBLE);
+                }
+            }
             if(hiddenDataElementRows.containsKey(id)) {
                 view.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
                 view.postInvalidate();
@@ -139,7 +153,9 @@ public final class DataValueAdapter extends AbsAdapter<Row> {
         if(hiddenDataElementRows == null) {
             hiddenDataElementRows = new HashMap<>();
         }
-        hiddenDataElementRows.put(dataElement, true);
+        if(dataElement != null) {
+            hiddenDataElementRows.put(dataElement, true);
+        }
     }
 
     public void resetHiding() {

@@ -33,6 +33,7 @@ import android.content.Context;
 
 import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.controllers.DhisController;
+import org.hisp.dhis.android.sdk.controllers.GpsController;
 import org.hisp.dhis.android.sdk.controllers.tracker.TrackerController;
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.persistence.loaders.Query;
@@ -47,13 +48,14 @@ import org.hisp.dhis.android.sdk.persistence.models.ProgramStageDataElement;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramStageSection;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityInstance;
+import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.DataEntryRowFactory;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.EventDueDatePickerRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.Row;
 import org.hisp.dhis.android.sdk.ui.fragments.dataentry.DataEntryFragmentSection;
 import org.hisp.dhis.android.sdk.utils.api.ValueType;
 import org.hisp.dhis.android.sdk.utils.services.ProgramIndicatorService;
 import org.hisp.dhis.android.sdk.utils.support.DateUtils;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.AutoCompleteRow;
+import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.autocompleterow.AutoCompleteRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.CheckBoxRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.CoordinatesRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.DataEntryRowTypes;
@@ -101,6 +103,9 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
         if (stage == null || stage.getProgramStageSections() == null) {
             return form;
         }
+        if(DhisController.getInstance().getSession() == null) {
+            return form;
+        }
 
         final String username = DhisController.getInstance().getSession().getCredentials().getUsername();
         final Event event = getEvent(
@@ -111,6 +116,21 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
         if(enrollmentId > 0) {
             Enrollment enrollment = TrackerController.getEnrollment(enrollmentId);
             enrollment.getEvents(true);
+
+            List<Event> newEventsForEnrollment = new ArrayList<>();
+            List<Event> currentEventsForEnrollment = new ArrayList<>();
+            currentEventsForEnrollment.addAll(enrollment.getEvents());
+            newEventsForEnrollment.addAll(enrollment.getEvents());
+
+            for(Event eventForEnrollment : currentEventsForEnrollment) {
+
+                if(eventForEnrollment.getLocalId() == event.getLocalId()) {
+                    int index = newEventsForEnrollment.indexOf(eventForEnrollment);
+                    newEventsForEnrollment.remove(eventForEnrollment);
+                    newEventsForEnrollment.add(index, eventForEnrollment);
+                }
+            }
+            enrollment.setEvents(newEventsForEnrollment);
             form.setEnrollment(enrollment);
         }
         form.setStage(stage);
@@ -131,7 +151,7 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
             }
             addEventDateRow(context, form, rows);
             addCoordinateRow(form, rows);
-            populateDataEntryRows(form, stage.getProgramStageDataElements(), rows, username);
+            populateDataEntryRows(form, stage.getProgramStageDataElements(), rows, username, context);
             populateIndicatorRows(form, stage.getProgramIndicators(), rows);
             form.getSections().add(new DataEntryFragmentSection(DEFAULT_SECTION, null, rows));
         } else {
@@ -150,7 +170,7 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
                     addEventDateRow(context, form, rows);
                     addCoordinateRow(form, rows);
                 }
-                populateDataEntryRows(form, section.getProgramStageDataElements(), rows, username);
+                populateDataEntryRows(form, section.getProgramStageDataElements(), rows, username, context);
                 populateIndicatorRows(form, section.getProgramIndicators(), rows);
                 form.getSections().add(new DataEntryFragmentSection(section.getName(), section.getUid(), rows));
             }
@@ -176,7 +196,7 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
                                      List<Row> rows) {
         Event event = form.getEvent();
         if(event==null) return;
-        StatusRow row = new StatusRow(context, event);
+        StatusRow row = new StatusRow(context, event, form.getStage());
         rows.add(row);
         form.setStatusRow(row);
     }
@@ -189,8 +209,8 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
 
     private static void addEventDateRow(Context context, EventDataEntryFragmentForm form,
                                         List<Row> rows) {
-        String reportDateDescription = form.getStage().getReportDateDescription()== null ?
-                context.getString(R.string.report_date) : form.getStage().getReportDateDescription();
+        String reportDateDescription = form.getStage().getExecutionDateLabel()== null ?
+                context.getString(R.string.report_date) : form.getStage().getExecutionDateLabel();
         rows.add(new EventDatePickerRow(reportDateDescription, form.getEvent(), false));
     }
 
@@ -203,7 +223,7 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
 
     private static void populateDataEntryRows(EventDataEntryFragmentForm form,
                                               List<ProgramStageDataElement> dataElements,
-                                              List<Row> rows, String username) {
+                                              List<Row> rows, String username, Context context) {
         for (ProgramStageDataElement stageDataElement : dataElements) {
             DataValue dataValue = getDataValue(stageDataElement.getDataelement(), form.getEvent(), username);
             DataElement dataElement = getDataElement(stageDataElement.getDataelement());
@@ -211,7 +231,19 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
                 form.getDataElementNames().put(stageDataElement.getDataelement(),
                         dataElement.getDisplayName());
                 form.getDataValues().put(dataValue.getDataElement(), dataValue);
-                rows.add(createDataEntryRow(stageDataElement, dataElement, dataValue));
+                String dataElementName;
+                if (!isEmpty(dataElement.getDisplayFormName())) {
+                    dataElementName = dataElement.getDisplayFormName();
+                } else {
+                    dataElementName = dataElement.getDisplayName();
+                }
+                if(ValueType.COORDINATE.equals(stageDataElement.getDataElement().getValueType())) {
+                    GpsController.activateGps(context);
+                }
+                Row row = DataEntryRowFactory.createDataEntryView(stageDataElement.getCompulsory(),
+                        stageDataElement.getAllowFutureDate(), dataElement.getOptionSet(),
+                        dataElementName, dataValue, dataElement.getValueType(), true, false);
+                rows.add(row);
             }
         }
     }
@@ -257,52 +289,12 @@ class EventDataEntryFragmentQuery implements Query<EventDataEntryFragmentForm> {
             event.setDataValues(dataValues);
         } else {
             event = TrackerController.getEvent(eventId);
+            if(event == null) {
+                getEvent(orgUnitId, programId, -1, enrollmentId, programStage, username); // if event is null, create a new one
+            }
         }
 
         return event;
-    }
-
-    private static Row createDataEntryRow(ProgramStageDataElement programStageDataElement, DataElement dataElement, DataValue dataValue) {
-        Row row;
-
-        String dataElementName;
-        if (!isEmpty(dataElement.getDisplayFormName())) {
-            dataElementName = dataElement.getDisplayFormName();
-        } else {
-            dataElementName = dataElement.getDisplayName();
-        }
-
-        if (dataElement.getOptionSet() != null) {
-            OptionSet optionSet = MetaDataController.getOptionSet(dataElement.getOptionSet());
-            if (optionSet == null) {
-                row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.TEXT);
-            } else {
-                row = new AutoCompleteRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, optionSet);
-            }
-        } else if (dataElement.getValueType().equals(ValueType.TEXT)) {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.TEXT);
-        } else if (dataElement.getValueType().equals(ValueType.LONG_TEXT)) {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.LONG_TEXT);
-        } else if (dataElement.getValueType().equals(ValueType.NUMBER)) {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.NUMBER);
-        } else if (dataElement.getValueType().equals(ValueType.INTEGER)) {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.INTEGER);
-        } else if (dataElement.getValueType().equals(ValueType.INTEGER_ZERO_OR_POSITIVE)) {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.INTEGER_ZERO_OR_POSITIVE);
-        } else if (dataElement.getValueType().equals(ValueType.INTEGER_POSITIVE)) {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.INTEGER_POSITIVE);
-        } else if (dataElement.getValueType().equals(ValueType.INTEGER_NEGATIVE)) {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.INTEGER_NEGATIVE);
-        } else if (dataElement.getValueType().equals(ValueType.BOOLEAN)) {
-            row = new RadioButtonsRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.BOOLEAN);
-        } else if (dataElement.getValueType().equals(ValueType.TRUE_ONLY)) {
-            row = new CheckBoxRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue);
-        } else if (dataElement.getValueType().equals(ValueType.DATE)) {
-            row = new DatePickerRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, programStageDataElement.getAllowFutureDate());
-        } else {
-            row = new EditTextRow(dataElementName, programStageDataElement.getCompulsory(), null, dataValue, DataEntryRowTypes.LONG_TEXT);
-        }
-        return row;
     }
 
     public static DataValue getDataValue(String dataElement, Event event,

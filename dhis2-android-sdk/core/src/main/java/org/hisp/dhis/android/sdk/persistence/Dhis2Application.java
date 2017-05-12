@@ -31,17 +31,24 @@ package org.hisp.dhis.android.sdk.persistence;
 
 import android.app.Activity;
 import android.app.Application;
+import android.database.sqlite.SQLiteDatabase;
 
+import com.crashlytics.android.Crashlytics;
 import com.facebook.stetho.Stetho;
+import com.raizlabs.android.dbflow.DatabaseHelperListener;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
 import org.hisp.dhis.android.sdk.controllers.DhisController;
+import org.hisp.dhis.android.sdk.controllers.DhisService;
+import org.hisp.dhis.android.sdk.persistence.migrations.MigrationUtil;
 import org.hisp.dhis.android.sdk.utils.MainThreadBus;
 
+import io.fabric.sdk.android.Fabric;
+
 /**
- *  Application for initiating the DbFlow Back end
+ * Application for initiating the DbFlow Back end
  */
 public abstract class Dhis2Application extends Application {
 
@@ -56,10 +63,34 @@ public abstract class Dhis2Application extends Application {
     public void onCreate() {
         super.onCreate();
         FlowManager.init(this);
+
         dhisController = new DhisController(this);
         bus.register(dhisController);
         Stetho.initializeWithDefaults(this);
+        Fabric.with(this, new Crashlytics());
 
+        FlowManager.setDatabaseListener(Dhis2Database.NAME, new DatabaseHelperListener() {
+            @Override
+            public void onOpen(SQLiteDatabase database) {
+            }
+
+            @Override
+            public void onCreate(SQLiteDatabase database) {
+            }
+
+            @Override
+            public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
+                MigrationUtil.setDatabase(database);
+
+                if (newVersion > oldVersion) {
+                    if (DhisController.isUserLoggedIn()) {
+                        DhisService.forceSynchronize(getApplicationContext());
+                    }
+                }
+            }
+        });
+
+        //MigrationUtil.migrateExistingData(this);
     }
 
     @Override
@@ -67,6 +98,7 @@ public abstract class Dhis2Application extends Application {
         super.onTerminate();
         FlowManager.destroy();
     }
+
     public abstract Class<? extends Activity> getMainActivity();
 
     public static Bus getEventBus() {

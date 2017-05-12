@@ -35,11 +35,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Simen Skogly Russnes on 20.03.15.
  */
 @JsonIgnoreProperties("modelAdapter")
-public abstract class BaseValue extends BaseModel {
+public abstract class BaseValue extends BaseModel implements Serializable {
 
     public static final String FALSE = "false";
     public static final String TRUE = "true";
@@ -48,6 +53,14 @@ public abstract class BaseValue extends BaseModel {
     @JsonProperty("value")
     @Column(name = "value")
     String value;
+
+    public BaseValue() {
+
+    }
+
+    protected BaseValue(BaseValue baseValue) {
+        this.value = baseValue.value;
+    }
 
     @JsonAnySetter
     public void handleUnknown(String key, Object value) {
@@ -59,5 +72,17 @@ public abstract class BaseValue extends BaseModel {
 
     public String getValue() {
         return value;
+    }
+
+    public static <T extends BaseValue> Map<String, T> toMap(Collection<T> objects) {
+        Map<String, T> map = new HashMap<>();
+        if (objects != null && objects.size() > 0) {
+            for (T object : objects) {
+                if (object.getValue() != null) {
+                    map.put(object.getValue(), object);
+                }
+            }
+        }
+        return map;
     }
 }

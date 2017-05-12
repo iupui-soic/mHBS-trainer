@@ -31,32 +31,36 @@ package org.hisp.dhis.android.sdk.controllers;
 
 import android.content.Context;
 
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.squareup.okhttp.HttpUrl;
 
-import org.hisp.dhis.android.sdk.controllers.tracker.TrackerController;
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.controllers.tracker.TrackerController;
+import org.hisp.dhis.android.sdk.events.UiEvent;
+import org.hisp.dhis.android.sdk.network.APIException;
+import org.hisp.dhis.android.sdk.network.Credentials;
 import org.hisp.dhis.android.sdk.network.DhisApi;
 import org.hisp.dhis.android.sdk.network.RepoManager;
+import org.hisp.dhis.android.sdk.network.Session;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
-import org.hisp.dhis.android.sdk.network.Credentials;
-import org.hisp.dhis.android.sdk.network.Session;
 import org.hisp.dhis.android.sdk.persistence.preferences.DateTimeManager;
 import org.hisp.dhis.android.sdk.persistence.preferences.LastUpdatedManager;
-import org.hisp.dhis.android.sdk.network.APIException;
+import org.hisp.dhis.android.sdk.utils.SyncDateWrapper;
+import org.hisp.dhis.client.sdk.ui.AppPreferencesImpl;
 
 public final class DhisController {
+    private static final String CLASS_TAG = "Dhis2";
+
     public final static String LAST_UPDATED_METADATA = "lastupdated_metadata";
     public final static String LAST_UPDATED_DATAVALUES = "lastupdated_datavalues";
+
     /* flags used to determine what data to be loaded from the server */
     //public static final String LOAD_TRACKER = "load_tracker";
     //public static final String LOAD_EVENTCAPTURE = "load_eventcapture";
     public final static String QUEUED = "queued";
     public final static String PREFS_NAME = "DHIS2";
-    private static final String CLASS_TAG = "Dhis2";
     private final static String USERNAME = "username";
     private final static String PASSWORD = "password";
     private final static String SERVER = "server";
@@ -72,17 +76,30 @@ public final class DhisController {
     private ObjectMapper objectMapper;
     private DhisApi dhisApi;
     private Session session;
+    private SyncDateWrapper syncDateWrapper;
+    private AppPreferencesImpl appPreferences;
+
 
     private boolean blocking = false;
+
+    public static DhisController getInstance() {
+        return Dhis2Application.dhisController;
+    }
 
     public DhisController(Context context) {
         objectMapper = getObjectMapper();
         LastUpdatedManager.init(context);
         DateTimeManager.init(context);
+        appPreferences = new AppPreferencesImpl(context);
+        syncDateWrapper = new SyncDateWrapper(context, appPreferences);
     }
 
-    public static DhisController getInstance() {
-        return Dhis2Application.dhisController;
+    public void init() {
+        readSession();
+    }
+
+    public DhisApi getDhisApi() {
+        return dhisApi;
     }
 
     /**
@@ -93,12 +110,22 @@ public final class DhisController {
      */
     static void synchronize(final Context context)
             throws APIException, IllegalStateException {
+        Dhis2Application.getEventBus().post(new UiEvent(UiEvent.UiEventType.SYNCING_START));
         sendData();
         loadData(context);
+        getInstance().getSyncDateWrapper().setLastSyncedNow();
+    }
+
+    public static void forceSynchronize(Context context) throws APIException, IllegalStateException {
+        Dhis2Application.getEventBus().post(new UiEvent(UiEvent.UiEventType.SYNCING_START));
+        sendData();
+        LoadingController.loadMetaData(context, getInstance().getDhisApi(), true);
+        LoadingController.loadDataValues(context, getInstance().getDhisApi());
+        getInstance().getSyncDateWrapper().setLastSyncedNow();
     }
 
     static void loadData(Context context) throws APIException, IllegalStateException {
-        LoadingController.loadMetaData(context, getInstance().getDhisApi());
+        LoadingController.loadMetaData(context, getInstance().getDhisApi(), false);
         LoadingController.loadDataValues(context, getInstance().getDhisApi());
     }
 
@@ -125,7 +152,7 @@ public final class DhisController {
         return user;
     }
 
-    public static void logOutUser(Context context) throws APIException {
+    static void logOutUser(Context context) throws APIException {
         (new UserController(getInstance().dhisApi)).logOut();
 
         // fetch meta data from disk
@@ -162,14 +189,6 @@ public final class DhisController {
         readSession();
     }
 
-    public void init() {
-        readSession();
-    }
-
-    public DhisApi getDhisApi() {
-        return dhisApi;
-    }
-
     public Session getSession() {
         return session;
     }
@@ -181,4 +200,9 @@ public final class DhisController {
         }
         return objectMapper;
     }
+
+    public SyncDateWrapper getSyncDateWrapper() {
+        return getInstance().syncDateWrapper;
+    }
+
 }

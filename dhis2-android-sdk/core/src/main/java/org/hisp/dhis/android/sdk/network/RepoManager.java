@@ -31,6 +31,7 @@ package org.hisp.dhis.android.sdk.network;
 
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.facebook.stetho.okhttp.StethoInterceptor;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.Interceptor;
@@ -120,7 +121,7 @@ public final class RepoManager {
                     .newBuilder()
                     .addHeader("Authorization", base64Credentials)
                     .build();
-            Log.d("RepoManager",request.toString());
+            Log.d("RepoManager", request.toString());
             Response response = chain.proceed(request);
             if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED &&
                     DhisController.getInstance().isUserLoggedIn()) {
@@ -135,7 +136,7 @@ public final class RepoManager {
         @Override
         public Throwable handleError(RetrofitError cause) {
             cause.printStackTrace();
-            Log.d("RepoManager", "there was an error.." + cause.getKind().name() );
+            Log.d("RepoManager", "there was an error.." + cause.getKind().name());
             try {
                 String body = new StringConverter().fromBody(cause.getResponse().getBody(), String.class);
                 Log.e("RepoManager", body);
@@ -145,7 +146,31 @@ public final class RepoManager {
                 e.printStackTrace();
             }
 
-            return APIException.fromRetrofitError(cause);
+            APIException apiException = APIException.fromRetrofitError(cause);
+            switch (apiException.getKind()) {
+                case CONVERSION:
+                case UNEXPECTED: {
+                    logResponseBody(cause);
+                    Crashlytics.logException(cause.getCause());
+                    break;
+                }
+                case HTTP:
+                    if (apiException.getResponse().getStatus() >= 500) {
+                        logResponseBody(cause);
+                        Crashlytics.logException(cause.getCause());
+                    } else if (apiException.getResponse().getStatus() == 409) {
+                        logResponseBody(cause);
+                        Crashlytics.logException(cause.getCause());
+                    }
+            }
+
+            return apiException;
+        }
+    }
+
+    private static void logResponseBody(RetrofitError cause) {
+        if (cause.getResponse() != null && cause.getResponse().getBody() != null) {
+            Crashlytics.log(cause.getResponse().getBody().toString());
         }
     }
 }

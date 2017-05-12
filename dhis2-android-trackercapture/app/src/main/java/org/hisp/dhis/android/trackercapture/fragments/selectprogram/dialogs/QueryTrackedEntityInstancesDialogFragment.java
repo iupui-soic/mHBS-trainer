@@ -58,6 +58,7 @@ import com.squareup.otto.Subscribe;
 
 import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.controllers.DhisController;
+import org.hisp.dhis.android.sdk.controllers.GpsController;
 import org.hisp.dhis.android.sdk.controllers.tracker.TrackerController;
 import org.hisp.dhis.android.sdk.events.UiEvent;
 import org.hisp.dhis.android.sdk.job.JobExecutor;
@@ -160,8 +161,8 @@ public class QueryTrackedEntityInstancesDialogFragment extends DialogFragment
         detailedSearchButton.setOnClickListener(this);
         mListView.addHeaderView(header, TAG, false);
 
-        ImageView loadDialogButton = (ImageView) view
-                .findViewById(R.id.load_dialog_button);
+        //ImageView loadDialogButton = (ImageView) view
+          //      .findViewById(R.id.load_dialog_button);
         ImageView closeDialogButton = (ImageView) view
                 .findViewById(R.id.close_dialog_button);
         mFilter = (EditText) view
@@ -189,7 +190,7 @@ public class QueryTrackedEntityInstancesDialogFragment extends DialogFragment
             }
         });
 
-        loadDialogButton.setOnClickListener(this);
+        //loadDialogButton.setOnClickListener(this);
 
         setDialogLabel(R.string.query_tracked_entity_instances);
     }
@@ -324,10 +325,11 @@ public class QueryTrackedEntityInstancesDialogFragment extends DialogFragment
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.load_dialog_button) {
-            dismiss();
-            runQuery();
-        } else if (v.getId() == org.hisp.dhis.android.trackercapture.R.id.detailed_search_button) {
+        //if (v.getId() == R.id.load_dialog_button) {
+          //  dismiss();
+            //runQuery();
+        //} else
+            if (v.getId() == org.hisp.dhis.android.trackercapture.R.id.detailed_search_button) {
             toggleDetailedSearch(v);
         }
     }
@@ -394,5 +396,11 @@ public class QueryTrackedEntityInstancesDialogFragment extends DialogFragment
                 this.activity = (FragmentActivity) activity;
             }
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        GpsController.disableGps();
     }
 }

@@ -38,6 +38,7 @@ import com.raizlabs.android.dbflow.sql.language.Select;
 
 import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.controllers.ApiEndpointContainer;
+import org.hisp.dhis.android.sdk.controllers.DhisController;
 import org.hisp.dhis.android.sdk.controllers.LoadingController;
 import org.hisp.dhis.android.sdk.controllers.ResourceController;
 import org.hisp.dhis.android.sdk.controllers.wrappers.AssignedProgramsWrapper;
@@ -53,6 +54,10 @@ import org.hisp.dhis.android.sdk.persistence.models.Constant;
 import org.hisp.dhis.android.sdk.persistence.models.Constant$Table;
 import org.hisp.dhis.android.sdk.persistence.models.DataElement;
 import org.hisp.dhis.android.sdk.persistence.models.DataElement$Table;
+import org.hisp.dhis.android.sdk.persistence.models.DataValue;
+import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
+import org.hisp.dhis.android.sdk.persistence.models.Event;
+import org.hisp.dhis.android.sdk.persistence.models.FailedItem;
 import org.hisp.dhis.android.sdk.persistence.models.Option;
 import org.hisp.dhis.android.sdk.persistence.models.Option$Table;
 import org.hisp.dhis.android.sdk.persistence.models.OptionSet;
@@ -79,6 +84,7 @@ import org.hisp.dhis.android.sdk.persistence.models.ProgramStageSection;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramStageSection$Table;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramTrackedEntityAttribute$Table;
+import org.hisp.dhis.android.sdk.persistence.models.Relationship;
 import org.hisp.dhis.android.sdk.persistence.models.RelationshipType;
 import org.hisp.dhis.android.sdk.persistence.models.RelationshipType$Table;
 import org.hisp.dhis.android.sdk.persistence.models.SystemInfo;
@@ -86,6 +92,9 @@ import org.hisp.dhis.android.sdk.persistence.models.TrackedEntity;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntity$Table;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute$Table;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeGeneratedValue;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeGeneratedValue$Table;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeGroup;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityInstance;
 import org.hisp.dhis.android.sdk.persistence.models.User;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
@@ -99,8 +108,10 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hisp.dhis.android.sdk.utils.NetworkUtils.unwrapResponse;
 
@@ -109,6 +120,7 @@ import static org.hisp.dhis.android.sdk.utils.NetworkUtils.unwrapResponse;
  */
 public final class MetaDataController extends ResourceController {
     private final static String CLASS_TAG = "MetaDataController";
+    private final static long TRACKED_ENTITY_ATTRITBUTE_GENERATED_VALUE_THRESHOLD = 100;
 
     private MetaDataController() {
     }
@@ -121,42 +133,47 @@ public final class MetaDataController extends ResourceController {
      */
     public static boolean isDataLoaded(Context context) {
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.ASSIGNEDPROGRAMS)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.ASSIGNEDPROGRAMS) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.ASSIGNEDPROGRAMS) == null) {
                 return false;
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.OPTIONSETS)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.OPTIONSETS) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.OPTIONSETS) == null) {
+                return false;
+            }
+        }
+        if (LoadingController.isLoadFlagEnabled(context, ResourceType.TRACKEDENTITYATTRIBUTEGROUPS)) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTEGROUPS) == null) {
                 return false;
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.TRACKEDENTITYATTRIBUTES)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTES) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTES) == null) {
                 return false;
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.CONSTANTS)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.CONSTANTS) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.CONSTANTS) == null) {
                 return false;
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.PROGRAMRULES)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.PROGRAMRULES) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.PROGRAMRULES) == null) {
                 return false;
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.PROGRAMRULEVARIABLES)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.PROGRAMRULEVARIABLES) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.PROGRAMRULEVARIABLES) == null) {
                 return false;
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.PROGRAMRULEACTIONS)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.PROGRAMRULEACTIONS) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.PROGRAMRULEACTIONS) == null) {
                 return false;
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.RELATIONSHIPTYPES)) {
-            if( DateTimeManager.getInstance().getLastUpdated(ResourceType.RELATIONSHIPTYPES) == null) {
+            if (DateTimeManager.getInstance().getLastUpdated(ResourceType.RELATIONSHIPTYPES) == null) {
                 return false;
             }
         }
@@ -222,7 +239,7 @@ public final class MetaDataController extends ResourceController {
      * @param dataElement to get the Attributes from
      * @return List of AttributeValue objects that belongs to the given DataElement
      */
-    public static List<AttributeValue> getAttributeValues(DataElement dataElement){
+    public static List<AttributeValue> getAttributeValues(DataElement dataElement) {
         if (dataElement == null) return null;
         return new Select().from(AttributeValue.class)
                 .where(Condition.column(AttributeValue$Table.DATAELEMENT).is(dataElement.getUid()))
@@ -235,7 +252,7 @@ public final class MetaDataController extends ResourceController {
      * @param id PK of the AttributeValue table
      * @return The AttributeValue object or null if not found
      */
-    public static AttributeValue getAttributeValue(Long id){
+    public static AttributeValue getAttributeValue(Long id) {
         if (id == null) return null;
         return new Select().from(AttributeValue.class)
                 .where(Condition.column(AttributeValue$Table.ID).is(id)).querySingle();
@@ -247,7 +264,7 @@ public final class MetaDataController extends ResourceController {
      * @param attributeId The ID used in DHIS2 to identify the Attribute
      * @return The Attribute object or null if not found
      */
-    public static Attribute getAttribute(String attributeId){
+    public static Attribute getAttribute(String attributeId) {
         if (attributeId == null) return null;
         return new Select().from(Attribute.class)
                 .where(Condition.column(Attribute$Table.ID).is(attributeId)).querySingle();
@@ -330,6 +347,14 @@ public final class MetaDataController extends ResourceController {
         return new Select().from(TrackedEntityAttribute.class).queryList();
     }
 
+    public static List<TrackedEntityAttributeGroup> getTrackedEntityAttributeGroups() {
+        return new Select().from(TrackedEntityAttributeGroup.class).queryList();
+    }
+
+    public static List<TrackedEntityAttributeGeneratedValue> getTrackedEntityAttributeGeneratedValues() {
+        return new Select().from(TrackedEntityAttributeGeneratedValue.class).queryList();
+    }
+
     /**
      * Returns a constant with the given uid
      *
@@ -405,7 +430,9 @@ public final class MetaDataController extends ResourceController {
      * @return
      */
     public static List<OrganisationUnit> getAssignedOrganisationUnits() {
-        List<OrganisationUnit> organisationUnits = new Select().from(OrganisationUnit.class).queryList();
+        List<OrganisationUnit> organisationUnits = new Select().from(OrganisationUnit.class)
+                .where(Condition.column(OrganisationUnit$Table.TYPE).eq(OrganisationUnit.TYPE.ASSIGNED))
+                .queryList();
         return organisationUnits;
     }
 
@@ -500,8 +527,8 @@ public final class MetaDataController extends ResourceController {
     }
 
     /**
-      * Clears status and time of loaded meta data items
-      */
+     * Clears status and time of loaded meta data items
+     */
     public static void clearMetaDataLoadedFlags() {
         DateTimeManager.getInstance().deleteLastUpdated(ResourceType.ASSIGNEDPROGRAMS);
         List<String> assignedPrograms = MetaDataController.getAssignedPrograms();
@@ -510,6 +537,7 @@ public final class MetaDataController extends ResourceController {
         }
         DateTimeManager.getInstance().deleteLastUpdated(ResourceType.OPTIONSETS);
         DateTimeManager.getInstance().deleteLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTES);
+        DateTimeManager.getInstance().deleteLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTEGROUPS);
         DateTimeManager.getInstance().deleteLastUpdated(ResourceType.CONSTANTS);
         DateTimeManager.getInstance().deleteLastUpdated(ResourceType.PROGRAMRULES);
         DateTimeManager.getInstance().deleteLastUpdated(ResourceType.PROGRAMRULEVARIABLES);
@@ -536,36 +564,66 @@ public final class MetaDataController extends ResourceController {
                 ProgramTrackedEntityAttribute.class,
                 SystemInfo.class,
                 TrackedEntity.class,
+                TrackedEntityAttributeGeneratedValue.class,
                 TrackedEntityAttribute.class,
+                TrackedEntityAttributeGroup.class,
                 TrackedEntityInstance.class,
+                Enrollment.class,
+                Event.class,
+                DataValue.class,
+                FailedItem.class,
                 User.class,
                 ProgramRule.class,
                 ProgramRuleVariable.class,
                 ProgramRuleAction.class,
                 RelationshipType.class,
+                Relationship.class,
                 Attribute.class,
                 AttributeValue.class);
+
+        /**  * Delete.tables(  Attribute.class,  AttributeValue.class,  Constant.class,  Conflict.class,  Dashboard.class,  DashboardElement.class,  DashboardItem.class,  DashboardItemContent.class,  DataElement.class,  DataValue.class,  Enrollment.class,  Event.class,  FailedItem.class,  ImportCount.class,  ImportSummary.class,  Interpretation.class,  InterpretationComment.class,  InterpretationElement.class,  Option.class,  OptionSet.class,  OrganisationUnit.class,  OrganisationUnitProgramRelationship.class,  Program.class,  ProgramIndicator.class,  ProgramIndicatorToSectionRelationship.class,  ProgramStage.class,  ProgramStageDataElement.class,  ProgramStageSection.class,  ProgramTrackedEntityAttribute.class,  RelationshipType.class,  Relationship.class,  SystemInfo.class,  TrackedEntity.class,  TrackedEntityAttribute.class,  TrackedEntityAttributeGeneratedValue.class,  TrackedEntityAttributeValue.class,  TrackedEntityInstance.class,  User.class,  UserAccount.class  );  */
+
+
     }
 
     /**
      * Loads metaData from the server and stores it in local persistence.
      */
-    public static void loadMetaData(Context context, DhisApi dhisApi) throws APIException {
+    public static void loadMetaData(Context context, DhisApi dhisApi, boolean forceSync) throws APIException {
         Log.d(CLASS_TAG, "loadMetaData");
         UiUtils.postProgressMessage(context.getString(R.string.loading_metadata));
-        updateMetaDataItems(context, dhisApi);
+        updateMetaDataItems(context, dhisApi, forceSync);
+    }
+
+    private static void updateTrackedDataItems(Context context, DhisApi dhisApi, DateTime serverDateTime) {
+        if (dhisApi == null) {
+            dhisApi = DhisController.getInstance().getDhisApi();
+            if (dhisApi == null) {
+                return;
+            }
+
+        }
+
+
     }
 
     /**
      * Loads a metadata item that is scheduled to be loaded but has not yet been.
      */
-    private static void updateMetaDataItems(Context context, DhisApi dhisApi) throws APIException {
+    private static void updateMetaDataItems(Context context, DhisApi dhisApi, boolean forceSync) throws APIException {
+        if (dhisApi == null) {
+            dhisApi = DhisController.getInstance().getDhisApi();
+            if (dhisApi == null) {
+                return;
+            }
+
+        }
         SystemInfo serverSystemInfo = dhisApi.getSystemInfo();
         DateTime serverDateTime = serverSystemInfo.getServerDate();
         //some items depend on each other. Programs depend on AssignedPrograms because we need
         //the ids of programs to load.
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.ASSIGNEDPROGRAMS)) {
-            if ( shouldLoad(serverDateTime, ResourceType.ASSIGNEDPROGRAMS) ) {
+            if (shouldLoad(serverDateTime, ResourceType.ASSIGNEDPROGRAMS)) {
                 getAssignedProgramsDataFromServer(dhisApi, serverDateTime);
             }
         }
@@ -573,46 +631,55 @@ public final class MetaDataController extends ResourceController {
             List<String> assignedPrograms = MetaDataController.getAssignedPrograms();
             if (assignedPrograms != null) {
                 for (String program : assignedPrograms) {
-                    if ( shouldLoad(serverDateTime, ResourceType.PROGRAMS, program) ) {
-                        getProgramDataFromServer(dhisApi, program, serverDateTime);
+                    if (shouldLoad(serverDateTime, ResourceType.PROGRAMS, program)) {
+                        getProgramDataFromServer(dhisApi, program, serverDateTime, forceSync);
                     }
                 }
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.OPTIONSETS)) {
-            if ( shouldLoad(serverDateTime, ResourceType.OPTIONSETS) ) {
+            if (shouldLoad(serverDateTime, ResourceType.OPTIONSETS)) {
                 getOptionSetDataFromServer(dhisApi, serverDateTime);
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.TRACKEDENTITYATTRIBUTES)) {
-            if ( shouldLoad(serverDateTime, ResourceType.TRACKEDENTITYATTRIBUTES) ) {
+            if (shouldLoad(serverDateTime, ResourceType.TRACKEDENTITYATTRIBUTES)) {
                 getTrackedEntityAttributeDataFromServer(dhisApi, serverDateTime);
             }
         }
+        if (LoadingController.isLoadFlagEnabled(context, ResourceType.TRACKEDENTITYATTRIBUTEGROUPS)) {
+            if (shouldLoad(serverDateTime, ResourceType.TRACKEDENTITYATTRIBUTEGROUPS)) {
+                getTrackedEntityAttributeGroupDataFromServer(dhisApi, serverDateTime);
+            }
+        }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.CONSTANTS)) {
-            if ( shouldLoad(serverDateTime, ResourceType.CONSTANTS) ) {
+            if (shouldLoad(serverDateTime, ResourceType.CONSTANTS)) {
                 getConstantsDataFromServer(dhisApi, serverDateTime);
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.PROGRAMRULES)) {
-            if ( shouldLoad(serverDateTime, ResourceType.PROGRAMRULES) ) {
+            if (shouldLoad(serverDateTime, ResourceType.PROGRAMRULES)) {
                 getProgramRulesDataFromServer(dhisApi, serverDateTime);
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.PROGRAMRULEVARIABLES)) {
-            if ( shouldLoad(serverDateTime, ResourceType.PROGRAMRULEVARIABLES) ) {
+            if (shouldLoad(serverDateTime, ResourceType.PROGRAMRULEVARIABLES)) {
                 getProgramRuleVariablesDataFromServer(dhisApi, serverDateTime);
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.PROGRAMRULEACTIONS)) {
-            if ( shouldLoad(serverDateTime, ResourceType.PROGRAMRULEACTIONS) ) {
+            if (shouldLoad(serverDateTime, ResourceType.PROGRAMRULEACTIONS)) {
                 getProgramRuleActionsDataFromServer(dhisApi, serverDateTime);
             }
         }
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.RELATIONSHIPTYPES)) {
-            if ( shouldLoad(serverDateTime, ResourceType.RELATIONSHIPTYPES) ) {
+            if (shouldLoad(serverDateTime, ResourceType.RELATIONSHIPTYPES)) {
                 getRelationshipTypesDataFromServer(dhisApi, serverDateTime);
             }
+        }
+        List<TrackedEntityAttribute> trackedEntityAttributes = getTrackedEntityAttributes();
+        if (trackedEntityAttributes != null && !trackedEntityAttributes.isEmpty()) {
+            getTrackedEntityAttributeGeneratedValuesFromServer(dhisApi, getTrackedEntityAttributes(), serverDateTime);
         }
     }
 
@@ -620,28 +687,79 @@ public final class MetaDataController extends ResourceController {
         Log.d(CLASS_TAG, "getAssignedProgramsDataFromServer");
         DateTime lastUpdated = DateTimeManager.getInstance()
                 .getLastUpdated(ResourceType.ASSIGNEDPROGRAMS);
-        UserAccount userAccount= dhisApi.getUserAccount();
+        UserAccount userAccount = dhisApi.getUserAccount();
         Map<String, Program> programMap = new HashMap<>();
         List<Program> assignedProgramUids = userAccount.getPrograms();
 
-        for(Program program : assignedProgramUids) {
+        for (Program program : assignedProgramUids) {
             programMap.put(program.getUid(), program);
         }
 
         List<OrganisationUnit> organisationUnitList = userAccount.getOrganisationUnits();
+        for (OrganisationUnit organisationUnit : organisationUnitList) {
+            organisationUnit.setType(OrganisationUnit.TYPE.ASSIGNED);
+        }
 
-        for(OrganisationUnit organisationUnit : organisationUnitList) {
+        Set<String> teiSearchOrganisationUnitUids = null;
+        if (userAccount.getTeiSearchOrganisationUnits() != null) {
+            if (!userAccount.getTeiSearchOrganisationUnits().isEmpty()) {
+                teiSearchOrganisationUnitUids = new HashSet<>();
+                List<OrganisationUnit> teiSearchOrganisatonUnits = userAccount.getTeiSearchOrganisationUnits();
+                for (OrganisationUnit organisationUnit : teiSearchOrganisatonUnits) {
+                    teiSearchOrganisationUnitUids.add(organisationUnit.getId());
+                }
+            }
+        }
+        Map<String, List<OrganisationUnit>> teiSearchOrganisationUnitMap = null;
+        List<OrganisationUnit> teiSearchOrganisationUnits = null;
+        if (teiSearchOrganisationUnitUids != null) {
+            Map<String, String> queryMap = new HashMap<>();
+            queryMap.put("fields", "[id,displayName,programs]");
+            String filter = "id:in:[";
 
-            if(organisationUnit.getPrograms() != null && !organisationUnit.getPrograms().isEmpty()) {
+            for (String orgUnitUid : teiSearchOrganisationUnitUids) {
+                if (!queryMap.containsKey("filter")) {
+                    queryMap.put("filter", filter + orgUnitUid);
+                } else {
+                    String currentFilter = queryMap.get("filter");
+                    queryMap.put("filter", currentFilter + "," + orgUnitUid);
+                }
+            }
+            String currentFilter = queryMap.get("filter");
+            queryMap.put("filter", currentFilter + "]");
+            teiSearchOrganisationUnitMap = dhisApi.getOrganisationUnits(queryMap);
+            teiSearchOrganisationUnits = teiSearchOrganisationUnitMap.get("organisationUnits");
+        }
+        if (teiSearchOrganisationUnits != null) {
+            for (OrganisationUnit searchOrgUnit : teiSearchOrganisationUnits) {
+                boolean isOrgUnitAssigned = false;
+                for (OrganisationUnit assignedOrganisationUnit : organisationUnitList) {
+                    if (searchOrgUnit.getId().equals(assignedOrganisationUnit)) {
+                        isOrgUnitAssigned = true;
+                        break;
+                    }
+                }
+                if (!isOrgUnitAssigned) {
+                    searchOrgUnit.setType(OrganisationUnit.TYPE.SEARCH);
+                }
+
+            }
+            organisationUnitList.addAll(teiSearchOrganisationUnits);
+        }
+
+        for (OrganisationUnit organisationUnit : organisationUnitList) {
+
+            if (organisationUnit.getPrograms() != null && !organisationUnit.getPrograms().isEmpty()) {
                 List<Program> assignedProgramToUnit = new ArrayList<>();
-                for(Program program : organisationUnit.getPrograms()) {
-                    if(programMap.containsKey(program.getUid())) {
-                       assignedProgramToUnit.add(programMap.get(program.getUid()));
+                for (Program program : organisationUnit.getPrograms()) {
+                    if (programMap.containsKey(program.getUid())) {
+                        assignedProgramToUnit.add(programMap.get(program.getUid()));
                     }
                 }
                 organisationUnit.setPrograms(assignedProgramToUnit);
             }
         }
+
 
         List<DbOperation> operations = AssignedProgramsWrapper.getOperations(organisationUnitList);
 
@@ -650,17 +768,18 @@ public final class MetaDataController extends ResourceController {
                 .setLastUpdated(ResourceType.ASSIGNEDPROGRAMS, serverDateTime);
     }
 
-    private static void getProgramDataFromServer(DhisApi dhisApi, String uid, DateTime serverDateTime) throws APIException {
+    private static void getProgramDataFromServer(DhisApi dhisApi, String uid, DateTime serverDateTime, boolean forceSync) throws APIException {
         Log.d(CLASS_TAG, "getProgramDataFromServer");
         DateTime lastUpdated = DateTimeManager.getInstance()
                 .getLastUpdated(ResourceType.PROGRAM, uid);
 
-        Program program = updateProgram(dhisApi, uid, lastUpdated);
+        Program program = updateProgram(dhisApi, uid, lastUpdated, forceSync);
         DateTimeManager.getInstance()
                 .setLastUpdated(ResourceType.PROGRAM, uid, serverDateTime);
+
     }
 
-    private static Program updateProgram(DhisApi dhisApi, String uid, DateTime lastUpdated) throws APIException {
+    private static Program updateProgram(DhisApi dhisApi, String uid, DateTime lastUpdated, boolean forceSync) throws APIException {
         final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
 
         QUERY_MAP_FULL.put("fields",
@@ -670,7 +789,7 @@ public final class MetaDataController extends ResourceController {
                         "[*,programStage[id],dataElement[*,optionSet[id]]]],programTrackedEntityAttributes" +
                         "[*,trackedEntityAttribute[*]],!organisationUnits");
 
-        if (lastUpdated != null) {
+        if (!forceSync && lastUpdated != null) {
             QUERY_MAP_FULL.put("filter", "lastUpdated:gt:" + lastUpdated.toString());
         }
 
@@ -678,6 +797,7 @@ public final class MetaDataController extends ResourceController {
         Program updatedProgram = dhisApi.getProgram(uid, QUERY_MAP_FULL);
         List<DbOperation> operations = ProgramWrapper.setReferences(updatedProgram);
         DbUtils.applyBatch(operations);
+
 
         return updatedProgram;
     }
@@ -701,13 +821,83 @@ public final class MetaDataController extends ResourceController {
                 .setLastUpdated(ResourceType.OPTIONSETS, serverDateTime);
     }
 
+    private static void getTrackedEntityAttributeGroupDataFromServer(DhisApi dhisApi, DateTime serverDateTime) throws APIException {
+        Log.d(CLASS_TAG, "getTrackedEntityAttributeDataFromServer");
+        DateTime lastUpdated = DateTimeManager.getInstance()
+                .getLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTEGROUPS);
+        List<TrackedEntityAttributeGroup> trackedEntityAttributeGroups = unwrapResponse(dhisApi
+                .getTrackedEntityAttributeGroups(getBasicQueryMap(lastUpdated)), ApiEndpointContainer.TRACKED_ENTITY_ATTRIBUTE_GROUPS);
+
+        saveResourceDataFromServer(ResourceType.TRACKEDENTITYATTRIBUTEGROUPS, dhisApi, trackedEntityAttributeGroups, getTrackedEntityAttributeGroups(), serverDateTime);
+    }
+
     private static void getTrackedEntityAttributeDataFromServer(DhisApi dhisApi, DateTime serverDateTime) throws APIException {
         Log.d(CLASS_TAG, "getTrackedEntityAttributeDataFromServer");
         DateTime lastUpdated = DateTimeManager.getInstance()
                 .getLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTES);
         List<TrackedEntityAttribute> trackedEntityAttributes = unwrapResponse(dhisApi
                 .getTrackedEntityAttributes(getBasicQueryMap(lastUpdated)), ApiEndpointContainer.TRACKED_ENTITY_ATTRIBUTES);
+
+
         saveResourceDataFromServer(ResourceType.TRACKEDENTITYATTRIBUTES, dhisApi, trackedEntityAttributes, getTrackedEntityAttributes(), serverDateTime);
+    }
+
+    /**
+     * @param dhisApi
+     * @param trackedEntityAttributes
+     * @param serverDateTime          This method tries to get trackedEntityAttributeGeneratedValues from server if we need it
+     */
+    public static void getTrackedEntityAttributeGeneratedValuesFromServer(DhisApi dhisApi, List<TrackedEntityAttribute> trackedEntityAttributes, DateTime serverDateTime) {
+        // After fetching trackedEntityAttributes from server, we want to go through all of them and fetch IDs for generation
+        DateTime lastUpdated = DateTimeManager.getInstance()
+                .getLastUpdated(ResourceType.TRACKEDENTITYATTRIBUTEGENERATEDVALUES);
+
+        for (TrackedEntityAttribute trackedEntityAttribute : trackedEntityAttributes) {
+            if (trackedEntityAttribute.isGenerated()) {
+                long numberOfGeneratedTrackedEntityAttributesToFetch = shouldFetchGeneratedTrackedEntityAttributeValues(trackedEntityAttribute, serverDateTime);
+                if (numberOfGeneratedTrackedEntityAttributesToFetch > 0) {
+                    List<TrackedEntityAttributeGeneratedValue> trackedEntityAttributeGeneratedValues =
+                            dhisApi.getTrackedEntityAttributeGeneratedValues(trackedEntityAttribute.getUid(), numberOfGeneratedTrackedEntityAttributesToFetch); // Downloading x generated IDs per trackedEntityAttribute
+
+                    saveBaseValueDataFromServer(ResourceType.TRACKEDENTITYATTRIBUTEGENERATEDVALUES, "", trackedEntityAttributeGeneratedValues, getTrackedEntityAttributeGeneratedValues(), serverDateTime, false);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param trackedEntityAttribute
+     * @return number of trackedEntityAttributeGeneratedValues to fetch
+     */
+    private static long shouldFetchGeneratedTrackedEntityAttributeValues(TrackedEntityAttribute trackedEntityAttribute, DateTime serverDateTime) {
+
+        checkIfGeneratedTrackedEntityAttributeValuesHasExpired(serverDateTime);
+
+        long numberOfTrackedEntityAttributeGeneratedValues = new Select().
+                from(TrackedEntityAttributeGeneratedValue.class)
+                .where(Condition.column(TrackedEntityAttributeGeneratedValue$Table.TRACKEDENTITYATTRIBUTE_TRACKEDENTITYATTRIBUTE)
+                        .eq(trackedEntityAttribute.getUid()))
+                .queryList().size();
+
+        if (numberOfTrackedEntityAttributeGeneratedValues < TRACKED_ENTITY_ATTRITBUTE_GENERATED_VALUE_THRESHOLD) {
+
+            return (TRACKED_ENTITY_ATTRITBUTE_GENERATED_VALUE_THRESHOLD - numberOfTrackedEntityAttributeGeneratedValues);
+        }
+
+        return 0;
+    }
+
+    public static void checkIfGeneratedTrackedEntityAttributeValuesHasExpired(DateTime serverDateTime) {
+        List<TrackedEntityAttributeGeneratedValue> generatedValuesThatIsExpired = new Select()
+                .from(TrackedEntityAttributeGeneratedValue.class)
+                .where(Condition.column(TrackedEntityAttributeGeneratedValue$Table.EXPIRYDATE)
+                        .lessThan(serverDateTime)).queryList();
+
+        for (TrackedEntityAttributeGeneratedValue trackedEntityAttributeGeneratedValue : generatedValuesThatIsExpired) {
+
+            trackedEntityAttributeGeneratedValue.delete();
+        }
+
     }
 
     private static void getConstantsDataFromServer(DhisApi dhisApi, DateTime serverDateTime) throws APIException {
@@ -754,5 +944,49 @@ public final class MetaDataController extends ResourceController {
         List<RelationshipType> relationshipTypes = unwrapResponse(dhisApi
                 .getRelationshipTypes(getBasicQueryMap(lastUpdated)), ApiEndpointContainer.RELATIONSHIPTYPES);
         saveResourceDataFromServer(resource, dhisApi, relationshipTypes, getRelationshipTypes(), serverDateTime);
+    }
+
+    public static TrackedEntityAttributeGeneratedValue getTrackedEntityAttributeGeneratedValue(TrackedEntityAttribute trackedEntityAttribute) {
+        List<TrackedEntityAttributeGeneratedValue> trackedEntityAttributeGeneratedValues = new Select().from(TrackedEntityAttributeGeneratedValue.class)
+                .where(Condition.column(TrackedEntityAttributeGeneratedValue$Table.TRACKEDENTITYATTRIBUTE_TRACKEDENTITYATTRIBUTE).eq(trackedEntityAttribute.getUid())).queryList();
+
+        if (trackedEntityAttributeGeneratedValues != null && !trackedEntityAttributeGeneratedValues.isEmpty()) {
+            TrackedEntityAttributeGeneratedValue trackedEntityAttributeGeneratedValue = trackedEntityAttributeGeneratedValues.get(0);
+
+            //trackedEntityAttributeGeneratedValue.delete(); // Deleting it so it cannot be re-used
+
+            return trackedEntityAttributeGeneratedValue;
+        }
+
+        return null;
+    }
+
+    public static TrackedEntityAttributeGeneratedValue getTrackedEntityAttributeGeneratedValue(String trackedEntityAttributeGeneratedValue) {
+        List<TrackedEntityAttributeGeneratedValue> trackedEntityAttributeGeneratedValues = new Select().from(TrackedEntityAttributeGeneratedValue.class)
+                .where(Condition.column(TrackedEntityAttributeGeneratedValue$Table.VALUE).eq(trackedEntityAttributeGeneratedValue)).queryList();
+
+        if (trackedEntityAttributeGeneratedValues != null && !trackedEntityAttributeGeneratedValues.isEmpty()) {
+            TrackedEntityAttributeGeneratedValue generatedValue = trackedEntityAttributeGeneratedValues.get(0);
+
+            return generatedValue;
+        }
+
+        return null;
+    }
+
+    public static boolean performSearchBeforeEnrollment() {
+        return getSearchAttributeGroup() != null;
+    }
+
+    public static TrackedEntityAttributeGroup getSearchAttributeGroup() {
+        List<TrackedEntityAttributeGroup> attributeGroups = getTrackedEntityAttributeGroups();
+        for (TrackedEntityAttributeGroup attributeGroup : attributeGroups) {
+            // TODO: put in proper logic here when backend solution is in place
+            // either use a AttributeGroup.TYPE enum or put a configuration flag somewhere
+            if (attributeGroup.getDescription().equals("SEARCH_GROUP")) {
+                return attributeGroup;
+            }
+        }
+        return null;
     }
 }

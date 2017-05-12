@@ -31,16 +31,19 @@ package org.hisp.dhis.android.trackercapture.fragments.trackedentityinstanceprof
 
 import android.content.Context;
 
-import org.hisp.dhis.android.sdk.controllers.tracker.TrackerController;
+import org.hisp.dhis.android.sdk.controllers.GpsController;
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.controllers.tracker.TrackerController;
 import org.hisp.dhis.android.sdk.persistence.loaders.Query;
+import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
 import org.hisp.dhis.android.sdk.persistence.models.OptionSet;
 import org.hisp.dhis.android.sdk.persistence.models.Program;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityInstance;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.AutoCompleteRow;
+import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.DataEntryRowFactory;
+import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.autocompleterow.AutoCompleteRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.CheckBoxRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.DataEntryRowTypes;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.DatePickerRow;
@@ -50,6 +53,7 @@ import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.Row;
 import org.hisp.dhis.android.sdk.utils.api.ValueType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -60,10 +64,13 @@ public class TrackedEntityInstanceProfileFragmentQuery implements Query<TrackedE
     private String mProgramId;
     private TrackedEntityInstance currentTrackedEntityInstance;
     private boolean editable;
+    private long enrollmentId;
+    private Enrollment currentEnrollment;
 
-    public TrackedEntityInstanceProfileFragmentQuery(long mTrackedEntityInstanceId, String mProgramId) {
+    public TrackedEntityInstanceProfileFragmentQuery(long mTrackedEntityInstanceId, String mProgramId, long enrollmentId) {
         this.mTrackedEntityInstanceId = mTrackedEntityInstanceId;
         this.mProgramId = mProgramId;
+        this.enrollmentId = enrollmentId;
     }
 
     @Override
@@ -72,29 +79,45 @@ public class TrackedEntityInstanceProfileFragmentQuery implements Query<TrackedE
         final Program mProgram = MetaDataController.getProgram(mProgramId);
         final TrackedEntityInstance mTrackedEntityInstance = TrackerController.getTrackedEntityInstance(mTrackedEntityInstanceId);
 
-        if (mProgram == null || mTrackedEntityInstance == null)
+        if (mProgram == null || mTrackedEntityInstance == null) {
             return mForm;
-
+        }
+        currentEnrollment = TrackerController.getEnrollment(enrollmentId);
         currentTrackedEntityInstance = mTrackedEntityInstance;
-
         mForm.setProgram(mProgram);
         mForm.setTrackedEntityInstance(mTrackedEntityInstance);
+        mForm.setTrackedEntityAttributeValueMap(new HashMap<String, TrackedEntityAttributeValue>());
 
-        List<TrackedEntityAttributeValue> values = TrackerController.getProgramTrackedEntityAttributeValues(mProgram, mTrackedEntityInstance);
-        List<ProgramTrackedEntityAttribute> attributes = MetaDataController.getProgramTrackedEntityAttributes(mProgramId);
+        List<TrackedEntityAttributeValue> trackedEntityAttributeValues = TrackerController.getProgramTrackedEntityAttributeValues(mProgram, mTrackedEntityInstance);
+        List<ProgramTrackedEntityAttribute> programTrackedEntityAttributes = MetaDataController.getProgramTrackedEntityAttributes(mProgramId);
 
-        if (values == null && attributes == null)
+        if (trackedEntityAttributeValues == null && programTrackedEntityAttributes == null) {
             return mForm;
-
+        }
+        currentEnrollment.setAttributes(trackedEntityAttributeValues);
+        mForm.setTrackedEntityAttributeValues(trackedEntityAttributeValues);
         List<Row> dataEntryRows = new ArrayList<>();
-        for (int i = 0; i < attributes.size(); i++) {
-            Row row = createDataEntryView(attributes.get(i), attributes.get(i).getTrackedEntityAttribute(),
-                    getTrackedEntityDataValue(attributes.get(i).getTrackedEntityAttribute().getUid(),
-                            values));
+        for (int i = 0; i < programTrackedEntityAttributes.size(); i++) {
+            boolean shouldNeverBeEdited = false;
+            if(programTrackedEntityAttributes.get(i).getTrackedEntityAttribute().isGenerated()) {
+                shouldNeverBeEdited = true;
+            }
+            if(ValueType.COORDINATE.equals(programTrackedEntityAttributes.get(i).getTrackedEntityAttribute().getValueType())) {
+                GpsController.activateGps(context);
+            }
+            Row row = DataEntryRowFactory.createDataEntryView(programTrackedEntityAttributes.get(i).getMandatory(),
+                    programTrackedEntityAttributes.get(i).getAllowFutureDate(), programTrackedEntityAttributes.get(i).getTrackedEntityAttribute().getOptionSet(),
+                    programTrackedEntityAttributes.get(i).getTrackedEntityAttribute().getName(), getTrackedEntityDataValue(programTrackedEntityAttributes.get(i).getTrackedEntityAttribute().getUid(),
+                            trackedEntityAttributeValues), programTrackedEntityAttributes.get(i).getTrackedEntityAttribute().getValueType(), false, shouldNeverBeEdited);
             dataEntryRows.add(row);
         }
-        mForm.setTrackedEntityAttributeValues(values);
+        if (trackedEntityAttributeValues != null) {
+            for (TrackedEntityAttributeValue trackedEntityAttributeValue : trackedEntityAttributeValues) {
+                mForm.getTrackedEntityAttributeValueMap().put(trackedEntityAttributeValue.getTrackedEntityAttributeId(), trackedEntityAttributeValue);
+            }
+        }
         mForm.setDataEntryRows(dataEntryRows);
+        mForm.setEnrollment(currentEnrollment);
         return mForm;
     }
 
@@ -113,41 +136,5 @@ public class TrackedEntityInstanceProfileFragmentQuery implements Query<TrackedE
         trackedEntityAttributeValue.setValue("");
         trackedEntityAttributeValues.add(trackedEntityAttributeValue);
         return trackedEntityAttributeValue;
-    }
-
-    public Row createDataEntryView(ProgramTrackedEntityAttribute programTrackedEntityAttribute, TrackedEntityAttribute trackedEntityAttribute, TrackedEntityAttributeValue dataValue) {
-        Row row;
-        String trackedEntityAttributeName = trackedEntityAttribute.getName();
-        if (trackedEntityAttribute.getOptionSet() != null) {
-            OptionSet optionSet = MetaDataController.getOptionSet(trackedEntityAttribute.getOptionSet());
-            if (optionSet == null) {
-                row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.TEXT);
-            } else {
-                row = new AutoCompleteRow(trackedEntityAttributeName, false, null, dataValue, optionSet);
-            }
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.TEXT)) {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.TEXT);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.LONG_TEXT)) {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.LONG_TEXT);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.NUMBER)) {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.NUMBER);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.INTEGER)) {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.INTEGER);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.INTEGER_ZERO_OR_POSITIVE)) {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.INTEGER_ZERO_OR_POSITIVE);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.INTEGER_POSITIVE)) {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.INTEGER_POSITIVE);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.INTEGER_NEGATIVE)) {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.INTEGER_NEGATIVE);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.BOOLEAN)) {
-            row = new RadioButtonsRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.BOOLEAN);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.TRUE_ONLY)) {
-            row = new CheckBoxRow(trackedEntityAttributeName, false, null, dataValue);
-        } else if (trackedEntityAttribute.getValueType().equals(ValueType.DATE)) {
-            row = new DatePickerRow(trackedEntityAttributeName, false, null, dataValue, programTrackedEntityAttribute.getAllowFutureDate());
-        } else {
-            row = new EditTextRow(trackedEntityAttributeName, false, null, dataValue, DataEntryRowTypes.LONG_TEXT);
-        }
-        return row;
     }
 }

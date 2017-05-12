@@ -32,24 +32,25 @@ package org.hisp.dhis.android.sdk.controllers.tracker;
 import android.content.Context;
 import android.util.Log;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.controllers.ApiEndpointContainer;
-import org.hisp.dhis.android.sdk.controllers.DhisController;
 import org.hisp.dhis.android.sdk.controllers.LoadingController;
 import org.hisp.dhis.android.sdk.controllers.ResourceController;
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.controllers.wrappers.EventsWrapper;
+import org.hisp.dhis.android.sdk.events.OnTeiDownloadedEvent;
 import org.hisp.dhis.android.sdk.network.APIException;
 import org.hisp.dhis.android.sdk.network.DhisApi;
+import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
 import org.hisp.dhis.android.sdk.persistence.models.Event;
 import org.hisp.dhis.android.sdk.persistence.models.OrganisationUnit;
 import org.hisp.dhis.android.sdk.persistence.models.Program;
 import org.hisp.dhis.android.sdk.persistence.models.Relationship;
 import org.hisp.dhis.android.sdk.persistence.models.SystemInfo;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityInstance;
 import org.hisp.dhis.android.sdk.persistence.models.meta.DbOperation;
@@ -61,15 +62,16 @@ import org.hisp.dhis.android.sdk.utils.Utils;
 import org.hisp.dhis.android.sdk.utils.api.ProgramType;
 import org.joda.time.DateTime;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hisp.dhis.android.sdk.utils.NetworkUtils.unwrapResponse;
+import static org.hisp.dhis.client.sdk.utils.StringUtils.isEmpty;
 
 /**
  * @author Simen Skogly Russnes on 24.08.15.
@@ -78,16 +80,25 @@ final class TrackerDataLoader extends ResourceController {
 
     public static final String CLASS_TAG = TrackerDataLoader.class.getSimpleName();
 
-    private TrackerDataLoader() {}
+    private TrackerDataLoader() {
+    }
 
     /**
      * Loads datavalue items that is scheduled to be loaded but has not yet been.
      */
     static void updateDataValueDataItems(Context context, DhisApi dhisApi) throws APIException {
+        if (dhisApi == null) {
+            return;
+        }
         SystemInfo serverSystemInfo = dhisApi.getSystemInfo();
         DateTime serverDateTime = serverSystemInfo.getServerDate();
         List<OrganisationUnit> assignedOrganisationUnits = MetaDataController.getAssignedOrganisationUnits();
         Hashtable<String, List<Program>> programsForOrganisationUnits = new Hashtable<>();
+
+
+        //check if events is updated on server
+        List<Enrollment> activeEnrollments = TrackerController.getActiveEnrollments();
+//        updateEventsForEnrollments(context, dhisApi, activeEnrollments, serverDateTime);
 
         if (LoadingController.isLoadFlagEnabled(context, ResourceType.EVENTS)) {
             for (OrganisationUnit organisationUnit : assignedOrganisationUnits) {
@@ -118,11 +129,11 @@ final class TrackerDataLoader extends ResourceController {
                         UiUtils.postProgressMessage(context.getString(R.string.loading_events) + ": "
                                 + organisationUnit.getLabel() + ": " + program.getName());
                         try {
-                        getEventsDataFromServer(dhisApi, organisationUnit.getId(), program.getUid(), serverDateTime);
+                            getEventsDataFromServer(dhisApi, organisationUnit.getId(), program.getUid(), serverDateTime);
                         } catch (APIException e) {
-                        e.printStackTrace();
-                        //todo: could probably do something prettier here. This catch is done to prevent
-                        // stopping loading of the following program/orgUnit as throwing and exception would exit the loop..
+                            e.printStackTrace();
+                            //todo: could probably do something prettier here. This catch is done to prevent
+                            // stopping loading of the following program/orgUnit as throwing and exception would exit the loop..
                         }
                     }
                 }
@@ -130,10 +141,92 @@ final class TrackerDataLoader extends ResourceController {
         }
     }
 
+    static void updateEventsForEnrollments(Context context, DhisApi dhisApi, List<Enrollment> enrollments, DateTime serverDateTime) {
+        DateTime lastUpdated = DateTimeManager.getInstance().getLastUpdated(ResourceType.EVENTS);
+        String delimiter = ";";
+        boolean failed = false;
+        String trackedEntityInstanceQueryParams = "trackedEntityInstance";
+        Map<String, String> QUERY_MAP_FULL = new HashMap<>();
+        Map<String, List<Enrollment>> programToEnrollmentMap = mapActiveEnrollmentsByProgram(enrollments);
+        List<Event> eventsFromServer = new ArrayList<>();
+        if (lastUpdated != null) {
+            QUERY_MAP_FULL.put("lastUpdated", lastUpdated.toString());
+        }
+
+        if (programToEnrollmentMap.keySet().size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            Set<String> programUids = programToEnrollmentMap.keySet();
+
+            for (String programUid : programUids) {
+                List<Enrollment> enrollmentsForProgram = programToEnrollmentMap.get(programUid);
+                for (Enrollment enrollment : enrollmentsForProgram) {
+                    sb.append(enrollment.getTrackedEntityInstance() + delimiter);
+                }
+                QUERY_MAP_FULL.put(trackedEntityInstanceQueryParams, sb.toString());
+                try {
+                    List<Event> eventsForTrackedEntityInstance = dhisApi.getEventsForTrackedEntityInstance(programUid, QUERY_MAP_FULL);
+                    if (eventsForTrackedEntityInstance != null) {
+                        eventsFromServer.addAll(dhisApi.getEventsForTrackedEntityInstance(programUid, QUERY_MAP_FULL));
+                    }
+
+                } catch (APIException apiException) {
+                    apiException.printStackTrace();
+                    failed = true;
+                }
+
+            }
+
+
+        }
+
+
+        if (!failed) {
+            saveResourceDataFromServer(ResourceType.EVENTS, dhisApi, eventsFromServer, null, serverDateTime);
+            DateTimeManager.getInstance().setLastUpdated(ResourceType.EVENTS, serverDateTime);
+        }
+
+    }
+
+    static Map<String, List<Enrollment>> mapActiveEnrollmentsByProgram(List<Enrollment> enrollments) {
+        Map<String, List<Enrollment>> programToEnrollmentMap = new HashMap<>();
+
+        for (Enrollment enrollment : enrollments) {
+            if (enrollment != null && enrollment.getProgram() != null // if enrollment exists, is active and have a trackedEntityInstance
+                    && Enrollment.ACTIVE.equals(enrollment.getStatus())
+                    && !isEmpty(enrollment.getTrackedEntityInstance())) {
+
+                if (!programToEnrollmentMap.containsKey(enrollment.getProgram().getUid())) {
+                    List<Enrollment> enrollmentForProgram = new ArrayList<>();
+                    enrollmentForProgram.add(enrollment);
+                    programToEnrollmentMap.put(enrollment.getProgram().getUid(), enrollmentForProgram);
+                } else {
+                    programToEnrollmentMap.get(enrollment.getProgram().getUid()).add(enrollment); // adding enrollment to list
+                }
+            }
+        }
+        return programToEnrollmentMap;
+    }
+
+    static void updateEnrollments(Context context, DhisApi dhisApi, List<Enrollment> enrollments) {
+        DateTime lastUpdated = DateTimeManager.getInstance().getLastUpdated(ResourceType.ENROLLMENTS);
+    }
+
+    static void updateEvents(Context context, DhisApi dhisApi, List<Event> events) {
+        DateTime lastUpdated = DateTimeManager.getInstance().getLastUpdated(ResourceType.EVENTS);
+
+        final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
+        if (events != null && events.size() > 0) {
+            QUERY_MAP_FULL.put("program", "");
+        }
+    }
+
     static void getEventsDataFromServer(DhisApi dhisApi, String organisationUnitUid, String programUid, DateTime serverDateTime) throws APIException {
+        if (dhisApi == null) {
+            return;
+        }
         Log.d(CLASS_TAG, "getEventsDataFromServer");
         DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(ResourceType.EVENTS,organisationUnitUid+programUid);
+                .getLastUpdated(ResourceType.EVENTS, organisationUnitUid + programUid);
         final Map<String, String> map = new HashMap<>();
         map.put("fields", "[:all]");
         if (lastUpdated != null) {
@@ -142,33 +235,45 @@ final class TrackerDataLoader extends ResourceController {
         JsonNode response = dhisApi.getEvents(programUid, organisationUnitUid, 50,
                 map);
         List<Event> events = EventsWrapper.getEvents(response);
-        saveResourceDataFromServer(ResourceType.EVENTS,organisationUnitUid+programUid, dhisApi, events, null, serverDateTime);
+        saveResourceDataFromServer(ResourceType.EVENTS, organisationUnitUid + programUid, dhisApi, events, null, serverDateTime);
     }
 
     static List<TrackedEntityInstance> queryTrackedEntityInstancesDataFromServer(DhisApi dhisApi,
-                                                                                        String organisationUnitUid,
-                                                                                        String programUid,
-                                                                                        String queryString,
-                                                                                        TrackedEntityAttributeValue... params) throws APIException {
+                                                                                 String organisationUnitUid,
+                                                                                 String programUid,
+                                                                                 String queryString,
+                                                                                 TrackedEntityAttributeValue... params) throws APIException {
+        if (dhisApi == null) {
+            return null;
+        }
         final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
-        if(programUid != null) {
+        if (programUid != null) {
             QUERY_MAP_FULL.put("program", programUid);
         }
         List<TrackedEntityAttributeValue> valueParams = new LinkedList<>();
-        if( params != null ) {
-            for(TrackedEntityAttributeValue teav: params ) {
-                if( teav != null && teav.getValue() != null ) {
-                    if( !teav.getValue().isEmpty() ) {
-                        valueParams.add( teav );
-                        QUERY_MAP_FULL.put("filter",teav.getTrackedEntityAttributeId()+":LIKE:"+teav.getValue());
+        if (params != null) {
+            for (TrackedEntityAttributeValue teav : params) {
+                if (teav != null && teav.getValue() != null) {
+                    if (!teav.getValue().isEmpty()) {
+                        valueParams.add(teav);
+//                        QUERY_MAP_FULL.put("filter",teav.getTrackedEntityAttributeId()+":LIKE:"+teav.getValue());
                     }
                 }
             }
         }
+        for (TrackedEntityAttributeValue val : valueParams) {
+            if (!QUERY_MAP_FULL.containsKey("filter")) {
+                QUERY_MAP_FULL.put("filter", val.getTrackedEntityAttributeId() + ":LIKE:" + val.getValue());
+            } else {
+                String currentFilter = QUERY_MAP_FULL.get("filter");
+                QUERY_MAP_FULL.put("filter", currentFilter + "&filter=" + val.getTrackedEntityAttributeId() + ":LIKE:" + val.getValue());
+            }
+        }
+
 
         //doesnt work with both attribute filter and query
-        if(queryString!=null && !queryString.isEmpty() && valueParams.isEmpty() ) {
-            QUERY_MAP_FULL.put("query","LIKE:"+queryString);//todo: make a map where we can use more than one of each key
+        if (queryString != null && !queryString.isEmpty() && valueParams.isEmpty()) {
+            QUERY_MAP_FULL.put("query", "LIKE:" + queryString);//todo: make a map where we can use more than one of each key
         }
         List<TrackedEntityInstance> trackedEntityInstances = unwrapResponse(dhisApi
                 .getTrackedEntityInstances(organisationUnitUid,
@@ -176,24 +281,102 @@ final class TrackerDataLoader extends ResourceController {
         return trackedEntityInstances;
     }
 
-    static void getTrackedEntityInstancesDataFromServer(DhisApi dhisApi, List<TrackedEntityInstance> trackedEntityInstances, boolean getEnrollments) {
-        if(trackedEntityInstances == null) {
-            return;
+    static List<TrackedEntityInstance> queryTrackedEntityInstancesDataFromAllAccessibleOrgunits(DhisApi dhisApi,
+                                                                                                String organisationUnitUid,
+                                                                                                String programUid,
+                                                                                                String queryString,
+                                                                                                boolean detailedSearch,
+                                                                                                TrackedEntityAttributeValue... params) throws APIException {
+        if (dhisApi == null) {
+            return null;
         }
-        for(TrackedEntityInstance trackedEntityInstance: trackedEntityInstances) {
-            try {
-                getTrackedEntityInstanceDataFromServer(dhisApi, trackedEntityInstance.getTrackedEntityInstance(), getEnrollments);
-            } catch (APIException e) { //can't throw this further up because we want to continue loading all the TEIs..
-                e.printStackTrace();
+        final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
+        if (programUid != null) {
+            QUERY_MAP_FULL.put("program", programUid);
+        }
+        List<TrackedEntityAttributeValue> valueParams = new LinkedList<>();
+        if (params != null) {
+            for (TrackedEntityAttributeValue teav : params) {
+                if (teav != null && teav.getValue() != null) {
+                    if (!teav.getValue().isEmpty()) {
+                        valueParams.add(teav);
+//                        QUERY_MAP_FULL.put("filter",teav.getTrackedEntityAttributeId()+":LIKE:"+teav.getValue());
+                    }
+                }
             }
         }
+        for (TrackedEntityAttributeValue val : valueParams) {
+            TrackedEntityAttribute trackedEntityAttribute = MetaDataController.getTrackedEntityAttribute(val.getTrackedEntityAttributeId());
+            if(trackedEntityAttribute.getOptionSet() != null) {
+                // has option sets. Want to search on exact matching
+                if (!QUERY_MAP_FULL.containsKey("filter")) {
+                    QUERY_MAP_FULL.put("filter", val.getTrackedEntityAttributeId() + ":EQ:" + val.getValue());
+                } else {
+                    String currentFilter = QUERY_MAP_FULL.get("filter");
+                    QUERY_MAP_FULL.put("filter", currentFilter + "&filter=" + val.getTrackedEntityAttributeId() + ":EQ:" + val.getValue());
+                }
+                continue;
+            }
+
+            if (!QUERY_MAP_FULL.containsKey("filter")) {
+                QUERY_MAP_FULL.put("filter", val.getTrackedEntityAttributeId() + ":LIKE:" + val.getValue());
+            } else {
+                String currentFilter = QUERY_MAP_FULL.get("filter");
+                QUERY_MAP_FULL.put("filter", currentFilter + "&filter=" + val.getTrackedEntityAttributeId() + ":LIKE:" + val.getValue());
+            }
+        }
+
+
+        //doesnt work with both attribute filter and query
+        if (queryString != null && !queryString.isEmpty() && valueParams.isEmpty()) {
+            QUERY_MAP_FULL.put("query", "LIKE:" + queryString);//todo: make a map where we can use more than one of each key
+        }
+        List<TrackedEntityInstance> trackedEntityInstances = unwrapResponse(dhisApi
+                        .getTrackedEntityInstancesFromAllAccessibleOrgUnits(organisationUnitUid, QUERY_MAP_FULL),
+                ApiEndpointContainer.TRACKED_ENTITY_INSTANCES);
+        return trackedEntityInstances;
     }
 
-    static void getTrackedEntityInstanceDataFromServer(DhisApi dhisApi, String uid, boolean getEnrollments) throws APIException {
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(ResourceType.TRACKEDENTITYINSTANCE, uid);
+    static List<TrackedEntityInstance> getTrackedEntityInstancesDataFromServer(DhisApi dhisApi, List<TrackedEntityInstance> trackedEntityInstances, boolean getEnrollments) {
+        if (trackedEntityInstances == null) {
+            return null;
+        }
+        if (dhisApi == null) {
+            return null;
+        }
+
         DateTime serverDateTime = dhisApi.getSystemInfo()
                 .getServerDate();
+
+        List<TrackedEntityInstance> trackedEntityInstancesToReturn = new ArrayList<>();
+        for (int teiIndex = 0; teiIndex < trackedEntityInstances.size(); teiIndex++) {
+
+            int userFriendlyIndex = (int) (Math.ceil((teiIndex + 1) / 2.0));
+
+            try {
+                trackedEntityInstancesToReturn.add(getTrackedEntityInstanceDataFromServer(dhisApi, trackedEntityInstances.get(teiIndex).getTrackedEntityInstance(), getEnrollments, serverDateTime));
+            } catch (APIException e) { //can't throw this further up because we want to continue loading all the TEIs..
+                e.printStackTrace();
+                Dhis2Application.getEventBus().post(
+                        new OnTeiDownloadedEvent(OnTeiDownloadedEvent.EventType.ERROR,
+                                trackedEntityInstances.size(), userFriendlyIndex));
+                return new ArrayList<>();
+            }
+
+            Dhis2Application.getEventBus().post(
+                    new OnTeiDownloadedEvent(OnTeiDownloadedEvent.EventType.UPDATE,
+                            trackedEntityInstances.size(), userFriendlyIndex));
+        }
+        return trackedEntityInstancesToReturn;
+    }
+
+    static TrackedEntityInstance getTrackedEntityInstanceDataFromServer(DhisApi dhisApi, String uid, boolean getEnrollments, DateTime serverDateTime) throws APIException {
+        if (dhisApi == null) {
+            return null;
+        }
+        DateTime lastUpdated = DateTimeManager.getInstance()
+                .getLastUpdated(ResourceType.TRACKEDENTITYINSTANCE, uid);
+
 
         Log.d(CLASS_TAG, "get tei " + uid);
         TrackedEntityInstance trackedEntityInstance = updateTrackedEntityInstance(dhisApi, uid, lastUpdated);
@@ -223,9 +406,11 @@ final class TrackerDataLoader extends ResourceController {
         DbUtils.applyBatch(operations);
         DateTimeManager.getInstance()
                 .setLastUpdated(ResourceType.TRACKEDENTITYINSTANCE, uid, serverDateTime);
-        if(getEnrollments) {
-            getEnrollmentsDataFromServer(dhisApi, trackedEntityInstance);
+        if (getEnrollments) {
+            getEnrollmentsDataFromServer(dhisApi, trackedEntityInstance, serverDateTime);
         }
+
+        return trackedEntityInstance;
     }
 
     private static TrackedEntityInstance updateTrackedEntityInstance(DhisApi dhisApi, String uid, DateTime lastUpdated) throws APIException {
@@ -234,18 +419,23 @@ final class TrackerDataLoader extends ResourceController {
         return updatedTrackedEntityInstance;
     }
 
-    static void getEnrollmentsDataFromServer(DhisApi dhisApi, TrackedEntityInstance trackedEntityInstance) throws APIException {
-        if(trackedEntityInstance == null) {
-            return;
+    static List<Enrollment> getEnrollmentsDataFromServer(DhisApi dhisApi, TrackedEntityInstance trackedEntityInstance, DateTime serverDateTime) throws APIException {
+        if (trackedEntityInstance == null) {
+            return null;
+        }
+        if (dhisApi == null) {
+            return null;
         }
         DateTime lastUpdated = DateTimeManager.getInstance()
                 .getLastUpdated(ResourceType.ENROLLMENTS, trackedEntityInstance.getTrackedEntityInstance());
-        DateTime serverDateTime = dhisApi.getSystemInfo()
-                .getServerDate();
+        if(serverDateTime == null) {
+            serverDateTime = dhisApi.getSystemInfo().getServerDate();
+        }
+
         List<Enrollment> enrollments = unwrapResponse(dhisApi
                 .getEnrollments(trackedEntityInstance.getTrackedEntityInstance(),
                         getBasicQueryMap(lastUpdated)), ApiEndpointContainer.ENROLLMENTS);
-        for(Enrollment enrollment: enrollments) {
+        for (Enrollment enrollment : enrollments) {
             enrollment.setLocalTrackedEntityInstanceId(trackedEntityInstance.getLocalId());
         }
 
@@ -253,59 +443,71 @@ final class TrackerDataLoader extends ResourceController {
                 trackedEntityInstance.getTrackedEntityInstance(), dhisApi,
                 enrollments, TrackerController.getEnrollments(trackedEntityInstance), serverDateTime);
         enrollments = TrackerController.getEnrollments(trackedEntityInstance);
-        if(enrollments != null) {
-            for(Enrollment enrollment: enrollments) {
+        if (enrollments != null) {
+            for (Enrollment enrollment : enrollments) {
                 try {
-                    getEventsDataFromServer(dhisApi, enrollment);
+                    getEventsDataFromServer(dhisApi, enrollment, serverDateTime);
                 } catch (APIException e) {//can't throw this exception up because we want to continue loading enrollments.. todo: let the user know?
                     e.printStackTrace();
                 }
             }
         }
+        return enrollments;
     }
 
-    static void getEnrollmentDataFromServer(DhisApi dhisApi, String uid, boolean getEvents) throws APIException {
+    static void getEnrollmentDataFromServer(DhisApi dhisApi, String uid, boolean getEvents, DateTime serverDateTime) throws APIException {
+        if (dhisApi == null) {
+            return;
+        }
         DateTime lastUpdated = DateTimeManager.getInstance()
                 .getLastUpdated(ResourceType.ENROLLMENT, uid);
-        DateTime serverDateTime = dhisApi.getSystemInfo()
-                .getServerDate();
+//        DateTime serverDateTime = dhisApi.getSystemInfo()
+//                .getServerDate();
+
+        if(serverDateTime == null) {
+            serverDateTime = dhisApi.getSystemInfo().getServerDate();
+        }
 
         Enrollment enrollment = updateEnrollment(dhisApi, uid, lastUpdated);
 
         DbOperation.save(enrollment).getModel().save();
         DateTimeManager.getInstance()
                 .setLastUpdated(ResourceType.ENROLLMENT, uid, serverDateTime);
-        if(getEvents) {
-            getEventsDataFromServer(dhisApi, enrollment);
+        if (getEvents) {
+            getEventsDataFromServer(dhisApi, enrollment, serverDateTime);
         }
     }
 
     private static Enrollment updateEnrollment(DhisApi dhisApi, String uid, DateTime lastUpdated) throws APIException {
+        if (dhisApi == null) {
+            return null;
+        }
         final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
         Enrollment updatedEnrollment = dhisApi.getEnrollment(uid, QUERY_MAP_FULL);
         return updatedEnrollment;
     }
 
-    static void getEventsDataFromServer(DhisApi dhisApi, Enrollment enrollment) {
-        if(enrollment == null) {
+    static void getEventsDataFromServer(DhisApi dhisApi, Enrollment enrollment, DateTime serverDateTime) {
+        if (enrollment == null) {
+            return;
+        } else if (dhisApi == null) {
             return;
         }
 
-        if(enrollment.getProgram() == null) {
+        if (enrollment.getProgram() == null) {
             Log.d(CLASS_TAG, "Enrollment:" + enrollment.getUid());
             return;
         }
 
         DateTime lastUpdated = DateTimeManager.getInstance()
                 .getLastUpdated(ResourceType.EVENTS, enrollment.getEnrollment());
-        DateTime serverDateTime = dhisApi.getSystemInfo()
-                .getServerDate();
+
         JsonNode response = dhisApi
                 .getEventsForEnrollment(enrollment.getProgram().getUid(), enrollment.getStatus(),
                         enrollment.getTrackedEntityInstance(),
                         getBasicQueryMap(lastUpdated));
         List<Event> events = EventsWrapper.getEvents(response);
-        for(Event event: events) {
+        for (Event event : events) {
             event.setLocalEnrollmentId(enrollment.getLocalId());
         }
 
@@ -326,6 +528,9 @@ final class TrackerDataLoader extends ResourceController {
     }
 
     private static Event updateEvent(DhisApi dhisApi, String uid, DateTime lastUpdated) throws APIException {
+        if (dhisApi == null) {
+            return null;
+        }
         final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
 
         Event updatedEvent = dhisApi.getEvent(uid, QUERY_MAP_FULL);

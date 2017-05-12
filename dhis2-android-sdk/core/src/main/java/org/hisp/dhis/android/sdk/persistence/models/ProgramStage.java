@@ -132,6 +132,10 @@ public class ProgramStage extends BaseMetaDataObject {
     @Column(name = "periodType")
     String periodType;
 
+    @JsonProperty("executionDateLabel")
+    @Column(name = "executionDateLabel")
+    String executionDateLabel;
+
     @JsonProperty("programStageDataElements")
     List<ProgramStageDataElement> programStageDataElements;
 
@@ -360,5 +364,61 @@ public class ProgramStage extends BaseMetaDataObject {
 
     public void setPeriodType(String periodType) {
         this.periodType = periodType;
+    }
+
+    public boolean isRepeatable() {
+        return repeatable;
+    }
+
+    public String getExecutionDateLabel() {
+        return executionDateLabel;
+    }
+
+    public void setExecutionDateLabel(String executionDateLabel) {
+        this.executionDateLabel = executionDateLabel;
+    }
+
+    public boolean isBlockEntryForm() {
+        return blockEntryForm;
+    }
+
+    public boolean isDisplayGenerateEventBox() {
+        return displayGenerateEventBox;
+    }
+
+    public boolean isExternalAccess() {
+        return externalAccess;
+    }
+
+    public boolean isOpenAfterEnrollment() {
+        return openAfterEnrollment;
+    }
+
+    public boolean isCaptureCoordinates() {
+        return captureCoordinates;
+    }
+
+    public boolean isRemindCompleted() {
+        return remindCompleted;
+    }
+
+    public boolean isValidCompleteOnly() {
+        return validCompleteOnly;
+    }
+
+    public boolean isGeneratedByEnrollmentDate() {
+        return generatedByEnrollmentDate;
+    }
+
+    public boolean isAutoGenerateEvent() {
+        return autoGenerateEvent;
+    }
+
+    public boolean isPreGenerateUID() {
+        return preGenerateUID;
+    }
+
+    public boolean isAllowGenerateNextVisit() {
+        return allowGenerateNextVisit;
     }
 }

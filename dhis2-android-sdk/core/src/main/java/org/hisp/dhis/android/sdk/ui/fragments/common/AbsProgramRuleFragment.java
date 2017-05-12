@@ -29,12 +29,11 @@
 
 package org.hisp.dhis.android.sdk.ui.fragments.common;
 
-import android.support.v4.app.Fragment;
+import android.app.ProgressDialog;
 import android.util.Log;
 
+import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue;
-import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
-import org.hisp.dhis.android.sdk.persistence.models.Event;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramRule;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramRuleAction;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramRuleVariable;
@@ -42,6 +41,7 @@ import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.sdk.utils.comparators.ProgramRulePriorityComparator;
 import org.hisp.dhis.android.sdk.utils.services.ProgramRuleService;
 import org.hisp.dhis.android.sdk.utils.services.VariableService;
+import org.hisp.dhis.client.sdk.ui.fragments.BaseFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,12 +49,14 @@ import java.util.List;
 
 /**
  * Abstract Fragment that can be extended by Fragments that want to make use of Program Rules.
+ *
  * @param <D>
  */
-public abstract class AbsProgramRuleFragment<D> extends Fragment {
+public abstract class AbsProgramRuleFragment<D> extends BaseFragment {
 
     private static final String TAG = AbsProgramRuleFragment.class.getSimpleName();
     protected IProgramRuleFragmentHelper programRuleFragmentHelper;
+    private ProgressDialog progressDialog;
 
     public IProgramRuleFragmentHelper getProgramRuleFragmentHelper() {
         return programRuleFragmentHelper;
@@ -67,24 +69,58 @@ public abstract class AbsProgramRuleFragment<D> extends Fragment {
     /**
      * Evaluates the ProgramRules for the current program and the current data values and applies
      * the results. This is for example used for hiding views if a rule contains skip logic
+     * If no rules exist for Enrollment, this won't be run
      */
     public void evaluateAndApplyProgramRules() {
+
+        if (programRuleFragmentHelper == null ||
+                programRuleFragmentHelper.getEnrollment() == null ||
+                programRuleFragmentHelper.getEnrollment().getProgram() == null ||
+                programRuleFragmentHelper.getEnrollment().getProgram().getProgramRules() == null ||
+                programRuleFragmentHelper.getEnrollment().getProgram().getProgramRules().isEmpty()) {
+            return;
+        }
+        if (programRuleFragmentHelper.blockingSpinnerNeeded()) {
+            //showBlockingProgressBar();
+        }
         VariableService.initialize(programRuleFragmentHelper.getEnrollment(), programRuleFragmentHelper.getEvent());
         programRuleFragmentHelper.mapFieldsToRulesAndIndicators();
         ArrayList<String> affectedFieldsWithValue = new ArrayList<>();
+
         List<ProgramRule> programRules = programRuleFragmentHelper.getProgramRules();
+
         Collections.sort(programRules, new ProgramRulePriorityComparator());
         for (ProgramRule programRule : programRules) {
-            boolean evaluatedTrue = ProgramRuleService.evaluate(programRule.getCondition());
-            for(ProgramRuleAction action : programRule.getProgramRuleActions()) {
-                if(evaluatedTrue) {
-                    applyProgramRuleAction(action, affectedFieldsWithValue);
+            try {
+                boolean evaluatedTrue = ProgramRuleService.evaluate(programRule.getCondition());
+                for (ProgramRuleAction action : programRule.getProgramRuleActions()) {
+                    if (evaluatedTrue) {
+                        applyProgramRuleAction(action, affectedFieldsWithValue);
+                    }
                 }
+            } catch (Exception e) {
+                Log.e("PROGRAM RULE", "Error evaluating program rule", e);
             }
         }
+
+//        Collections.sort(programRules, new ProgramRulePriorityComparator());
+//        for (ProgramRule programRule : programRules) {
+//            try {
+//                boolean evaluatedTrue = ProgramRuleService.evaluate(programRule.getCondition());
+//                for (ProgramRuleAction action : programRule.getProgramRuleActions()) {
+//                    if (evaluatedTrue) {
+//                        applyProgramRuleAction(action, affectedFieldsWithValue);
+//                    }
+//                }
+//            } catch (Exception e) {
+//                Log.e("PROGRAM RULE", "Error evaluating program rule", e);
+//            }
+//        }
+
         if (!affectedFieldsWithValue.isEmpty()) {
             programRuleFragmentHelper.showWarningHiddenValuesDialog(programRuleFragmentHelper.getFragment(), affectedFieldsWithValue);
         }
+        //hideBlockingProgressBar();
         programRuleFragmentHelper.updateUi();
     }
 
@@ -130,29 +166,65 @@ public abstract class AbsProgramRuleFragment<D> extends Fragment {
         String stringResult = ProgramRuleService.getCalculatedConditionValue(programRuleAction.getData());
         String programRuleVariableName = programRuleAction.getContent();
         ProgramRuleVariable programRuleVariable;
-        if(programRuleVariableName != null) {
-            programRuleVariableName = programRuleVariableName.substring(2, programRuleVariableName.length()-1);
+        if (programRuleVariableName != null) {
+            programRuleVariableName = programRuleVariableName.substring(2, programRuleVariableName.length() - 1);
             programRuleVariable = VariableService.getInstance().getProgramRuleVariableMap().get(programRuleVariableName);
             programRuleVariable.setVariableValue(stringResult);
             programRuleVariable.setHasValue(true);
         }
         String dataElementId = programRuleAction.getDataElement();
-        if(dataElementId != null) {
+        if (dataElementId != null) {
             DataValue dataValue = programRuleFragmentHelper.getDataElementValue(dataElementId);
-            if(dataValue != null) {
+            if (dataValue != null) {
                 dataValue.setValue(stringResult);
                 programRuleFragmentHelper.flagDataChanged(true);
                 programRuleFragmentHelper.saveDataElement(dataElementId);
             }
         }
         String trackedEntityAttributeId = programRuleAction.getTrackedEntityAttribute();
-        if(trackedEntityAttributeId != null) {
+        if (trackedEntityAttributeId != null) {
             TrackedEntityAttributeValue trackedEntityAttributeValue = programRuleFragmentHelper.getTrackedEntityAttributeValue(trackedEntityAttributeId);
-            if(trackedEntityAttributeValue != null) {
+            if (trackedEntityAttributeValue != null) {
                 trackedEntityAttributeValue.setValue(stringResult);
                 programRuleFragmentHelper.flagDataChanged(true);
                 programRuleFragmentHelper.saveTrackedEntityAttribute(trackedEntityAttributeId);
             }
+        }
+    }
+
+    public void showBlockingProgressBar() {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (getActivity() != null && isAdded()) {
+                        if (progressDialog != null) {
+                            progressDialog.dismiss();
+                        }
+                        progressDialog = ProgressDialog.show(
+                                getContext(), "", getString(R.string.please_wait), true, false);
+                    }
+                }
+            });
+        }
+    }
+
+    public void hideBlockingProgressBar() {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (getActivity() != null && isAdded()) {
+                        if (progressDialog != null) {
+                            progressDialog.cancel();
+                            progressDialog.dismiss();
+                        } else {
+                            Log.w("HIDE PROGRESS",
+                                    "Unable to hide progress dialog: AbsProgramRuleFragment.progressDialog is null");
+                        }
+                    }
+                }
+            });
         }
     }
 }

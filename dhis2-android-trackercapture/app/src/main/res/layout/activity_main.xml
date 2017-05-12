@@ -27,51 +27,24 @@
   ~  */
   -->
 
-
-<android.support.v4.widget.DrawerLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/drawer_layout">
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/toolbar_main"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:orientation="vertical"
+        android:background="@color/navy_blue"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        tools:ignore="UselessParent">
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-        <include
-            layout="@layout/toolbar_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <FrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-
-        </FrameLayout>
-    </LinearLayout>
-
-
-    <android.support.design.widget.NavigationView
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/navigation_view"
-        android:layout_gravity= "start"
-        app:menu="@menu/drawer_menu"
-        app:headerLayout="@layout/navigation_drawer_header">
-    </android.support.design.widget.NavigationView>
+        android:layout_height="match_parent"/>
 
-
-
-
-
-</android.support.v4.widget.DrawerLayout>
+</LinearLayout>

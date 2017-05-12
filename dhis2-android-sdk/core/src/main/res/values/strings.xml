@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ * Copyright (c) 2016, University of Oslo
   ~  * All rights reserved.
   ~  *
@@ -50,6 +49,8 @@
 
 
     <string name="description">ImageView description</string>
+    <string name="specify_search_criteria">Please specify a search criteria</string>
+    <string name="edit">Edit</string>
 
 
     <!-- Alert Dialogs -->
@@ -58,14 +59,12 @@
     <string name="none_option">None</string>
     <string name="no_option">No</string>
     <string name="error_message">Error</string>
-    <string name="logout_option">Log out</string>
+    <string name="logout_option">Delete all local data and log out</string>
     <string name="cancel_option">Cancel</string>
     <string name="delete">Delete</string>
     <string name="missing_mandatory_field">Missing mandatory field</string>
     <string name="unable_to_complete_registration">Unable to complete registration.</string>
     <string name="review_errors">Please review the errors below and try again.</string>
-
-
 
 
     <!-- Login Activity -->
@@ -99,7 +98,6 @@
     <string name="search">Search</string>
 
 
-
     <!-- Data Entry -->
     <string name="submit">Submit</string>
     <string name="cancel">Cancel</string>
@@ -110,13 +108,13 @@
 
 
     <!-- GPS -->
-    
+
 
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
+    <string name="coordinates">Coordinates</string>
 
 
-    
     <!-- Data fetching -->
     <string name="loading_metadata">Loading meta data</string>
     <string name="saving_data_locally">Saving data locally</string>
@@ -125,13 +123,12 @@
     <string name="retry">Retry</string>
 
 
-    
     <!-- Data uploading -->
     <string name="loading_failed">Loading Failed</string>
     <string name="retrying">Retrying</string>
 
     <string name="update_frequency">Automatic synchronization frequency</string>
-    <string name="logout">Log out</string>
+    <string name="logout">Delete all local data and log out</string>
     <string name="complete">Complete</string>
     <string name="finishing_up">Finishing initial database setup. This may take several minutes so please be patient.</string>
     <string name="loading_server_info">Loading server info</string>
@@ -161,7 +158,7 @@
         <item>1 Day</item>
         <item>Disabled</item>
     </string-array>
-    
+
     <string-array name="copy_store_error_message">
         <item>Copy</item>
         <item>Write to SD card</item>
@@ -187,7 +184,7 @@
     <string name="enter_coordinates">Enter coordinates</string>
     <string name="latitude_error_message">Latitude must be in range from -90 to 90</string>
     <string name="longitude_error_message">Longitude must be in range from -180 to 180</string>
-    <string name="warning_hidefieldwithvalue">The following fields with value are being hidden.</string>
+    <string name="warning_hidefieldwithvalue">The following fields with value are being hidden and value has been blanked.</string>
     <string name="report_date">Report date</string>
     <string name="choose_organisation_unit">Choose organisation unit</string>
     <string name="choose_program">Choose program</string>
@@ -240,10 +237,18 @@
     <string name="go_to_programoverview_fragment">Go to overview</string>
     <string name="go_to_dataentry_fragment">Go to data entry</string>
 
+    <!-- Remove Report Entity confirmation dialog -->
+    <string name="remove">Remove from device</string>
+    <string name="remove_report_entity_dialog_title">Remove item?</string>
+    <string name="remove_report_entity_dialog_message">This item will be removed from your device. You can re-download this item from the server at a later time.</string>
+
     <string name="warning_delete_unsent_tei">Warning! This item has not been synchronized with the server. If you delete this item, you will not be able to recover this data</string>
     <string name="detailed_info_dataelement">Detailed information</string>
     <string name="detailed_info_coordinate_row">Please enter the GPS coordinates by pressing the button on the right side of the row. If it does not work, please check your data and/or GPS connection.</string>
     <string name="detailed_info_status_row">Please press the complete button when you are finished with entering data. Press the validate button to check if the entered data is valid.</string>
+    <string name="delimiter">:</string>
+    <string name="enter_phone_number">Enter phone number</string>
+    <string name="choose_filter">Choose filter</string>
 
 
 </resources>

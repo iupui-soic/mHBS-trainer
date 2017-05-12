@@ -29,11 +29,13 @@
 
 package org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry;
 
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,11 +43,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.hisp.dhis.android.sdk.R;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.events.OnDetailedInfoButtonClick;
-import org.hisp.dhis.android.sdk.ui.fragments.dataentry.RowValueChangedEvent;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.AbsTextWatcher;
 import org.hisp.dhis.android.sdk.persistence.models.BaseValue;
+import org.hisp.dhis.android.sdk.ui.adapters.rows.AbsTextWatcher;
+import org.hisp.dhis.android.sdk.ui.fragments.dataentry.RowValueChangedEvent;
 
 public class EditTextRow extends Row {
     private static final String EMPTY_FIELD = "";
@@ -65,6 +66,7 @@ public class EditTextRow extends Row {
                 !DataEntryRowTypes.INTEGER.equals(rowType) &&
                 !DataEntryRowTypes.INTEGER_NEGATIVE.equals(rowType) &&
                 !DataEntryRowTypes.INTEGER_ZERO_OR_POSITIVE.equals(rowType) &&
+                !DataEntryRowTypes.PHONE_NUMBER.equals(rowType) &&
                 !DataEntryRowTypes.INTEGER_POSITIVE.equals(rowType)) {
             throw new IllegalArgumentException("Unsupported row type");
         }
@@ -81,6 +83,7 @@ public class EditTextRow extends Row {
         if (convertView != null && convertView.getTag() instanceof ValueEntryHolder) {
             view = convertView;
             holder = (ValueEntryHolder) view.getTag();
+            holder.listener.onRowReused();
         } else {
             View root = inflater.inflate(R.layout.listview_row_edit_text, container, false);
             TextView label = (TextView) root.findViewById(R.id.text_label);
@@ -88,14 +91,14 @@ public class EditTextRow extends Row {
             TextView warningLabel = (TextView) root.findViewById(R.id.warning_label);
             TextView errorLabel = (TextView) root.findViewById(R.id.error_label);
             EditText editText = (EditText) root.findViewById(R.id.edit_text_row);
-            detailedInfoButton = root.findViewById(R.id.detailed_info_button_layout);
+//            detailedInfoButton = root.findViewById(R.id.detailed_info_button_layout);
 
             if (DataEntryRowTypes.TEXT.equals(mRowType)) {
-                editText.setInputType(InputType.TYPE_CLASS_TEXT);
+                editText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
                 editText.setHint(R.string.enter_text);
                 editText.setSingleLine(true);
             } else if (DataEntryRowTypes.LONG_TEXT.equals(mRowType)) {
-                editText.setInputType(InputType.TYPE_CLASS_TEXT);
+                editText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
                 editText.setHint(R.string.enter_long_text);
                 editText.setLines(LONG_TEXT_LINE_COUNT);
             } else if (DataEntryRowTypes.NUMBER.equals(mRowType)) {
@@ -126,51 +129,60 @@ public class EditTextRow extends Row {
                 editText.setFilters(new InputFilter[]{new PosFilter()});
                 editText.setSingleLine(true);
             }
+            else if(DataEntryRowTypes.PHONE_NUMBER.equals(mRowType)) {
+                editText.setInputType(InputType.TYPE_CLASS_PHONE);
+                editText.setHint(R.string.enter_phone_number);
+                editText.setSingleLine(true);
+            }
 
             OnTextChangeListener listener = new OnTextChangeListener();
-            holder = new ValueEntryHolder(label, mandatoryIndicator, warningLabel, errorLabel, editText, detailedInfoButton, listener );
+            holder = new ValueEntryHolder(label, mandatoryIndicator, warningLabel, errorLabel, editText, listener);
+            holder.listener.setBaseValue(mValue);
             holder.editText.addTextChangedListener(listener);
-
-            if(!isEditable()) {
-                holder.editText.setEnabled(false);
-            } else {
-                holder.editText.setEnabled(true);
-            }
 
             rowTypeTemp = mRowType.toString();
             root.setTag(holder);
             view = root;
         }
 
+        //when recycling views we don't want to keep the focus on the edittext
+        //holder.editText.clearFocus();
+
+        if (!isEditable()) {
+            holder.editText.setEnabled(false);
+        } else {
+            holder.editText.setEnabled(true);
+        }
+
         holder.textLabel.setText(mLabel);
         holder.listener.setBaseValue(mValue);
-        holder.detailedInfoButton.setOnClickListener(new OnDetailedInfoButtonClick(this));
+//        holder.detailedInfoButton.setOnClickListener(new OnDetailedInfoButtonClick(this));
 
         holder.editText.setText(mValue.getValue());
         holder.editText.setSelection(holder.editText.getText().length());
 
-        if(isDetailedInfoButtonHidden()) {
-            holder.detailedInfoButton.setVisibility(View.INVISIBLE);
-        }
-        else {
-            holder.detailedInfoButton.setVisibility(View.VISIBLE);
-        }
+//        if(isDetailedInfoButtonHidden()) {
+//            holder.detailedInfoButton.setVisibility(View.INVISIBLE);
+//        }
+//        else {
+//            holder.detailedInfoButton.setVisibility(View.VISIBLE);
+//        }
 
-        if(mWarning == null) {
+        if (mWarning == null) {
             holder.warningLabel.setVisibility(View.GONE);
         } else {
             holder.warningLabel.setVisibility(View.VISIBLE);
             holder.warningLabel.setText(mWarning);
         }
 
-        if(mError == null) {
+        if (mError == null) {
             holder.errorLabel.setVisibility(View.GONE);
         } else {
             holder.errorLabel.setVisibility(View.VISIBLE);
-            holder.errorLabel.setText(mWarning);
+            holder.errorLabel.setText(mError);
         }
 
-        if(!mMandatory) {
+        if (!mMandatory) {
             holder.mandatoryIndicator.setVisibility(View.GONE);
         } else {
             holder.mandatoryIndicator.setVisibility(View.VISIBLE);
@@ -190,40 +202,69 @@ public class EditTextRow extends Row {
         final TextView warningLabel;
         final TextView errorLabel;
         final EditText editText;
-        final View detailedInfoButton;
+        //        final View detailedInfoButton;
         final OnTextChangeListener listener;
 
         public ValueEntryHolder(TextView textLabel,
                                 TextView mandatoryIndicator, TextView warningLabel,
                                 TextView errorLabel, EditText editText,
-                                View detailedInfoButton,
                                 OnTextChangeListener listener) {
             this.textLabel = textLabel;
             this.mandatoryIndicator = mandatoryIndicator;
             this.warningLabel = warningLabel;
             this.errorLabel = errorLabel;
             this.editText = editText;
-            this.detailedInfoButton = detailedInfoButton;
+//            this.detailedInfoButton = detailedInfoButton;
             this.listener = listener;
         }
     }
 
-    private static class OnTextChangeListener extends AbsTextWatcher {
+    private class OnTextChangeListener extends AbsTextWatcher {
         private BaseValue value;
+        RunProgramRulesDelayedDispatcher runProgramRulesDelayedDispatcher = new RunProgramRulesDelayedDispatcher();
 
         public void setBaseValue(BaseValue value) {
             this.value = value;
+        }
+
+        public void onRowReused() {
+            if (runProgramRulesDelayedDispatcher != null) {
+                runProgramRulesDelayedDispatcher.dispatchNow();
+            }
         }
 
         @Override
         public void afterTextChanged(Editable s) {
             String newValue = s != null ? s.toString() : EMPTY_FIELD;
             if (!newValue.equals(value.getValue())) {
+                //newValue = removeInvalidDecimalSeparatorsFromNumberRows(newValue);
                 value.setValue(newValue);
-                Dhis2Application.getEventBus()
-                        .post(new RowValueChangedEvent(value, rowTypeTemp));
+                RowValueChangedEvent rowValueChangeEvent = new RowValueChangedEvent(value, EditTextRow.rowTypeTemp);
+                rowValueChangeEvent.setRow(EditTextRow.this);
+                Dhis2Application.getEventBus().post(rowValueChangeEvent);
+                runProgramRulesDelayedDispatcher.dispatchDelayed(new RunProgramRulesEvent(value));
             }
         }
+    }
+
+    /**
+     * Number fields should never start or end with the decimal separator "."
+     *
+     * @param value The text that is currently in the edit text field
+     * @return Clean text with trailing dots removed or a zero added at the start of the string if
+     * it starts with a dot
+     */
+    @NonNull
+    private static String removeInvalidDecimalSeparatorsFromNumberRows(String value) {
+        if (rowTypeTemp.equals(DataEntryRowTypes.NUMBER.name())) {
+            if (value.endsWith(".")) {
+                value = value.substring(0, value.length() - 1);
+            }
+            if (value.startsWith(".")) {
+                value = String.format("0%s", value);
+            }
+        }
+        return value;
     }
 
     private static class NegInpFilter implements InputFilter {

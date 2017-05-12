@@ -30,7 +30,6 @@
 package org.hisp.dhis.android.trackercapture.fragments.programoverview;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -41,6 +40,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,7 +49,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -85,28 +84,23 @@ import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityInstance;
 import org.hisp.dhis.android.sdk.persistence.preferences.ResourceType;
-import org.hisp.dhis.android.sdk.ui.activities.INavigationHandler;
+import org.hisp.dhis.android.sdk.ui.activities.OnBackPressedListener;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.IndicatorRow;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.KeyValueRow;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.NonEditableTextViewRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.PlainTextRow;
 import org.hisp.dhis.android.sdk.ui.dialogs.ProgramDialogFragment;
 import org.hisp.dhis.android.sdk.ui.fragments.common.AbsProgramRuleFragment;
-import org.hisp.dhis.android.sdk.ui.fragments.eventdataentry.EventDataEntryFragment;
-import org.hisp.dhis.android.sdk.ui.fragments.settings.SettingsFragment;
 import org.hisp.dhis.android.sdk.ui.views.FloatingActionButton;
 import org.hisp.dhis.android.sdk.ui.views.FontTextView;
 import org.hisp.dhis.android.sdk.utils.UiUtils;
 import org.hisp.dhis.android.sdk.utils.api.ProgramType;
+import org.hisp.dhis.android.sdk.utils.comparators.EnrollmentDateComparator;
 import org.hisp.dhis.android.sdk.utils.services.ProgramRuleService;
 import org.hisp.dhis.android.trackercapture.R;
-import org.hisp.dhis.android.trackercapture.fragments.enrollment.EnrollmentDataEntryFragment;
-import org.hisp.dhis.android.trackercapture.fragments.enrollmentdate.EnrollmentDateFragment;
+import org.hisp.dhis.android.trackercapture.activities.HolderActivity;
 import org.hisp.dhis.android.trackercapture.fragments.programoverview.registerrelationshipdialogfragment.RegisterRelationshipDialogFragment;
 import org.hisp.dhis.android.trackercapture.fragments.selectprogram.EnrollmentDateSetterHelper;
 import org.hisp.dhis.android.trackercapture.fragments.selectprogram.IEnroller;
 import org.hisp.dhis.android.trackercapture.fragments.selectprogram.dialogs.ItemStatusDialogFragment;
-import org.hisp.dhis.android.trackercapture.fragments.trackedentityinstanceprofile.TrackedEntityInstanceProfileFragment;
 import org.hisp.dhis.android.trackercapture.ui.adapters.ProgramAdapter;
 import org.hisp.dhis.android.trackercapture.ui.adapters.ProgramStageAdapter;
 import org.hisp.dhis.android.trackercapture.ui.rows.programoverview.OnProgramStageEventClick;
@@ -114,9 +108,9 @@ import org.hisp.dhis.android.trackercapture.ui.rows.programoverview.ProgramStage
 import org.hisp.dhis.android.trackercapture.ui.rows.programoverview.ProgramStageLabelRow;
 import org.hisp.dhis.android.trackercapture.ui.rows.programoverview.ProgramStageRow;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -125,7 +119,9 @@ import java.util.Map;
 public class ProgramOverviewFragment extends AbsProgramRuleFragment implements View.OnClickListener,
         AdapterView.OnItemClickListener,
         ProgramDialogFragment.OnOptionSelectedListener,
-        LoaderManager.LoaderCallbacks<ProgramOverviewFragmentForm>, AdapterView.OnItemSelectedListener, SwipeRefreshLayout.OnRefreshListener, IEnroller {
+        LoaderManager.LoaderCallbacks<ProgramOverviewFragmentForm>,
+        AdapterView.OnItemSelectedListener, SwipeRefreshLayout.OnRefreshListener, IEnroller,
+        OnBackPressedListener {
 
     public static final String CLASS_TAG = ProgramOverviewFragment.class.getSimpleName();
     private static final String STATE = "state:UpcomingEventsFragment";
@@ -164,6 +160,7 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
     private ImageButton profileButton;
     private ImageView enrollmentServerStatus;
     private Button completeButton;
+    private Button reOpenButton;
     private Button terminateButton;
 
     private TextView attribute1Label;
@@ -176,8 +173,6 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
 
     private ProgramOverviewFragmentState mState;
     private ProgramOverviewFragmentForm mForm;
-
-    private INavigationHandler mNavigationHandler;
 
     public ProgramOverviewFragment() {
         setProgramRuleFragmentHelper(new ProgramOverviewRuleHelper(this));
@@ -209,26 +204,10 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        if (activity instanceof INavigationHandler) {
-            mNavigationHandler = (INavigationHandler) activity;
-        } else {
-            throw new IllegalArgumentException("Activity must implement INavigationHandler interface");
-        }
     }
 
     @Override
     public void onDetach() {
-
-        // we need to nullify reference
-        // to parent activity in order not to leak it
-        if (getActivity() != null &&
-                getActivity() instanceof INavigationHandler) {
-            ((INavigationHandler) getActivity()).setBackPressedListener(null);
-        }
-        // we need to nullify reference
-        // to parent activity in order not to leak it
-        mNavigationHandler = null;
-
         super.onDetach();
     }
 
@@ -264,7 +243,7 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        if(getActivity() instanceof AppCompatActivity) {
+        if (getActivity() instanceof AppCompatActivity) {
             getActionBar().setDisplayShowTitleEnabled(false);
             getActionBar().setDisplayHomeAsUpEnabled(true);
             getActionBar().setHomeButtonEnabled(true);
@@ -302,10 +281,12 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
         programIndicatorCardView = (CardView) header.findViewById(R.id.programindicators_cardview);
 
         completeButton = (Button) header.findViewById(R.id.complete);
+        reOpenButton = (Button) header.findViewById(R.id.re_open);
         terminateButton = (Button) header.findViewById(R.id.terminate);
         followupButton = (ImageButton) header.findViewById(R.id.followupButton);
         profileButton = (ImageButton) header.findViewById(R.id.profile_button);
         completeButton.setOnClickListener(this);
+        reOpenButton.setOnClickListener(this);
         terminateButton.setOnClickListener(this);
         followupButton.setOnClickListener(this);
         followupButton.setVisibility(View.GONE);
@@ -360,18 +341,14 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_main, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            mNavigationHandler.switchFragment(
-                    new SettingsFragment(), SettingsFragment.TAG, true);
-        }
-        else if (id == android.R.id.home) {
-            getFragmentManager().popBackStack();
+
+        if (id == android.R.id.home) {
+            getActivity().finish();
             return true;
         }
 
@@ -441,7 +418,7 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
             mSpinner.setAdapter(mSpinnerAdapter);
             mSpinner.post(new Runnable() {
                 public void run() {
-                    if(mSpinner != null) {
+                    if (mSpinner != null) {
                         mSpinner.setOnItemSelectedListener(ProgramOverviewFragment.this);
                     }
                 }
@@ -503,7 +480,7 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
             mSpinner.setSelection(getSpinnerIndex(mState.getProgramName()));
 
             if (mForm == null || mForm.getEnrollment() == null) {
-                showNoActiveEnrollment();
+                showNoActiveEnrollment(mForm);
                 return;
             } else {
                 enrollmentLayout.setVisibility(View.VISIBLE);
@@ -526,13 +503,9 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
             if (failedItem != null && failedItem.getHttpStatusCode() >= 0) {
                 enrollmentServerStatus.setImageResource(R.drawable.ic_event_error);
             } else if (!mForm.getEnrollment().isFromServer()) {
-                enrollmentServerStatus.setImageResource(R.drawable.ic_offline);
+                enrollmentServerStatus.setImageResource(R.drawable.ic_legacy_offline);
             } else {
                 enrollmentServerStatus.setImageResource(R.drawable.ic_from_server);
-            }
-
-            if (mForm.getEnrollment().getStatus().equals(Enrollment.COMPLETED)) {
-                setCompleted();
             }
 
             if (mForm.getEnrollment().getStatus().equals(Enrollment.CANCELLED)) {
@@ -566,13 +539,11 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
                     ProgramStageLabelRow stageRow = (ProgramStageLabelRow) row;
                     if (stageRow.getProgramStage().getRepeatable()) {
                         stageRow.setButtonListener(this);
-                    }
-                    else
-                    {
-                        if(stageRow.getEventRows().size() < 1) { // if stage is not autogen and not repeatable, allow user to create exactly one event
+                    } else {
+                        if (stageRow.getEventRows().size() < 1) { // if stage is not autogen and not repeatable, allow user to create exactly one event
                             stageRow.setButtonListener(this);
                         }
-                        if(stageRow.getProgramStage().getAutoGenerateEvent()) {
+                        if (stageRow.getProgramStage().getAllowGenerateNextVisit()) {
                             stageRow.setButtonListener(this);
                         }
                     }
@@ -602,7 +573,7 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
             keyValueLayout.removeAllViews();
             LinearLayout displayTextLayout = (LinearLayout) programIndicatorCardView.findViewById(R.id.textlayout);
             displayTextLayout.removeAllViews();
-            for(IndicatorRow indicatorRow : mForm.getProgramIndicatorRows().values()) {
+            for (IndicatorRow indicatorRow : mForm.getProgramIndicatorRows().values()) {
                 View view = indicatorRow.getView(getChildFragmentManager(), getLayoutInflater(getArguments()), null, programIndicatorLayout);
                 programIndicatorLayout.addView(view);
             }
@@ -700,7 +671,7 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
                                 ProgramOverviewFragment fragment = ProgramOverviewFragment.
                                         newInstance(getArguments().getString(ORG_UNIT_ID),
                                                 getArguments().getString(PROGRAM_ID), relative.getLocalId());
-                                mNavigationHandler.switchFragment(fragment, CLASS_TAG, true);
+//                                mNavigationHandler.switchFragment(fragment, CLASS_TAG, true);
                             }
                         }
                     });
@@ -756,9 +727,14 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
         return failedItemMap;
     }
 
-    public void showNoActiveEnrollment() {
+    public void showNoActiveEnrollment(ProgramOverviewFragmentForm mForm) {
         enrollmentLayout.setVisibility(View.GONE);
-        missingEnrollmentLayout.setVisibility(View.VISIBLE);
+
+        if (mForm.getProgram() != null && !mForm.getProgram().getOnlyEnrollOnce()) {
+            missingEnrollmentLayout.setVisibility(View.VISIBLE);
+        } else {
+            missingEnrollmentLayout.setVisibility(View.GONE);
+        }
 
         //update profile view
         List<Enrollment> enrollmentsForTEI = TrackerController.getEnrollments(TrackerController.getTrackedEntityInstance(mState.getTrackedEntityInstanceId()));
@@ -777,7 +753,11 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
                     TrackedEntityAttribute attribute1 = selectedProgram.getProgramTrackedEntityAttributes().get(0).getTrackedEntityAttribute();
                     attribute1Label.setText(attribute1.getName());
                     TrackedEntityAttributeValue attribute1Val = TrackerController.getTrackedEntityAttributeValue(attribute1.getUid(), trackedEntityInstance.getLocalId());
-                    attribute1Value.setText(attribute1Val.getValue());
+                    if (attribute1Val != null) {
+                        attribute1Value.setText(attribute1Val.getValue());
+                    } else {
+                        attribute1Value.setText("");
+                    }
                 } else {
                     attribute1Label.setText("");
                     attribute1Value.setText("");
@@ -788,7 +768,11 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
                     TrackedEntityAttributeValue attribute2Val = TrackerController.getTrackedEntityAttributeValue(attribute2.getUid(), trackedEntityInstance.getLocalId());
 
                     attribute2Label.setText(attribute2.getName());
-                    attribute2Value.setText(attribute2Val.getValue());
+                    if (attribute2Val != null) {
+                        attribute2Value.setText(attribute2Val.getValue());
+                    } else {
+                        attribute2Value.setText("");
+                    }
                 } else {
                     attribute2Label.setText("");
                     attribute2Value.setText("");
@@ -842,52 +826,42 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
     public void showEnrollmentFragment(TrackedEntityInstance trackedEntityInstance, DateTime enrollmentDate, DateTime incidentDate) {
         String enrollmentDateString = enrollmentDate.toString();
         String incidentDateString = null;
-        if(incidentDate != null) {
+        if (incidentDate != null) {
             incidentDateString = incidentDate.toString();
         }
-        EnrollmentDataEntryFragment enrollmentDataEntryFragment;
-        if(trackedEntityInstance == null) {
-            enrollmentDataEntryFragment = EnrollmentDataEntryFragment.newInstance(mState.getOrgUnitId(), mState.getProgramId(), enrollmentDateString, incidentDateString);
+        if (trackedEntityInstance == null) {
+            HolderActivity.navigateToEnrollmentDataEntryFragment(getActivity(), mState.getOrgUnitId(), mState.getProgramId(), enrollmentDateString, incidentDateString);
         } else {
-            enrollmentDataEntryFragment = EnrollmentDataEntryFragment.newInstance(mState.getOrgUnitId(), mState.getProgramId(), trackedEntityInstance.getLocalId(), enrollmentDateString, incidentDateString);
+            HolderActivity.navigateToEnrollmentDataEntryFragment(getActivity(), mState.getOrgUnitId(), mState.getProgramId(), trackedEntityInstance.getLocalId(), enrollmentDateString, incidentDateString);
         }
-        mNavigationHandler.switchFragment(enrollmentDataEntryFragment, EnrollmentDataEntryFragment.class.getName(), true);
     }
 
     public void showDataEntryFragment(Event event, String programStage) {
         Bundle args = getArguments();
-        EventDataEntryFragment fragment;
         if (event == null) {
-            fragment = EventDataEntryFragment.newInstanceWithEnrollment(args.getString(ORG_UNIT_ID), args.getString(PROGRAM_ID), programStage, mForm.getEnrollment().getLocalId());
+            HolderActivity.navigateToDataEntryFragment(getActivity(), args.getString(ORG_UNIT_ID), args.getString(PROGRAM_ID), programStage, mForm.getEnrollment().getLocalId());
         } else {
-            fragment = EventDataEntryFragment.newInstanceWithEnrollment(args.getString(ORG_UNIT_ID), args.getString(PROGRAM_ID), programStage,
-                    event.getLocalEnrollmentId(), event.getLocalId());
+            HolderActivity.navigateToDataEntryFragment(getActivity(), args.getString(ORG_UNIT_ID), args.getString(PROGRAM_ID), programStage,
+                    mForm.getEnrollment().getLocalId(), event.getLocalId());
         }
-        mNavigationHandler.switchFragment(fragment, ProgramOverviewFragment.CLASS_TAG, true);
     }
 
     public void completeEnrollment() {
+        if (mForm == null || mForm.getEnrollment() == null) {
+            Log.i("ENROLLMENT", "Unable to complete enrollment. mForm or mForm.getEnrollment() is null");
+            return;
+        }
         mForm.getEnrollment().setStatus(Enrollment.COMPLETED);
         mForm.getEnrollment().setFromServer(false);
         mForm.getEnrollment().async().save();
-        setCompleted();
         clearViews();
     }
 
-    /**
-     * Disables the ability to edit enrollment info
-     * Program stages can still be viewed but not changed.
-     */
-    public void setCompleted() {
-        completeButton.setEnabled(false);
-        completeButton.setAlpha(0.2f);
-        terminateButton.setEnabled(false);
-        terminateButton.setAlpha(0.2f);
-        followupButton.setEnabled(false);
-        followupButton.setAlpha(0x40);
-    }
-
     public void terminateEnrollment() {
+        if (mForm == null || mForm.getEnrollment() == null) {
+            Log.i("ENROLLMENT", "Unable to terminate enrollment. mForm or mForm.getEnrollment() is null");
+            return;
+        }
         mForm.getEnrollment().setStatus(Enrollment.CANCELLED);
         mForm.getEnrollment().setFromServer(false);
         mForm.getEnrollment().async().save();
@@ -960,6 +934,13 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
                         });
                 break;
             }
+            case R.id.re_open: {
+                Enrollment enrollment = getLastEnrollmentForTrackedEntityInstance();
+                enrollment.setStatus(Enrollment.ACTIVE);
+                enrollment.async().save();
+                refreshUi();
+                break;
+            }
 
             case R.id.terminate: {
                 UiUtils.showConfirmDialog(getActivity(),
@@ -1009,6 +990,18 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
         }
     }
 
+    private void refreshUi() {
+        getLoaderManager().restartLoader(LOADER_ID, getArguments(), this);
+    }
+
+    private Enrollment getLastEnrollmentForTrackedEntityInstance() {
+        List<Enrollment> enrollments = TrackerController.getEnrollments(mForm.getTrackedEntityInstance());
+        EnrollmentDateComparator comparator = new EnrollmentDateComparator();
+        Collections.reverseOrder(comparator);
+        Collections.sort(enrollments, comparator);
+        return enrollments.get(0);
+    }
+
     private void clearViews() {
         adapter.swapData(null);
     }
@@ -1019,14 +1012,15 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
     }
 
     private void editEnrollmentDates() {
-        EnrollmentDateFragment fragment = EnrollmentDateFragment.newInstance(mForm.getEnrollment().getLocalId());
-        mNavigationHandler.switchFragment(fragment, EnrollmentDateFragment.TAG, true);
+        if(mForm != null && mForm.getEnrollment() != null ) {
+            HolderActivity.navigateToEnrollmentDateFragment(getActivity(), mForm.getEnrollment().getLocalId());
+        }
+
     }
 
     private void editTrackedEntityInstanceProfile() {
-        TrackedEntityInstanceProfileFragment fragment = TrackedEntityInstanceProfileFragment.newInstance(getArguments().
-                getLong(TRACKEDENTITYINSTANCE_ID), getArguments().getString(PROGRAM_ID));
-        mNavigationHandler.switchFragment(fragment, TrackedEntityInstanceProfileFragment.TAG, true);
+        HolderActivity.navigateToTrackedEntityInstanceProfileFragment(getActivity(), getArguments().
+                getLong(TRACKEDENTITYINSTANCE_ID), getArguments().getString(PROGRAM_ID), mForm.getEnrollment().getLocalId());
     }
 
     private void showAddRelationshipFragment() {
@@ -1106,7 +1100,9 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
     }
 
     public void synchronize() {
-        sendTrackedEntityInstance(mForm.getTrackedEntityInstance());
+        if(mForm != null) {
+            sendTrackedEntityInstance(mForm.getTrackedEntityInstance());
+        }
     }
 
 
@@ -1129,4 +1125,9 @@ public class ProgramOverviewFragment extends AbsProgramRuleFragment implements V
         this.mForm = mForm;
     }
 
+    @Override
+    public boolean doBack() {
+        getActivity().finish();
+        return false;
+    }
 }

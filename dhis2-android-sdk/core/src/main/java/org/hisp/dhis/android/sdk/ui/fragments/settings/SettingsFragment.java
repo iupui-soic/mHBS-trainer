@@ -31,10 +31,14 @@ package org.hisp.dhis.android.sdk.ui.fragments.settings;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -44,6 +48,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.okhttp.HttpUrl;
 import com.squareup.otto.Subscribe;
 
 import org.hisp.dhis.android.sdk.R;
@@ -52,7 +57,9 @@ import org.hisp.dhis.android.sdk.controllers.DhisService;
 import org.hisp.dhis.android.sdk.controllers.PeriodicSynchronizerController;
 import org.hisp.dhis.android.sdk.events.LoadingMessageEvent;
 import org.hisp.dhis.android.sdk.events.UiEvent;
+import org.hisp.dhis.android.sdk.network.Session;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
+import org.hisp.dhis.android.sdk.persistence.preferences.AppPreferences;
 import org.hisp.dhis.android.sdk.utils.UiUtils;
 
 /**
@@ -76,7 +83,7 @@ public class SettingsFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // we need to disable options menu in this fragment
-        setHasOptionsMenu(false);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -87,6 +94,13 @@ public class SettingsFragment extends Fragment
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+
+        if(getActionBar() != null) {
+            getActionBar().setTitle(getString(R.string.settings));
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+            getActionBar().setHomeButtonEnabled(true);
+        }
+
         updateFrequencySpinner = (Spinner) view.findViewById(R.id.settings_update_frequency_spinner);
         updateFrequencySpinner.setSelection(PeriodicSynchronizerController.getUpdateFrequency(getActivity()));
         updateFrequencySpinner.setOnItemSelectedListener(this);
@@ -110,6 +124,14 @@ public class SettingsFragment extends Fragment
             //syncTextView.setText(DhisController.getLastSynchronizationSummary());
         }
     }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        if (menuItem.getItemId() == android.R.id.home) {
+            getActivity().finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(menuItem);
+    }
 
     @Override
     public void onClick(View view) {
@@ -131,8 +153,26 @@ public class SettingsFragment extends Fragment
                                             }
                                         });
                             } else {
+                                Session session = DhisController.getInstance().getSession();
+                                if(session != null) {
+                                    HttpUrl httpUrl = session.getServerUrl();
+                                    if(httpUrl != null) {
+                                        String serverUrlString = httpUrl.toString();
+                                        AppPreferences appPreferences = new AppPreferences(getActivity().getApplicationContext());
+                                        appPreferences.putServerUrl(serverUrlString);
+                                    }
+                                }
                                 DhisService.logOutUser(getActivity());
-                                getActivity().finish();
+
+                                int apiVersion = Build.VERSION.SDK_INT;
+                                if(apiVersion >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                                    getActivity().finishAffinity();
+                                }
+                                else {
+                                    getActivity().finish();
+                                    System.exit(0);
+                                }
+
                             }
                         }
                     });
@@ -239,5 +279,9 @@ public class SettingsFragment extends Fragment
         }
         //else
         //    enableUi(false);
+    }
+
+    public ActionBar getActionBar() {
+        return ((AppCompatActivity)getActivity()).getSupportActionBar();
     }
 }

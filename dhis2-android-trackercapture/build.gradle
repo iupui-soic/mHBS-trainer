@@ -4,11 +4,14 @@ buildscript {
     repositories {
         jcenter()
         maven { url "https://raw.github.com/Raizlabs/maven-releases/master/releases" }
+        maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0'
+        classpath 'com.android.tools.build:gradle:2.2.3'
         classpath 'com.raizlabs:Griddle:1.0.3'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        classpath 'io.fabric.tools:gradle:1.+'
+
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -18,17 +21,34 @@ allprojects {
     repositories {
         jcenter()
         maven { url "https://raw.github.com/Raizlabs/maven-releases/master/releases" }
+        maven { url 'https://maven.fabric.io/public' }
     }
 }
 
-ext {
-    // SDK version.
-    versionCode = 1
-    versionName = "1.0"
 
-    // Compilation configuration.
+ext {
+    buildToolsVersion = "23.0.2"
     minSdkVersion = 15
-    compileSdkVersion = 22
-    targetSdkVersion = 22
-    buildToolsVersion = "22.0.1"
+    compileSdkVersion = 23
+    targetSdkVersion = 23
+    versionCode = 54
+    versionName = "0.3.37-2.26"
+
+    configuration = [
+            buildToolsVersion: "23.0.2",
+            minSdkVersion    : 15,
+            compileSdkVersion: 23,
+            targetSdkVersion : 23,
+            versionCode      : 54,
+            versionName      : "0.3.37-2.26"
+    ]
+
+    libraries = [
+            // android libs
+            supportVersion    : "23.3.0",
+            progressBarVersion: "1.2.0",
+
+            // testing libs
+            jUnitVersion      : "4.12"
+    ]
 }

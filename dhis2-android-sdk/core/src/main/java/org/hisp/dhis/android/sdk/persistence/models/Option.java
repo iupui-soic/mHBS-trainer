@@ -46,7 +46,6 @@ public class Option extends BaseMetaDataObject {
     @Column(name = "sortIndex")
     int sortIndex;
 
-    @JsonProperty("optionSet")
     @Column(name = "optionSet")
     String optionSet;
 
@@ -58,7 +57,6 @@ public class Option extends BaseMetaDataObject {
     public void handleOptionSets(OptionSet optionSet) {
         setOptionSet(optionSet.getUid());
     }
-
     public String getCode() {
         return code;
     }

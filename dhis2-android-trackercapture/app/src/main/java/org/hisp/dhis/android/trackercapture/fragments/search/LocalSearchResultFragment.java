@@ -10,6 +10,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -37,6 +38,7 @@ import org.hisp.dhis.android.sdk.ui.activities.INavigationHandler;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.events.TrackedEntityInstanceItemRow;
 import org.hisp.dhis.android.sdk.utils.UiUtils;
 import org.hisp.dhis.android.trackercapture.R;
+import org.hisp.dhis.android.trackercapture.activities.HolderActivity;
 import org.hisp.dhis.android.trackercapture.fragments.programoverview.ProgramOverviewFragment;
 import org.hisp.dhis.android.trackercapture.fragments.selectprogram.dialogs.ItemStatusDialogFragment;
 import org.hisp.dhis.android.trackercapture.ui.adapters.TrackedEntityInstanceAdapter;
@@ -45,7 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class LocalSearchResultFragment extends Fragment implements LoaderManager.LoaderCallbacks<LocalSearchResultFragmentForm> {
+public class LocalSearchResultFragment extends Fragment implements LoaderManager.LoaderCallbacks<LocalSearchResultFragmentForm>,
+                                                                    View.OnClickListener{
     public static final String EXTRA_PROGRAM = "extra:ProgramId";
     public static final String EXTRA_ORGUNIT = "extra:OrgUnitId";
     public static final String EXTRA_ATTRIBUTEVALUEMAP = "extra:AttributeValueMap";
@@ -57,7 +60,7 @@ public class LocalSearchResultFragment extends Fragment implements LoaderManager
     private final int LOADER_ID = 1112222111;
     private LocalSearchResultFragmentForm mForm;
     private ProgressBar progressBar;
-    private INavigationHandler navigationHandler;
+    private CardView cardView;
 
     public static LocalSearchResultFragment newInstance(String orgUnitId, String programId, HashMap<String,String> attributeValueMap) {
         LocalSearchResultFragment fragment = new LocalSearchResultFragment();
@@ -92,10 +95,9 @@ public class LocalSearchResultFragment extends Fragment implements LoaderManager
         int id = item.getItemId();
 
         if (id == android.R.id.home) {
-            getFragmentManager().popBackStack();
+            getActivity().finish();
             return true;
         }
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -104,16 +106,19 @@ public class LocalSearchResultFragment extends Fragment implements LoaderManager
         super.onViewCreated(view, savedInstanceState);
 
         if(getActivity() instanceof AppCompatActivity) {
-            getActionBar().setDisplayShowTitleEnabled(false);
+            getActionBar().setDisplayShowTitleEnabled(true);
             getActionBar().setDisplayHomeAsUpEnabled(true);
             getActionBar().setHomeButtonEnabled(true);
         }
         searchResultsListView = (ListView) view.findViewById(R.id.listview_search_results);
         progressBar = (ProgressBar) view.findViewById(R.id.local_search_progressbar);
+        cardView = (CardView) view.findViewById(R.id.search_online_cardview);
 
         mAdapter = new TrackedEntityInstanceAdapter(getLayoutInflater(savedInstanceState));
         searchResultsListView.setAdapter(mAdapter);
         progressBar.setVisibility(View.VISIBLE);
+        cardView.setVisibility(View.GONE);
+        cardView.setOnClickListener(this);
     }
 
 
@@ -133,13 +138,9 @@ public class LocalSearchResultFragment extends Fragment implements LoaderManager
 
         final TrackedEntityInstanceItemRow itemRow = (TrackedEntityInstanceItemRow) searchResultsListView.getItemAtPosition(info.position);
 
-
-
         if(item.getTitle().toString().equals(getResources().getString(org.hisp.dhis.android.sdk.R.string.go_to_programoverview_fragment))) {
-            navigationHandler.switchFragment(
-                    ProgramOverviewFragment.newInstance(
-                            orgUnitId, programId, itemRow.getTrackedEntityInstance().getLocalId()),
-                    this.getClass().getSimpleName(), false);
+            HolderActivity.navigateToProgramOverviewFragment(getActivity(),
+                            orgUnitId, programId, itemRow.getTrackedEntityInstance().getLocalId());
         } else if(item.getTitle().toString().equals(getResources().getString(org.hisp.dhis.android.sdk.R.string.delete))) {
             // if not sent to server, present dialog to user
             if( !(itemRow.getStatus().equals(OnRowClick.ITEM_STATUS.SENT))) {
@@ -239,25 +240,14 @@ public class LocalSearchResultFragment extends Fragment implements LoaderManager
     public void onItemClick(OnTrackerItemClick eventClick) {
         if (eventClick.isOnDescriptionClick()) {
 
-            ProgramOverviewFragment fragment = ProgramOverviewFragment.
-                    newInstance(orgUnitId, programId,
+            HolderActivity.navigateToProgramOverviewFragment(getActivity(),orgUnitId, programId,
                             eventClick.getItem().getLocalId());
-
-            navigationHandler.switchFragment(fragment, ProgramOverviewFragment.CLASS_TAG, true);
         } else {
             showStatusDialog(eventClick.getItem());
         }
     }
 
 
-    @Subscribe /* it doesn't seem that this subscribe works. Inheriting class will have to */
-    public void onReceivedUiEvent(UiEvent uiEvent) {
-        if(uiEvent.getEventType().equals(UiEvent.UiEventType.SYNCING_START)) {
-            //setRefreshing(true);
-        } else if(uiEvent.getEventType().equals(UiEvent.UiEventType.SYNCING_END)) {
-            //setRefreshing(false);
-        }
-    }
     public void showStatusDialog(BaseSerializableModel model) {
         ItemStatusDialogFragment fragment = ItemStatusDialogFragment.newInstance(model);
         fragment.show(getChildFragmentManager());
@@ -268,26 +258,16 @@ public class LocalSearchResultFragment extends Fragment implements LoaderManager
 
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void searchOnline() {
 
-        if (activity instanceof INavigationHandler) {
-            navigationHandler = (INavigationHandler) activity;
-        } else {
-            throw new IllegalArgumentException("Activity must " +
-                    "implement INavigationHandler interface");
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.search_online_cardview: {
+                searchOnline();
+            }
         }
     }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        // we need to nullify reference
-        // to parent activity in order not to leak it
-        navigationHandler = null;
-    }
-
-
-
 }

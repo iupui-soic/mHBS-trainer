@@ -68,6 +68,7 @@ public class Event extends BaseSerializableModel {
     public static final String STATUS_COMPLETED = "COMPLETED";
     public static final String STATUS_FUTURE_VISIT = "SCHEDULE";
     public static final String STATUS_SKIPPED = "SKIPPED";
+    public static final String STATUS_OVERDUE = "OVERDUE";
 
     @JsonIgnore
     @Column(name = "event")
@@ -121,6 +122,9 @@ public class Event extends BaseSerializableModel {
     @Column(name = "dueDate")
     String dueDate;
 
+    @JsonProperty("completedDate")
+    @Column(name = "completedDate")
+    String completedDate;
     @JsonProperty("dataValues")
     List<DataValue> dataValues;
 
@@ -322,6 +326,14 @@ public class Event extends BaseSerializableModel {
 
     public void setDueDate(String dueDate) {
         this.dueDate = dueDate;
+    }
+
+    public String getCompletedDate() {
+        return completedDate;
+    }
+
+    public void setCompletedDate(String completedDate) {
+        this.completedDate = completedDate;
     }
 
     public void setDataValues(List<DataValue> dataValues) {

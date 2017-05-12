@@ -35,6 +35,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.List;
@@ -87,7 +88,7 @@ public final class GpsController implements LocationListener {
         List<String> providers = mLocationManager.getProviders(true);
         for (String provider : providers) {
             Log.d(TAG, provider);
-            mLocationManager.requestLocationUpdates(provider, 0, 0, this);
+            mLocationManager.requestLocationUpdates(provider, 0, 0, this, Looper.getMainLooper());
         }
     }
 
@@ -100,7 +101,11 @@ public final class GpsController implements LocationListener {
 
         Criteria criteria = new Criteria();
         String provider = getInstance().mLocationManager.getBestProvider(criteria, false);
-        Location location = getInstance().mLocationManager.getLastKnownLocation(provider);
+        Location location = null;
+        if(provider != null) {
+            location = getInstance().mLocationManager.getLastKnownLocation(provider);
+        }
+
         if (location != null) {
             getInstance().mLatitude = location.getLatitude();
             getInstance().mLongitude = location.getLongitude();

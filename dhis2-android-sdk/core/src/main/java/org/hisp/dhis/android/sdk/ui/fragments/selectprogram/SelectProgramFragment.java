@@ -32,12 +32,9 @@ package org.hisp.dhis.android.sdk.ui.fragments.selectprogram;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
 import android.view.ContextMenu;
@@ -47,7 +44,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -56,26 +52,25 @@ import com.squareup.otto.Subscribe;
 
 import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.controllers.DhisService;
+import org.hisp.dhis.android.sdk.events.OnTeiDownloadedEvent;
 import org.hisp.dhis.android.sdk.events.UiEvent;
-import org.hisp.dhis.android.sdk.ui.activities.INavigationHandler;
-import org.hisp.dhis.android.sdk.controllers.DhisController;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.events.TrackedEntityInstanceItemRow;
-import org.hisp.dhis.android.sdk.ui.fragments.settings.SettingsFragment;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
-import org.hisp.dhis.android.sdk.persistence.models.Program;
+import org.hisp.dhis.android.sdk.ui.activities.SynchronisationStateHandler;
 import org.hisp.dhis.android.sdk.ui.adapters.AbsAdapter;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.events.EventRow;
 import org.hisp.dhis.android.sdk.ui.dialogs.AutoCompleteDialogFragment;
 import org.hisp.dhis.android.sdk.ui.dialogs.OrgUnitDialogFragment;
 import org.hisp.dhis.android.sdk.ui.dialogs.ProgramDialogFragment;
+import org.hisp.dhis.android.sdk.ui.dialogs.UpcomingEventsDialogFilter;
+import org.hisp.dhis.android.sdk.ui.fragments.dataentry.RefreshListViewEvent;
 import org.hisp.dhis.android.sdk.ui.views.CardTextViewButton;
 import org.hisp.dhis.android.sdk.utils.api.ProgramType;
+import org.hisp.dhis.client.sdk.ui.fragments.BaseFragment;
 
-import java.util.List;
+import java.util.Arrays;
 
-public abstract class SelectProgramFragment extends Fragment
+public abstract class SelectProgramFragment extends BaseFragment
         implements View.OnClickListener, AutoCompleteDialogFragment.OnOptionSelectedListener,
-        SwipeRefreshLayout.OnRefreshListener, LoaderManager.LoaderCallbacks<SelectProgramFragmentForm> {
+        SwipeRefreshLayout.OnRefreshListener, LoaderManager.LoaderCallbacks<SelectProgramFragmentForm>, SynchronisationStateHandler.OnSynchronisationStateListener {
     public static final String TAG = SelectProgramFragment.class.getSimpleName();
     protected final String STATE;
     protected final int LOADER_ID;
@@ -91,8 +86,6 @@ public abstract class SelectProgramFragment extends Fragment
     protected SelectProgramFragmentState mState;
     protected SelectProgramFragmentPreferences mPrefs;
 
-    protected INavigationHandler mNavigationHandler;
-
     public SelectProgramFragment() {
         this("state:SelectProgramFragment", 1);
     }
@@ -100,26 +93,6 @@ public abstract class SelectProgramFragment extends Fragment
     public SelectProgramFragment(String stateName, int loaderId) {
         STATE = stateName;
         LOADER_ID = loaderId;
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-        if (activity instanceof INavigationHandler) {
-            mNavigationHandler = (INavigationHandler) activity;
-        } else {
-            throw new IllegalArgumentException("Activity must " +
-                    "implement INavigationHandler interface");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        // we need to nullify reference
-        // to parent activity in order not to leak it
-        mNavigationHandler = null;
     }
 
     @Override
@@ -145,6 +118,9 @@ public abstract class SelectProgramFragment extends Fragment
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
         mListView = (ListView) view.findViewById(R.id.event_listview);
+
+
+
         mAdapter = getAdapter(savedInstanceState);
         View header = getListViewHeader(savedInstanceState);
         setStandardButtons(header);
@@ -161,12 +137,21 @@ public abstract class SelectProgramFragment extends Fragment
             // restoring last selection of program
             Pair<String, String> orgUnit = mPrefs.getOrgUnit();
             Pair<String, String> program = mPrefs.getProgram();
+            Pair<String, String> filter = mPrefs.getFilter();
             mState = new SelectProgramFragmentState();
             if (orgUnit != null) {
                 mState.setOrgUnit(orgUnit.first, orgUnit.second);
                 if (program != null) {
                     mState.setProgram(program.first, program.second);
                 }
+                if(filter != null) {
+                    mState.setFilter(filter.first, filter.second);
+                }
+                else {
+                    mState.setFilter("0", Arrays.asList(UpcomingEventsDialogFilter.Type.values()).get(0).toString());
+                }
+
+
             }
         }
 
@@ -223,28 +208,24 @@ public abstract class SelectProgramFragment extends Fragment
     public void onPause() {
         super.onPause();
         Dhis2Application.getEventBus().unregister(this);
+        SynchronisationStateHandler.getInstance().removeListener();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        SynchronisationStateHandler.getInstance().setListener(this);
+        setRefreshing(SynchronisationStateHandler.getInstance().getState());
         Dhis2Application.getEventBus().register(this);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_main, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            mNavigationHandler.switchFragment(
-                    new SettingsFragment(), SettingsFragment.TAG, true);
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -330,6 +311,7 @@ public abstract class SelectProgramFragment extends Fragment
                 );
             }
         }
+
     }
 
     public void onUnitSelected(String orgUnitId, String orgUnitLabel) {
@@ -357,6 +339,7 @@ public abstract class SelectProgramFragment extends Fragment
         getLoaderManager().restartLoader(LOADER_ID, getArguments(), this);
     }
 
+
     @Subscribe /* it doesn't seem that this subscribe works. Inheriting class will have to */
     public void onReceivedUiEvent(UiEvent uiEvent) {
         if(uiEvent.getEventType().equals(UiEvent.UiEventType.SYNCING_START)) {
@@ -364,6 +347,11 @@ public abstract class SelectProgramFragment extends Fragment
         } else if(uiEvent.getEventType().equals(UiEvent.UiEventType.SYNCING_END)) {
             setRefreshing(false);
         }
+    }
+
+    @Override
+    public void stateChanged() {
+        // stub - will listen to updates in onResume()
     }
 
     protected abstract void handleViews(int level);
