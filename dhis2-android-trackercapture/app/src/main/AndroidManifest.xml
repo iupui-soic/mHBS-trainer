@@ -64,7 +64,19 @@
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_main"
-            android:windowSoftInputMode="adjustPan"></activity>
+            android:windowSoftInputMode="adjustPan">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"></action>
+                <category android:name="android.intent.category.DEFAULT"></category>
+                <category android:name="android.intent.category.BROWSABLE"></category>
+                <data
+                    android:scheme="http"
+                    android:host="mhbs.com"
+                    android:pathPrefix="/mhbsapp">
+                    </data>
+            </intent-filter>
+        </activity>
         <activity
             android:name=".activities.HolderActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -90,6 +102,7 @@
                 <action android:name="org.hisp.dhis.android.trackercapture.export.TrackerExportService.EXPORT" />
             </intent-filter>
         </service>
+
 
         <!-- Specify the next screen after SplashScreen if user already logged in -->
         <meta-data
