@@ -73,6 +73,10 @@ public abstract class AbsHomeActivity extends BaseActivity
             "org.hispindia.bidtrackerreports";
     private static final String APPS_REDCAP_PACKAGE =
             "edu.vanderbilt.redcap";
+    private static final String APPS_ECEB_PACKAGE =
+            "com.eceb";
+    private static final String APPS_ECSB_PACKAGE =
+            "com.ecsb";
 
     private static final int DEFAULT_ORDER_IN_CATEGORY = 100;
 
@@ -123,6 +127,10 @@ public abstract class AbsHomeActivity extends BaseActivity
                 isAppInstalled(APPS_TRACKER_CAPTURE_REPORTS_PACKAGE));
         navigationView.getMenu().findItem(R.id.drawer_item_redcap).setVisible(
                 isAppInstalled(APPS_REDCAP_PACKAGE));
+        navigationView.getMenu().findItem(R.id.drawer_item_ECEB).setVisible(
+                isAppInstalled(APPS_ECEB_PACKAGE));
+        navigationView.getMenu().findItem(R.id.drawer_item_ECSB).setVisible(
+                isAppInstalled(APPS_ECSB_PACKAGE));
     }
 
     @Override
@@ -142,7 +150,11 @@ public abstract class AbsHomeActivity extends BaseActivity
             isSelected = openApp(APPS_TRACKER_CAPTURE_REPORTS_PACKAGE);
         } else if (menuItemId == R.id.drawer_item_redcap) {
             isSelected = openApp(APPS_REDCAP_PACKAGE);
-        } else if (menuItemId == R.id.drawer_item_profile) {
+        } else if (menuItemId == R.id.drawer_item_ECEB) {
+            isSelected = openApp(APPS_ECEB_PACKAGE);
+        }else if (menuItemId == R.id.drawer_item_ECSB) {
+            isSelected = openApp(APPS_ECSB_PACKAGE);
+        }else if (menuItemId == R.id.drawer_item_profile) {
             attachFragmentDelayed(getProfileFragment());
             isSelected = true;
         } else if (menuItemId == R.id.drawer_item_settings) {

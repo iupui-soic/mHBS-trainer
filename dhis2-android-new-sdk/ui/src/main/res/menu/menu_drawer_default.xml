@@ -72,6 +72,14 @@
                         android:id="@+id/drawer_item_redcap"
                         android:orderInCategory="200"
                         android:title="RedCap"/>
+                    <item
+                        android:id="@+id/drawer_item_ECEB"
+                        android:orderInCategory="200"
+                        android:title="Essential Newborn Care"/>
+                    <item
+                        android:id="@+id/drawer_item_ECSB"
+                        android:orderInCategory="200"
+                        android:title="Essential Newborn Care"/>
                 </group>
             </menu>
         </item>

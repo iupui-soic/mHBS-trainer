@@ -69,6 +69,10 @@ public class MainActivity extends AbsHomeActivity {
             "org.hispindia.bidtrackerreports";
     private static final String APPS_REDCAP_PACKAGE =
             "edu.vanderbilt.redcap";
+    private static final String APPS_ECEB_PACKAGE =
+            "com.eceb";
+    private static final String APPS_ECSB_PACKAGE =
+            "com.ecsb";
 
 
     @Override
@@ -201,6 +205,10 @@ public class MainActivity extends AbsHomeActivity {
             isSelected = true;
         } else if (menuItemId == org.hisp.dhis.client.sdk.ui.R.id.drawer_item_redcap) {
             isSelected = openApp(APPS_REDCAP_PACKAGE);
+        } else if (menuItemId == org.hisp.dhis.client.sdk.ui.R.id.drawer_item_ECEB) {
+            isSelected = openApp(APPS_ECEB_PACKAGE);
+        } else if (menuItemId == org.hisp.dhis.client.sdk.ui.R.id.drawer_item_ECSB) {
+            isSelected = openApp(APPS_ECSB_PACKAGE);
         }
         /*else if (menuItemId == R.id.drawer_item_help) {
             attachFragment(getHelpFragment());
