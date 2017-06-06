@@ -79,7 +79,7 @@
                     <item
                         android:id="@+id/drawer_item_ECSB"
                         android:orderInCategory="200"
-                        android:title="Essential Newborn Care"/>
+                        android:title="Essential Care for Small Babies"/>
                 </group>
             </menu>
         </item>
