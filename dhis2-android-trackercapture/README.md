@@ -7,9 +7,9 @@ https://github.com/dhis2/dhis2-android-trackercapture/releases
 
 # Testing
 If you want to try the application out with a demo database, you can use the following:
-- Server: https://apps.dhis2.org/demo
-- Username: android
-- Password: Android123
+- Server: http://gw174.iu.xsede.org/
+- Username: admin
+- Password: district
 
 # How to Download and Set up in Android Studio
 Stepwise explanation on how to set it up: https://docs.google.com/document/d/141uX2IKA7NRouaYDAPUhJu29WRmiw7UxwNtXSj_iOVA/edit?usp=sharing 
