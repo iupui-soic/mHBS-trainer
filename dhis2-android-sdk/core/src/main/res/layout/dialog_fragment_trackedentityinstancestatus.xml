@@ -109,7 +109,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/itemstatus"
-                    android:id="@+id/itemstatus" />
+                    android:src="@drawable/ic_offline"
+                    />
 
                 <org.hisp.dhis.android.sdk.ui.views.FontTextView
                     android:id="@+id/statusinfo"
