@@ -51,6 +51,7 @@ android {
     lintOptions {
         abortOnError false
     }
+    buildToolsVersion '25.0.0'
 }
 
 dependencies {
@@ -71,5 +72,5 @@ dependencies {
     compile "com.github.castorflex.smoothprogressbar:library-circular:${libs.progressBarVersion}"
 
     // Test
-    testCompile "junit:junit:${libs.jUnitVersion}"
+    //testCompile "junit:junit:${libs.jUnitVersion}"
 }
