@@ -31,6 +31,7 @@ package org.hisp.dhis.client.sdk.ui;
 
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 /**

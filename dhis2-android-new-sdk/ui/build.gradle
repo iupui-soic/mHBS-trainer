@@ -73,4 +73,5 @@ dependencies {
 
     // Test
     //testCompile "junit:junit:${libs.jUnitVersion}"
+    testCompile 'junit:junit:4.12'
 }
