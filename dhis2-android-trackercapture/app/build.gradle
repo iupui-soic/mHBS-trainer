@@ -75,6 +75,7 @@ android {
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
     }
+    buildToolsVersion '25.0.0'
 }
 
 dependencies {

@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">mHBS_training</string>
+    <string name="title_activity_main">mHBS Learner Tracker</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="downloads">Downloads</string>
+    <string name="favorites">Favorites</string>
+    <string name="settings">Settings</string>
+    <string name="information">Information</string>
+    <string name="email_example">android.studio@android.com</string>
+    <string name="offline_mode">Offline Mode</string>
+    <string name="videos">Videos</string>
+    <string name="resources">Resources</string>
+    <string name="courses">Courses</string>
+    <string name="mHBS_Tracker">mHBS Tracker App</string>
 </resources>

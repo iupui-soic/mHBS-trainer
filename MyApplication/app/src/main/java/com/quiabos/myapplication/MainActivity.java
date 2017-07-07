@@ -1,4 +1,4 @@
-package com.example.siva0.mhbs_training.activities;
+package com.quiabos.myapplication;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -18,14 +18,16 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.siva0.mhbs_training.R;
-
+<<<<<<< Updated upstream:MyApplication/app/src/main/java/com/quiabos/myapplication/MainActivity.java
+public class MainActivity extends AppCompatActivity {
+=======
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
 
         Button btn_Videos, btn_Resources, btn_Courses;
         Switch sw_offlineMode;
         TextView tv_switch_status;
+>>>>>>> Stashed changes:mHBS_training/app/src/main/java/com/example/siva0/mhbs_training/MainActivity.java
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
