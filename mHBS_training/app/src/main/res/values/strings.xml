@@ -21,4 +21,7 @@
     <string name="studio">Android Studio</string>
     <string name="title_activity_videos">videosActivity</string>
     <string name="title_activity_courses">coursesActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

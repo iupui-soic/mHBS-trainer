@@ -1,13 +1,10 @@
 package com.example.siva0.mhbs_training.activities;
 
 import android.content.Intent;
-import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.example.siva0.mhbs_training.R;
 
@@ -42,16 +39,16 @@ public class ProgramPortalActivity extends AppCompatActivity {
                 switch(data){
                     case "Resources":
                         //TODO: pass the name of the program clicked to get appropriate resources
-                        startActivity( new Intent(ProgramPortalActivity.this, resourcesActivity.class).putExtra("resourceKey",data));
+                        startActivity( new Intent(ProgramPortalActivity.this, ResourcesActivity.class).putExtra("resourceKey",data));
                         break;
                     case "Videos":
                         //TODO: pass the name of the program clicked to get appropriate resources
 
-                        startActivity( new Intent(ProgramPortalActivity.this, videosActivity.class).putExtra("resourceKey",data));
+                        startActivity( new Intent(ProgramPortalActivity.this, VideosActivity.class).putExtra("resourceKey",data));
                         break;
                     case "Courses":
                         //TODO: pass the name of the program clicked to get appropriate resources
-                        startActivity( new Intent(ProgramPortalActivity.this, videosActivity.class).putExtra("resourceKey",data));
+                        startActivity( new Intent(ProgramPortalActivity.this, VideosActivity.class).putExtra("resourceKey",data));
                         break;
                 }
             }

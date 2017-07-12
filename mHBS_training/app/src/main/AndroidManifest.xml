@@ -22,13 +22,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.ProgramPortalActivity" />
-        <activity android:name=".activities.resourcesActivity" />
+        <activity android:name=".activities.ResourcesActivity" />
         <activity
-            android:name=".activities.videosActivity"
+            android:name=".activities.VideosActivity"
             android:label="@string/title_activity_videos"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activities.coursesActivity"
+            android:name=".activities.CoursesActivity"
             android:label="@string/title_activity_courses"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
