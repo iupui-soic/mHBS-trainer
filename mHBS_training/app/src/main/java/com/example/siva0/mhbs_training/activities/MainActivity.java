@@ -1,5 +1,6 @@
 package com.example.siva0.mhbs_training.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Debug;
 import android.support.annotation.NonNull;
@@ -116,18 +117,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void startVideos(View view) {
-        shortToastMessage("Start Videos Activity");
-        // TODO - Replace toast with intent to start Videos activity
+       callProgramPortal();
     }
 
     public void startResources(View view) {
-        shortToastMessage("Start Resources Activity");
-        // TODO - Replace toast with intent to start Resources activity
+        callProgramPortal();
     }
 
     public void startCourses(View view) {
-        shortToastMessage("Start Courses Activity");
-        // TODO - Replace toast with intent to start Courses activity
+        callProgramPortal();
     }
 
     @Override
@@ -139,5 +137,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //tv_switch_status.setText("Off");
             // TODO - Add methods for offline mode
         }
+    }
+
+    public void callProgramPortal(){
+        Intent intent = new Intent(this, ProgramPortalActivity.class);
+        startActivity(intent);
     }
 }
