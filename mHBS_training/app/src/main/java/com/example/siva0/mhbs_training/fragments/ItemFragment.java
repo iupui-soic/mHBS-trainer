@@ -17,10 +17,8 @@ import com.example.siva0.mhbs_training.dummy.DummyContent.DummyItem;
 
 /**
  * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
  */
+
 public class ItemFragment extends Fragment {
 
     // TODO: Customize parameter argument names

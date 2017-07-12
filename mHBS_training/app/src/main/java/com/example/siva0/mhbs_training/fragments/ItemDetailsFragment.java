@@ -1,7 +1,5 @@
 package com.example.siva0.mhbs_training.fragments;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +9,10 @@ import android.view.ViewGroup;
 
 import com.example.siva0.mhbs_training.R;
 
+/*
+This fragment displays details about individual videos, resources etc..
+
+ */
 public class ItemDetailsFragment extends Fragment {
 
     @Override
