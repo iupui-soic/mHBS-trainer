@@ -16,4 +16,8 @@
     <string name="resources">Resources</string>
     <string name="courses">Courses</string>
     <string name="mHBS_Tracker">mHBS Tracker App</string>
+    <string name="toggleOn">on</string>
+    <string name="toggleOff">off</string>
+    <string name="studio">Android Studio</string>
+    <string name="title_activity_atest">atest</string>
 </resources>

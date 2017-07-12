@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single"
-        android:id="@+id/group_mHBS_Tracker_APp">
+        android:id="@+id/group_mHBS_Tracker_App">
         <item
             android:id="@+id/nav_mHBS_tracker_app"
             android:icon="@drawable/ic_apps"
