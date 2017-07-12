@@ -117,15 +117,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void startVideos(View view) {
-       callProgramPortal();
+       callProgramPortal(view.getTag().toString());
     }
 
     public void startResources(View view) {
-        callProgramPortal();
+        callProgramPortal(view.getTag().toString());
     }
 
     public void startCourses(View view) {
-        callProgramPortal();
+        callProgramPortal(view.getTag().toString());
     }
 
     @Override
@@ -139,8 +139,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void callProgramPortal(){
+    public void callProgramPortal(String resourceType){
         Intent intent = new Intent(this, ProgramPortalActivity.class);
+        intent.putExtra("resourceKey",resourceType);
         startActivity(intent);
     }
 }

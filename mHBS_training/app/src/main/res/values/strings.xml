@@ -19,5 +19,6 @@
     <string name="toggleOn">on</string>
     <string name="toggleOff">off</string>
     <string name="studio">Android Studio</string>
-    <string name="title_activity_atest">atest</string>
+    <string name="title_activity_videos">videosActivity</string>
+    <string name="title_activity_courses">coursesActivity</string>
 </resources>

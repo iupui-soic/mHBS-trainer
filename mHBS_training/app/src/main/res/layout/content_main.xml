@@ -25,6 +25,7 @@
             android:layout_centerVertical="true">
             <Button
                 android:id="@+id/btn_videos"
+                android:tag="@string/videos"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
                 android:foreground="@drawable/ic_video"
@@ -47,6 +48,7 @@
             <Button
                 android:layout_toRightOf="@+id/btn_videos"
                 android:id="@+id/btn_resources"
+                android:tag="@string/resources"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
                 android:foreground="@drawable/ic_file"
@@ -69,6 +71,8 @@
             <Button
                 android:layout_toRightOf="@id/btn_resources"
                 android:id="@+id/btn_courses"
+                android:tag="@string/courses"
+
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
                 android:foreground="@drawable/ic_courses"

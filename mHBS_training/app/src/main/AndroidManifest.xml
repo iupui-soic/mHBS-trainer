@@ -21,7 +21,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.ProgramPortalActivity"></activity>
+        <activity android:name=".activities.ProgramPortalActivity" />
+        <activity android:name=".activities.resourcesActivity" />
+        <activity
+            android:name=".activities.videosActivity"
+            android:label="@string/title_activity_videos"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.coursesActivity"
+            android:label="@string/title_activity_courses"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

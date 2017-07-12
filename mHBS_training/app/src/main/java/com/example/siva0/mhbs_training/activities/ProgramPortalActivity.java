@@ -1,5 +1,6 @@
 package com.example.siva0.mhbs_training.activities;
 
+import android.content.Intent;
 import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,23 +23,37 @@ public class ProgramPortalActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_program_portal);
 
+        // get the type of data (video, resource or course) that was requested
+        String data = getIntent().getStringExtra("resourceKey");
+
         // show our button(s) and attach listener action!
-        addListenerOnButton();
+        addListenerOnButton(data);
+
     }
 
-    public void addListenerOnButton() {
-        // TODO: change the placeholder to our actual program images add multiple buttons etc
-        ImageButton btn_placeholder = (ImageButton) findViewById(R.id.btn_placeholder);
+    public void addListenerOnButton(final String data) {
+        ImageButton btn_program = (ImageButton) findViewById(R.id.btn_program);
 
-        btn_placeholder.setOnClickListener(new ImageButton.OnClickListener() {
+        btn_program.setOnClickListener(new ImageButton.OnClickListener() {
 
             @Override
             public void onClick(View view) {
+            // TODO: instead of hardcoding the cases, abstractify names, this is just a quick placeholder way
+                switch(data){
+                    case "Resources":
+                        //TODO: pass the name of the program clicked to get appropriate resources
+                        startActivity( new Intent(ProgramPortalActivity.this, resourcesActivity.class).putExtra("resourceKey",data));
+                        break;
+                    case "Videos":
+                        //TODO: pass the name of the program clicked to get appropriate resources
 
-                Toast.makeText(ProgramPortalActivity.this,
-                        "ImageButton is clicked!", Toast.LENGTH_SHORT).show();
-
-
+                        startActivity( new Intent(ProgramPortalActivity.this, videosActivity.class).putExtra("resourceKey",data));
+                        break;
+                    case "Courses":
+                        //TODO: pass the name of the program clicked to get appropriate resources
+                        startActivity( new Intent(ProgramPortalActivity.this, videosActivity.class).putExtra("resourceKey",data));
+                        break;
+                }
             }
 
         });

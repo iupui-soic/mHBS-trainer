@@ -4,10 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.siva0.mhbs_training.activities.ProgramPortalActivity">
-    <ImageButton
-        android:id="@+id/btn_program"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/buttonrounded" />
+    tools:context="com.example.siva0.mhbs_training.activities.resourcesActivity">
+
 </android.support.constraint.ConstraintLayout>
