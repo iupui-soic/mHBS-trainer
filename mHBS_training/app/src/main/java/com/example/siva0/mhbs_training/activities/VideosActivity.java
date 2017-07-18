@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -19,6 +18,7 @@ This class calls a list fragment which brings up the available videos in a list 
  */
 
 public class VideosActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener{
+    FragmentManager fragmentManager = getSupportFragmentManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +28,7 @@ public class VideosActivity extends AppCompatActivity implements ItemFragment.On
         // TODO: remove after testing
         Toast.makeText(getApplicationContext(), getIntent().getStringExtra("resourceKey"), Toast.LENGTH_SHORT).show();
 
-        // this allows going "up" from a fragment rather than back
+        // get the toolbar
         ActionBar myToolbar = this.getSupportActionBar();
         if (myToolbar != null) {
             myToolbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
@@ -38,10 +38,9 @@ public class VideosActivity extends AppCompatActivity implements ItemFragment.On
         if (savedInstanceState == null) {
             // call the video fragment list via fragment manager
             ItemFragment itemFragment = new ItemFragment();
-            getSupportFragmentManager()
+            fragmentManager
                     .beginTransaction()
-                    .replace(R.id.vid_fragment_container, itemFragment)
-                    .addToBackStack(null)
+                    .replace(R.id.video_fragment_container, itemFragment)
                     .commit();
         }
     }
@@ -56,38 +55,36 @@ public class VideosActivity extends AppCompatActivity implements ItemFragment.On
 
         // when we interact with an item, begin a new details fragment
         // TODO: will need to pass item data to the new fragment
-        getSupportFragmentManager()
+        fragmentManager
                 .beginTransaction()
-                .replace(R.id.vid_fragment_container, detailsFragment)
+                .replace(R.id.video_fragment_container, detailsFragment)
                 .addToBackStack(null)
                 .commit();
     }
 
     @Override
+    // going back
     public void onBackPressed() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        // pop last fragment off the stack to go back
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStackImmediate();
+        if(fragmentManager.getBackStackEntryCount()>1)
+        {
+            fragmentManager.popBackStack();
         }
-        else super.onBackPressed();
+        super.onBackPressed();
     }
 
-    @Override
     // for returning via the menu back button rather than button click
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                FragmentManager fm = getSupportFragmentManager();
                 // pop off fragments if we can
-                if (fm.getBackStackEntryCount() > 1) {
-                    fm.popBackStack();
+                if (fragmentManager.getBackStackEntryCount() > 1) {
+                    fragmentManager.popBackStack();
                     return true;
                 }
+                super.onBackPressed();
+
             default:
                 return super.onOptionsItemSelected(item);
-
-
         }
     }
 }

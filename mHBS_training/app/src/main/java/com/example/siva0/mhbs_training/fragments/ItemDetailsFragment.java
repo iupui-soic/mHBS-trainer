@@ -1,3 +1,7 @@
+/*
+* This fragment displays details about individual videos, resources etc..
+*/
+
 package com.example.siva0.mhbs_training.fragments;
 
 import android.os.Bundle;
@@ -9,10 +13,6 @@ import android.view.ViewGroup;
 
 import com.example.siva0.mhbs_training.R;
 
-/*
-This fragment displays details about individual videos, resources etc..
-
- */
 public class ItemDetailsFragment extends Fragment {
 
     @Override

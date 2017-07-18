@@ -1,3 +1,7 @@
+/*
+* A fragment representing a list of Items to be reused wherever lists of resources are needed
+*/
+
 package com.example.siva0.mhbs_training.fragments;
 
 import android.content.Context;
@@ -14,10 +18,6 @@ import com.example.siva0.mhbs_training.R;
 import com.example.siva0.mhbs_training.adapters.MyItemRecyclerViewAdapter;
 import com.example.siva0.mhbs_training.dummy.DummyContent;
 import com.example.siva0.mhbs_training.dummy.DummyContent.DummyItem;
-
-/**
- * A fragment representing a list of Items.
- */
 
 public class ItemFragment extends Fragment {
 

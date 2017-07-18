@@ -1,3 +1,7 @@
+/*
+* Main Activity is the home page for this application.
+ */
+
 package com.example.siva0.mhbs_training.activities;
 
 import android.content.Intent;
@@ -90,17 +94,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_favorites) {
-            shortToastMessage("Start Favorites Activity");
-            // TODO - Insert intent to start favorites activity
+            Intent intent = new Intent(this, FavoritesActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_download) {
-            shortToastMessage("Start Downloads Activity");
-            // TODO - Insert intent to start downloads activity
+            Intent intent = new Intent(this, DownloadsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_information) {
-            shortToastMessage("Start Information Activity");
-            // TODO - Insert intent to start information activity
+            Intent intent = new Intent(this, InfoActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_settings) {
-            shortToastMessage("Start Settings Activity");
-            // TODO - Insert intent to start settings activity
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_mHBS_tracker_app) {
             shortToastMessage("Start mHBS Tracker App");
             // TODO - Start mHBS app from here
@@ -139,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    // when each button is clicked, we call the program portal activity and display program options per resource chosen
     public void callProgramPortal(String resourceType){
         Intent intent = new Intent(this, ProgramPortalActivity.class);
         intent.putExtra("resourceKey",resourceType);

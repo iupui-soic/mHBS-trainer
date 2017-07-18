@@ -4,12 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.siva0.mhbs_training.activities.VideosActivity">
-
-    <FrameLayout
-        android:id="@+id/video_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    tools:context="com.example.siva0.mhbs_training.activities.SettingsActivity">
 
 </android.support.constraint.ConstraintLayout>
-
