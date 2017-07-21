@@ -6,4 +6,11 @@
     android:layout_height="match_parent"
     tools:context="com.example.siva0.mhbs_training.activities.SearchActivity">
 
+    <android.support.v7.widget.SearchView
+        android:id="@+id/search"
+        android:layout_width="368dp"
+        android:layout_height="wrap_content"
+        app:queryHint="search"
+        app:iconifiedByDefault="false"
+        />
 </android.support.constraint.ConstraintLayout>

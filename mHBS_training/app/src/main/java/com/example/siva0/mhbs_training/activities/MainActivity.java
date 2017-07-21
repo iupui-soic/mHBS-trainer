@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Intent intent = new Intent(this, DownloadsActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_information) {
-            Intent intent = new Intent(this, InfoActivity.class);
+            Intent intent = new Intent(this, SearchActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
