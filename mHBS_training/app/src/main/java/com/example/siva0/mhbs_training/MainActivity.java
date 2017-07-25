@@ -2,7 +2,7 @@
 * Main Activity is the home page for this application.
  */
 
-package com.example.siva0.mhbs_training.activities;
+package com.example.siva0.mhbs_training;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +24,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.siva0.mhbs_training.R;
+import com.example.siva0.mhbs_training.activities.DownloadsActivity;
+import com.example.siva0.mhbs_training.activities.FavoritesActivity;
+import com.example.siva0.mhbs_training.activities.ProgramPortalActivity;
+import com.example.siva0.mhbs_training.activities.SearchActivity;
+import com.example.siva0.mhbs_training.activities.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     Button btn_Videos, btn_Resources, btn_Courses;
@@ -35,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // TODO: handle user credentials and database from login
 
         btn_Courses = (Button) findViewById(R.id.btn_courses);
         btn_Resources = (Button) findViewById(R.id.btn_resources);
