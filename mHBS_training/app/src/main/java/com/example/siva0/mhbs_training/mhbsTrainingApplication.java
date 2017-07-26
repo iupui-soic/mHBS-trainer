@@ -13,8 +13,14 @@ public class mhbsTrainingApplication extends Dhis2Application {
     public void onCreate() {
 
         /*TODO: Here we can send a broadcast to tracker capture. If the user is logged in,
-        / Create an instance of LoginActivity and call handleUser();
-        */
+        * Create an instance of LoginActivity and call handleUser();
+        *
+        * Consider adding a prompt to confirm the user is logged in for
+        * the case a user is logged in tracker capture while a separate user
+        * wants to user our app
+        *
+        * Consider adding logout functionality
+         */
         super.onCreate();
 
     }

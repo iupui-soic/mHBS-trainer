@@ -30,11 +30,13 @@ import com.example.siva0.mhbs_training.activities.ProgramPortalActivity;
 import com.example.siva0.mhbs_training.activities.SearchActivity;
 import com.example.siva0.mhbs_training.activities.SettingsActivity;
 
+import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     Button btn_Videos, btn_Resources, btn_Courses;
         Switch sw_offlineMode;
-        TextView tv_switch_status;
-
+        TextView tv_switch_status, dhis_user_name, dhis_user_email;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,8 +60,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         tv_switch_status = (TextView) findViewById(R.id.tv_switcher_status);
         sw_offlineMode = (Switch) findViewById(R.id.sw_offlineMode);
-     //   sw_offlineMode.setOnCheckedChangeListener(this);
 
+        // get the user details from login
+        UserAccount userAccount = MetaDataController.getUserAccount();
+
+        if(userAccount!=null) {
+            // to set text to drawer we need to get its view to access its content
+            View header = navigationView.getHeaderView(0);
+            // Change the user id and email to match login details
+            dhis_user_name = (TextView) header.findViewById(R.id.dhis_user_name);
+            dhis_user_email = (TextView) header.findViewById(R.id.dhis_user_email);
+            // display the username and email in the navigation drawer
+            dhis_user_name.setText(userAccount.getDisplayName());
+            dhis_user_email.setText(userAccount.getEmail());
+        }
+        //   sw_offlineMode.setOnCheckedChangeListener(this);
     }
 
     @Override
