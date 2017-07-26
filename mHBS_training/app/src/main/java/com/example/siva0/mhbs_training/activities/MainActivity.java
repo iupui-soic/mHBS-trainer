@@ -4,16 +4,21 @@
 
 package com.example.siva0.mhbs_training.activities;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +30,7 @@ import android.widget.Toast;
 import com.example.siva0.mhbs_training.R;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
+
     Button btn_Videos, btn_Resources, btn_Courses;
         Switch sw_offlineMode;
         TextView tv_switch_status;
@@ -35,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         btn_Courses = (Button) findViewById(R.id.btn_courses);
         btn_Resources = (Button) findViewById(R.id.btn_resources);
         btn_Videos = (Button) findViewById(R.id.btn_videos);
@@ -66,10 +71,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        inflater.inflate(R.menu.main, menu);
+            // Retrieve the SearchView and plug it into SearchManager
+        // Detect SearchView icon clicks
+
+        final MenuItem searchItem = menu.findItem(R.id.menuSearch);
+        SearchView searchView = (android.support.v7.widget.SearchView) searchItem.getActionView();
+
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setItemsVisibility(menu, searchItem, false);
+                Log.d("hi", "not visible");
+            }
+
+
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                setItemsVisibility(menu, searchItem, true);
+                Log.d("hi", "visible");
+                return false;
+            }
+        });
+
+
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    private void setItemsVisibility(Menu menu, MenuItem exception, boolean visible) {
+        for (int i=0; i<menu.size(); ++i) {
+            MenuItem item = menu.getItem(i);
+            if (item != exception) item.setVisible(visible);
+        }
     }
 
     @Override
@@ -149,4 +190,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         intent.putExtra("resourceKey",resourceType);
         startActivity(intent);
     }
+
+
 }

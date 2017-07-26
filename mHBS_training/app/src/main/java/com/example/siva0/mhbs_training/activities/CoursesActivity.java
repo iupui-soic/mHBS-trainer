@@ -19,7 +19,6 @@ import com.example.siva0.mhbs_training.fragments.ItemFragment;
 
 public class CoursesActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
     FragmentManager fragmentManager = getSupportFragmentManager();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

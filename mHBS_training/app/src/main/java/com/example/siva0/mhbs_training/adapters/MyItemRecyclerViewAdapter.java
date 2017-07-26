@@ -1,16 +1,22 @@
 package com.example.siva0.mhbs_training.adapters;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.example.siva0.mhbs_training.R;
+import android.view.ContextThemeWrapper.*;
 
 import com.example.siva0.mhbs_training.fragments.ItemFragment.OnListFragmentInteractionListener;
 import com.example.siva0.mhbs_training.dummy.DummyContent.DummyItem;
 
 import java.util.List;
+
+import static com.example.siva0.mhbs_training.R.id.parent;
+import static java.security.AccessController.getContext;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
@@ -30,15 +36,17 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_item, parent, false);
+                .inflate(R.layout.fragment_rowfragment, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+
+        // holder.mIdView.setText(mValues.get(position).id);
+        // holder.mTitleView.setText(mValues.get(position).title);
+        // holder.mInstitutionView.setText(mValues.get(position).institution);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,19 +68,23 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mIdView;
-        public final TextView mContentView;
+//        public final TextView mTitleView;
+//        public final TextView mInstitutionView;
+
         public DummyItem mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.id);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            mIdView = (TextView) view.findViewById(R.id.titleImage);
+//            mTitleView = (TextView) view.findViewById(R.id.titleLocation);
+//            mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
+
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString();
         }
     }
 }

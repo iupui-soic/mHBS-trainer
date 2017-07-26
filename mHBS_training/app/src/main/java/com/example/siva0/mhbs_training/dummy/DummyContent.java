@@ -38,6 +38,7 @@ public class DummyContent {
     }
 
     private static DummyItem createDummyItem(int position) {
+
         return new DummyItem(String.valueOf(position), "Item " + position, makeDetails(position));
     }
 
@@ -55,18 +56,18 @@ public class DummyContent {
      */
     public static class DummyItem {
         public final String id;
-        public final String content;
+        public final String title;
         public final String details;
 
-        public DummyItem(String id, String content, String details) {
+        public DummyItem(String id, String title, String details) {
             this.id = id;
-            this.content = content;
+            this.title = title;
             this.details = details;
         }
 
         @Override
         public String toString() {
-            return content;
+            return title;
         }
     }
 }

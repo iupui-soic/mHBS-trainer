@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <group android:checkableBehavior="single"
         android:id="@+id/group_mHBS_Tracker_App">
         <item
@@ -23,7 +23,10 @@
         <item
             android:id="@+id/nav_information"
             android:icon="@drawable/ic_info"
-            android:title="@string/information" />
+            android:title="@string/information"
+            />
+
     </group>
+
 
 </menu>

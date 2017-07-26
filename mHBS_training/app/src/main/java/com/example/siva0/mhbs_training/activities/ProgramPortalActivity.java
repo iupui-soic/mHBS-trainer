@@ -37,7 +37,7 @@ public class ProgramPortalActivity extends AppCompatActivity {
     }
 
     public void addListenerOnButton(final String data) {
-        ImageButton btn_program = (ImageButton) findViewById(R.id.btn_program);
+        ImageButton btn_program = (ImageButton) findViewById(R.id.btn_allPrograms);
 
         btn_program.setOnClickListener(new ImageButton.OnClickListener() {
 

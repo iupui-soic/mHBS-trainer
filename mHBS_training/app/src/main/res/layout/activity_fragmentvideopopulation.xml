@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:weightSum="1.0"
+    tools:context="com.example.siva0.mhbs_training.activities.VideosActivity"
+    android:id="@+id/afv">
+
+
+
+
+
+
+
+
+
+    <!-- display this button in 2nd column via layout_column(zero based) -->
+
+
+</TableLayout>
+
+
+
