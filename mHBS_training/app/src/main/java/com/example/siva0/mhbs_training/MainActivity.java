@@ -2,7 +2,7 @@
 * Main Activity is the home page for this application.
  */
 
-package com.example.siva0.mhbs_training.activities;
+package com.example.siva0.mhbs_training;
 
 import android.app.SearchManager;
 import android.content.Intent;
@@ -28,19 +28,27 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.siva0.mhbs_training.R;
+import com.example.siva0.mhbs_training.activities.DownloadsActivity;
+import com.example.siva0.mhbs_training.activities.FavoritesActivity;
+import com.example.siva0.mhbs_training.activities.ProgramPortalActivity;
+import com.example.siva0.mhbs_training.activities.SearchActivity;
+import com.example.siva0.mhbs_training.activities.SettingsActivity;
+
+import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
-
     Button btn_Videos, btn_Resources, btn_Courses;
         Switch sw_offlineMode;
-        TextView tv_switch_status;
-
+        TextView tv_switch_status, dhis_user_name, dhis_user_email;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // TODO: handle user credentials and database from login
+
         btn_Courses = (Button) findViewById(R.id.btn_courses);
         btn_Resources = (Button) findViewById(R.id.btn_resources);
         btn_Videos = (Button) findViewById(R.id.btn_videos);
@@ -54,10 +62,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        tv_switch_status = (TextView) findViewById(R.id.tv_switcher_status);
-        sw_offlineMode = (Switch) findViewById(R.id.sw_offlineMode);
-     //   sw_offlineMode.setOnCheckedChangeListener(this);
+        // to set text to drawer we need to get its view to access its content
+        View header = navigationView.getHeaderView(0);
+        tv_switch_status = (TextView)header.findViewById(R.id.tv_switcher_status);
+        sw_offlineMode = (Switch)header.findViewById(R.id.sw_offlineMode);
 
+        // get the user details from login
+        UserAccount userAccount = MetaDataController.getUserAccount();
+
+        if(userAccount!=null) {
+            // Change the user id and email to match login details
+            dhis_user_name = (TextView) header.findViewById(R.id.dhis_user_name);
+            dhis_user_email = (TextView) header.findViewById(R.id.dhis_user_email);
+            // display the username and email in the navigation drawer
+            dhis_user_name.setText(userAccount.getDisplayName());
+            dhis_user_email.setText(userAccount.getEmail());
+        }
+         sw_offlineMode.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -147,8 +168,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_mHBS_tracker_app) {
-            shortToastMessage("Start mHBS Tracker App");
-            // TODO - Start mHBS app from here
+            /*Start the DHIS2 capture tracker app with intent*/
+            String trackerCapture = getString(R.string.trackerCapture);
+            Intent launchIntent = getPackageManager().getLaunchIntentForPackage(trackerCapture);
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //null pointer check in case package name was not found
+                /*TODO: bypass tracker login when hitting this button
+                *I think SplashActivity has related information to this
+                */
+                startActivity(launchIntent);
+            }
+            else{
+                // tracker capture not on phone
+                // TODO: hide button in side bar instead of this prompt if tracker not installed
+                shortToastMessage(getString(R.string.trackerCaptureNA));
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -176,10 +211,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (isChecked) {
-            //tv_switch_status.setText("On");
+            tv_switch_status.setText(R.string.toggleOn);
             // TODO - Add methods for online mode
         } else {
-            //tv_switch_status.setText("Off");
+            tv_switch_status.setText(R.string.toggleOff);
             // TODO - Add methods for offline mode
         }
     }
@@ -187,9 +222,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // when each button is clicked, we call the program portal activity and display program options per resource chosen
     public void callProgramPortal(String resourceType){
         Intent intent = new Intent(this, ProgramPortalActivity.class);
-        intent.putExtra("resourceKey",resourceType);
+        intent.putExtra(getString(R.string.resourceKey),resourceType);
         startActivity(intent);
     }
-
-
 }
