@@ -27,11 +27,6 @@
             android:textSize="20sp"/>
 
 
-    <ImageButton
-        android:id="@+id/btn_program"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/buttonrounded" />
 
     <ImageButton
         android:id="@+id/btn_allPrograms"

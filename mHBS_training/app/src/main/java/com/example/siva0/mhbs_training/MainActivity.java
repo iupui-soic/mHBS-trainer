@@ -39,8 +39,9 @@ import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     Button btn_Videos, btn_Resources, btn_Courses;
-        Switch sw_offlineMode;
-        TextView tv_switch_status, dhis_user_name, dhis_user_email;
+    Switch sw_offlineMode;
+    TextView tv_switch_status, dhis_user_name, dhis_user_email;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,13 +65,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // to set text to drawer we need to get its view to access its content
         View header = navigationView.getHeaderView(0);
-        tv_switch_status = (TextView)header.findViewById(R.id.tv_switcher_status);
-        sw_offlineMode = (Switch)header.findViewById(R.id.sw_offlineMode);
+        tv_switch_status = (TextView) header.findViewById(R.id.tv_switcher_status);
+        sw_offlineMode = (Switch) header.findViewById(R.id.sw_offlineMode);
 
         // get the user details from login
         UserAccount userAccount = MetaDataController.getUserAccount();
 
-        if(userAccount!=null) {
+        if (userAccount != null) {
             // Change the user id and email to match login details
             dhis_user_name = (TextView) header.findViewById(R.id.dhis_user_name);
             dhis_user_email = (TextView) header.findViewById(R.id.dhis_user_email);
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             dhis_user_name.setText(userAccount.getDisplayName());
             dhis_user_email.setText(userAccount.getEmail());
         }
-         sw_offlineMode.setOnCheckedChangeListener(this);
+        sw_offlineMode.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         MenuInflater inflater = getMenuInflater();
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.main, menu);
-            // Retrieve the SearchView and plug it into SearchManager
+        // Retrieve the SearchView and plug it into SearchManager
         // Detect SearchView icon clicks
 
         final MenuItem searchItem = menu.findItem(R.id.menuSearch);
@@ -123,16 +124,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
 
-
         return super.onCreateOptionsMenu(menu);
     }
 
     private void setItemsVisibility(Menu menu, MenuItem exception, boolean visible) {
-        for (int i=0; i<menu.size(); ++i) {
+        for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
             if (item != exception) item.setVisible(visible);
         }
+
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

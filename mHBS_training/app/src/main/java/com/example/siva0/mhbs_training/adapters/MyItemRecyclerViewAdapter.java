@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.example.siva0.mhbs_training.R;
 import android.view.ContextThemeWrapper.*;
 
+import com.example.siva0.mhbs_training.dummy.DummyContent;
 import com.example.siva0.mhbs_training.fragments.ItemFragment.OnListFragmentInteractionListener;
 import com.example.siva0.mhbs_training.dummy.DummyContent.DummyItem;
 
@@ -32,6 +33,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         mValues = items;
         mListener = listener;
     }
+
+
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

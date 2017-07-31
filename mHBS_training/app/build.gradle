@@ -34,22 +34,22 @@ android {
 }
 
 dependencies {
-compile project(':core')
- //  compile project(':ui')
+    compile project(':core')
+    //  compile project(':ui')
 
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
+
+    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
+        transitive = true;
+    }
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
     testCompile 'junit:junit:4.12'
-
-
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
-        transitive = true;
-    }
 }

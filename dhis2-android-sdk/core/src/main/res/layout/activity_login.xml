@@ -57,9 +57,10 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="10dp"
-                android:adjustViewBounds="true"
+                android:adjustViewBounds="false"
                 android:contentDescription="@string/description"
-                android:src="@drawable/hbs_login" />
+                android:src="@drawable/hbb"
+                />
 
             <org.hisp.dhis.android.sdk.ui.views.FontEditText
                 android:id="@+id/server_url"

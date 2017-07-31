@@ -11,13 +11,13 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.Toast;
-
 import com.example.siva0.mhbs_training.R;
 import com.example.siva0.mhbs_training.dummy.DummyContent;
 import com.example.siva0.mhbs_training.fragments.ItemDetailsFragment;
 import com.example.siva0.mhbs_training.fragments.ItemFragment;
 
 public class CoursesActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
+//    Gets fragment manager method
     FragmentManager fragmentManager = getSupportFragmentManager();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
