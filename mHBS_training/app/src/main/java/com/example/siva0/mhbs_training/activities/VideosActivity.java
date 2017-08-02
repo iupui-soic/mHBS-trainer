@@ -36,7 +36,7 @@ public class VideosActivity extends AppCompatActivity implements ItemFragment.On
 //    Creates a videoView
     VideoView videoview;
 //    Stringifies a videoURL for video stream
-//    ToDo:// Connect URL to db value of instance
+//    ToDo:// Connect URL to db instance
     String VideoURL = "http://www.androidbegin.com/tutorial/AndroidCommercial.3gp";
 
 //    Stringifies value for download stream
