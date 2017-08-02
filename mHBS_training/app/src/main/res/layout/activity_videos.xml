@@ -6,17 +6,11 @@
     android:layout_height="match_parent"
     tools:context="com.example.siva0.mhbs_training.activities.VideosActivity">
 
-    <FrameLayout
-        android:id="@+id/video_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-
-    <VideoView
-        android:id="@+id/videoView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"/>
+<FrameLayout
+    android:id="@+id/video_fragment_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+</FrameLayout>
 
 </android.support.constraint.ConstraintLayout>
 

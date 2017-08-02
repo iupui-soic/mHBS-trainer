@@ -35,12 +35,17 @@ import com.example.siva0.mhbs_training.activities.SearchActivity;
 import com.example.siva0.mhbs_training.activities.SettingsActivity;
 
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
+import org.hisp.dhis.android.sdk.persistence.models.RelationshipType;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     Button btn_Videos, btn_Resources, btn_Courses;
     Switch sw_offlineMode;
     TextView tv_switch_status, dhis_user_name, dhis_user_email;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // TODO: handle user credentials and database from login
 
         btn_Courses = (Button) findViewById(R.id.btn_courses);
         btn_Resources = (Button) findViewById(R.id.btn_resources);
@@ -80,6 +84,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             dhis_user_email.setText(userAccount.getEmail());
         }
         sw_offlineMode.setOnCheckedChangeListener(this);
+
+/*TODO: The following code is an example of connecting and printing data from the database
+        // the same logic needs to be implemented for pdf/videos. See documentation on github
+         // issue #41 under the database section for great detail.
+        Dhis2Application.bus.register(this);
+        // can we load data?
+        boolean canLoad = MetaDataController.isDataLoaded(this);
+
+        if(canLoad){
+            Log.d("canLoad", "Yes we can load data from the database");
+        }else{
+            Log.d("canLoad", "No we cannot load data");
+        }
+        // log the data
+        List<RelationshipType> rt = MetaDataController.getRelationshipTypes();
+        if(rt.isEmpty()){
+            Log.d("isEmpty", "Relationship types is empty");
+        }
+        else{
+            Log.d("isEmpty",rt.get(0).getName());
+        }*/
     }
 
     @Override
@@ -108,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
                 setItemsVisibility(menu, searchItem, false);
+                //TODO: remove after testing
                 Log.d("hi", "not visible");
             }
 
@@ -118,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public boolean onClose() {
                 setItemsVisibility(menu, searchItem, true);
+                //TODO: remove after testing
                 Log.d("hi", "visible");
                 return false;
             }

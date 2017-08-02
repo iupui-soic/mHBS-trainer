@@ -17,12 +17,11 @@ import com.example.siva0.mhbs_training.dummy.DummyContent;
 import com.example.siva0.mhbs_training.fragments.ItemDetailsFragment;
 import com.example.siva0.mhbs_training.fragments.ItemFragment;
 import com.github.barteksc.pdfviewer.PDFView;
+
 public class ResourcesActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener{
     FragmentManager fragmentManager = getSupportFragmentManager();
 
-
-
-//// Create static context of pdf from plugin
+// Create static context of pdf from plugin
     static PDFView pdfView;
 
 // Creates a local instance of download
@@ -31,18 +30,17 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
 
 
 //    TODO:// Check url link against database
-//    Views PDF from online
-//    String pdfStreamLink = "http://www.pdf995.com/samples/pdf.pdf";
-//    Uri pdfStream = Uri.parse(pdfStreamLink);
-
+/*
+   Views PDF from online
+    String pdfStreamLink = "http://www.pdf995.com/samples/pdf.pdf";
+    Uri pdfStream = Uri.parse(pdfStreamLink);
+*/
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_resource);
-
-
 
         // TODO: remove after testing
         Toast.makeText(getApplicationContext(), getIntent().getStringExtra("resourceKey"), Toast.LENGTH_SHORT).show();
@@ -61,17 +59,8 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
                     .beginTransaction()
                     .replace(R.id.res_fragment_container, itemFragment)
                     .commit();
-
         }
-
-
-
     }
-
-
-
-
-
 
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
@@ -89,30 +78,26 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
                 .addToBackStack(null)
                 .commit();
 
-
-
 //        fixme: UNCOMMENT FOR DOWNLOADS__pdfView running through downloads not working properly
-//        String pdfPlace = "android.resource://" + getPackageName() + "/raw/" + pdfName;
-//        Log.d("hi", pdfPlace);
+/*       String pdfPlace = "android.resource://" + getPackageName() + "/raw/" + pdfName;
+        Log.d("hi", pdfPlace);*//*
 
         pdfView.fromAsset(pdfName)
                 .defaultPage(1)
                 .enableSwipe(true)
-                 .load();
+                 .load();*/
 
 //        fixme: UNCOMMENT FOR STREAM__pdfView from uri not passing correctly
 
-//        pdfView.fromUri(pdfStream)
-//                .defaultPage(1)
-//                .enableSwipe(true)
-////                .onLoad(onLoadCompleteListener)
-//                .onPageChange(this)
-//                 .load();
-
-
-
+/*
+        pdfView.fromUri(pdfStream)
+               .defaultPage(1)
+               .enableSwipe(true)
+               .onLoad(onLoadCompleteListener)
+                .onPageChange(this)
+                .load();
+*/
     }
-
 
     // for returning via the menu back button rather than button click
     public boolean onOptionsItemSelected(MenuItem item) {
