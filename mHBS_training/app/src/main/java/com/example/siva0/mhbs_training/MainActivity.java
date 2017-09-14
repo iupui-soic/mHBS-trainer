@@ -4,9 +4,13 @@
 
 package com.example.siva0.mhbs_training;
 
+import android.app.AppOpsManager;
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Process;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,6 +30,9 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 
 import com.example.siva0.mhbs_training.R;
 import com.example.siva0.mhbs_training.activities.DownloadsActivity;
@@ -40,6 +47,14 @@ import org.hisp.dhis.android.sdk.persistence.models.RelationshipType;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
 import java.util.List;
+import java.util.Calendar;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import static android.app.AppOpsManager.MODE_ALLOWED;
+import static android.app.AppOpsManager.OPSTR_GET_USAGE_STATS;
+import static android.os.Process.myUid;
+
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     Button btn_Videos, btn_Resources, btn_Courses;
@@ -163,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -208,8 +222,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 *I think SplashActivity has related information to this
                 */
                 startActivity(launchIntent);
-            }
-            else{
+            } else {
                 // tracker capture not on phone
                 // TODO: hide button in side bar instead of this prompt if tracker not installed
                 shortToastMessage(getString(R.string.trackerCaptureNA));
@@ -221,13 +234,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    public void shortToastMessage(String s)
-    {
+    public void shortToastMessage(String s) {
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
     }
 
     public void startVideos(View view) {
-       callProgramPortal(view.getTag().toString());
+        callProgramPortal(view.getTag().toString());
     }
 
     public void startResources(View view) {
@@ -250,9 +262,54 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     // when each button is clicked, we call the program portal activity and display program options per resource chosen
-    public void callProgramPortal(String resourceType){
+    public void callProgramPortal(String resourceType) {
         Intent intent = new Intent(this, ProgramPortalActivity.class);
-        intent.putExtra(getString(R.string.resourceKey),resourceType);
+        intent.putExtra(getString(R.string.resourceKey), resourceType);
         startActivity(intent);
+    }
+
+    UsageStats usageStats;
+    String PackageName;
+    long TimeInForeground;
+    int minutes, seconds, hours;
+
+    private boolean checkForPermission(Context context) {
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(OPSTR_GET_USAGE_STATS, myUid(), context.getPackageName());
+        return mode == MODE_ALLOWED;
+    }
+
+
+    UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService("usagestats");
+    long time = System.currentTimeMillis();
+
+
+    List<UsageStats> Stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 10, time);
+
+
+    {
+        if (Stats != null)
+
+        {
+            SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
+            for (UsageStats usageStats : Stats) {
+                long TimeInforground = usageStats.getTotalTimeInForeground();
+
+                PackageName = usageStats.getPackageName();
+
+                minutes = (int) ((TimeInforground / (1000 * 60)) % 60);
+
+                seconds = (int) (TimeInforground / 1000) % 60;
+
+                hours = (int) ((TimeInforground / (1000 * 60 * 60)) % 24);
+
+                Log.i("BAC", "PackageName is" + PackageName + "Time is: " + hours + "h" + ":" + minutes + "m" + seconds + "s");
+
+            }
+
+
+        }else{
+        Log.i("use", "usageststs not working");
+    }
     }
 }
