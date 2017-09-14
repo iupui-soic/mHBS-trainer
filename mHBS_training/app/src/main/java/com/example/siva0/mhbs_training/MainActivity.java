@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Process;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -61,10 +62,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Switch sw_offlineMode;
     TextView tv_switch_status, dhis_user_name, dhis_user_email;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        UsageTracker usage = new UsageTracker();
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -268,48 +269,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startActivity(intent);
     }
 
-    UsageStats usageStats;
-    String PackageName;
-    long TimeInForeground;
-    int minutes, seconds, hours;
+    class UsageTracker {
+        UsageStats usageStats;
+        String PackageName;
+        long TimeInForeground;
+        int minutes, seconds, hours;
 
-    private boolean checkForPermission(Context context) {
-        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow(OPSTR_GET_USAGE_STATS, myUid(), context.getPackageName());
-        return mode == MODE_ALLOWED;
-    }
-
-
-    UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService("usagestats");
-    long time = System.currentTimeMillis();
-
-
-    List<UsageStats> Stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 10, time);
-
-
-    {
-        if (Stats != null)
-
-        {
-            SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
-            for (UsageStats usageStats : Stats) {
-                long TimeInforground = usageStats.getTotalTimeInForeground();
-
-                PackageName = usageStats.getPackageName();
-
-                minutes = (int) ((TimeInforground / (1000 * 60)) % 60);
-
-                seconds = (int) (TimeInforground / 1000) % 60;
-
-                hours = (int) ((TimeInforground / (1000 * 60 * 60)) % 24);
-
-                Log.i("BAC", "PackageName is" + PackageName + "Time is: " + hours + "h" + ":" + minutes + "m" + seconds + "s");
-
+        private boolean checkForPermission() {
+            AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            int mode = appOps.checkOpNoThrow(OPSTR_GET_USAGE_STATS, myUid(), getPackageName());
+            if(mode == MODE_ALLOWED){
+                return true;
+            } else {
+                startActivityForResult(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS), 100);
+                return false;
             }
+        }
 
-
-        }else{
-        Log.i("use", "usageststs not working");
-    }
+        public UsageTracker() {
+            checkForPermission();
+            UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List<UsageStats> Stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 10, time);
+            if (Stats != null) {
+                for (UsageStats usageStats : Stats) {
+                    long TimeInforground = usageStats.getTotalTimeInForeground();
+                    PackageName = usageStats.getPackageName();
+                    minutes = (int) ((TimeInforground / (1000 * 60)) % 60);
+                    seconds = (int) (TimeInforground / 1000) % 60;
+                    hours = (int) ((TimeInforground / (1000 * 60 * 60)) % 24);
+                    Log.i("BAC", "PackageName is" + PackageName + "Time is: " + hours + "h" + ":" + minutes + "m" + seconds + "s");
+                }
+            } else {
+                Log.i("use", "usagestats not working");
+            }
+        }
     }
 }
