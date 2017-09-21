@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.siva0.mhbs_training.activities.SearchActivity">
+    tools:context="edu.iupui.soic.biohealth.plhi.mhbs.activities.SearchActivity">
 
     <android.support.v7.widget.SearchView
         android:id="@+id/search"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.siva0.mhbs_training">
+    package="edu.iupui.soic.biohealth.plhi.mhbs">
 
     <uses-sdk tools:overrideLibrary=":core" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
     <application
-        android:name="com.example.siva0.mhbs_training.mhbsTrainingApplication"
+        android:name="edu.iupui.soic.biohealth.plhi.mhbs.mhbsTrainingApplication"
         android:allowBackup="true"
         android:icon="@drawable/hbb"
         android:label="@string/app_name"
@@ -35,7 +35,7 @@
         </activity>
 
         <activity
-            android:name="com.example.siva0.mhbs_training.MainActivity"
+            android:name="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
@@ -58,7 +58,7 @@
         <!-- Specify the next screen after SplashScreen if user already logged in -->
         <meta-data
             android:name="nextClassName"
-            android:value=".com.example.siva0.mhbs_training.MainActivity" />
+            android:value=".edu.iupui.soic.biohealth.plhi.mhbs.MainActivity" />
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="a5caa46009119f5e584e4964c30a922095b1075c" />

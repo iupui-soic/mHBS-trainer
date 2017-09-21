@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.siva0.mhbs_training.activities.ResourcesActivity">
+    tools:context="edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity">
 
     <FrameLayout
         android:id="@+id/res_fragment_container"

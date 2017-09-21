@@ -1,4 +1,4 @@
-package com.example.siva0.mhbs_training;
+package edu.iupui.soic.biohealth.plhi.mhbs;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.siva0.mhbs_training", appContext.getPackageName());
+        assertEquals("edu.iupui.soic.biohealth.plhi.mhbs", appContext.getPackageName());
     }
 }

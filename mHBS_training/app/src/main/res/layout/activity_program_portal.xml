@@ -11,7 +11,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
    android:orientation="vertical"
-    tools:context="com.example.siva0.mhbs_training.activities.ProgramPortalActivity"
+    tools:context="edu.iupui.soic.biohealth.plhi.mhbs.activities.ProgramPortalActivity"
     android:weightSum="1">
 
     <LinearLayout
