@@ -290,12 +290,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             checkForPermission();
             UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
             long time = System.currentTimeMillis();
-            UsageEvents usageEvents = mUsageStatsManager.queryEvents(time - 1000 * 10, time);
-            while(usageEvents.hasNextEvent()) {
-
-                Log.i(">>>>>>>>>", u.getClassName());
-            }
-
             List<UsageStats> Stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 10, time);
             if (Stats != null) {
                 for (UsageStats usageStats : Stats) {
