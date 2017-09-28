@@ -35,8 +35,6 @@ import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 
-import com.appsee.Appsee;
-
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.DownloadsActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.FavoritesActivity;
@@ -67,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Appsee.start(getString(R.string.com_appsee_apikey));
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
