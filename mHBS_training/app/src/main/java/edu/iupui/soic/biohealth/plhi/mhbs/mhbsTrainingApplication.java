@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 
 public class mhbsTrainingApplication extends Dhis2Application {
@@ -22,6 +24,11 @@ public class mhbsTrainingApplication extends Dhis2Application {
         * Consider adding logout functionality
          */
         super.onCreate();
+        final Fabric fabric = new Fabric.Builder(this)
+                .kits(new Crashlytics())
+                .debuggable(true)
+                .build();
+        Fabric.with(fabric);
     }
 
     @Override

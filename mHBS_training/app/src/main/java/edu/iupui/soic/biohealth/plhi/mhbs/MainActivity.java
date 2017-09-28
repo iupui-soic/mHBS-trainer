@@ -35,6 +35,8 @@ import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 
+import com.appsee.Appsee;
+
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.DownloadsActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.FavoritesActivity;
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        UsageTracker usage = new UsageTracker();
+        Appsee.start(getString(R.string.com_appsee_apikey));
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -267,48 +269,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent intent = new Intent(this, ProgramPortalActivity.class);
         intent.putExtra(getString(R.string.resourceKey), resourceType);
         startActivity(intent);
-    }
-
-    class UsageTracker {
-        UsageStats usageStats;
-        String packageName;
-        long timeInForeground;
-        int minutes, seconds, hours;
-
-        private boolean checkForPermission() {
-            AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
-            int mode = appOps.checkOpNoThrow(OPSTR_GET_USAGE_STATS, myUid(), getPackageName());
-            if(mode == MODE_ALLOWED){
-                return true;
-            } else {
-                startActivityForResult(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS), 100);
-                return false;
-            }
-        }
-
-        public UsageTracker() {
-            checkForPermission();
-            UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-            long time = System.currentTimeMillis();
-            UsageEvents usageEvents = mUsageStatsManager.queryEvents(time - 1000 * 10, time);
-            while(usageEvents.hasNextEvent()) {
-
-                Log.i(">>>>>>>>>", u.getClassName());
-            }
-
-            List<UsageStats> Stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 10, time);
-            if (Stats != null) {
-                for (UsageStats usageStats : Stats) {
-                    long TimeInforground = usageStats.getTotalTimeInForeground();
-                    packageName = usageStats.getPackageName();
-                    minutes = (int) ((TimeInforground / (1000 * 60)) % 60);
-                    seconds = (int) (TimeInforground / 1000) % 60;
-                    hours = (int) ((TimeInforground / (1000 * 60 * 60)) % 24);
-                    Log.i(">>>>>>", "PackageName is - " + packageName + "Time is: " + hours + "h" + ":" + minutes + "m" + seconds + "s");
-                }
-            } else {
-                Log.i("use", "usagestats not working");
-            }
-        }
     }
 }
