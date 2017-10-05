@@ -55,17 +55,6 @@
         <activity android:name=".activities.DownloadsActivity" />
         <activity android:name=".activities.InfoActivity" />
         <activity android:name=".activities.FavoritesActivity"/>
-        <service
-            android:label="ActivityTracking"
-            android:name=".activities.WindowChangeDetectingService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibilityservice"/>
-        </service>
 
         <!-- Specify the next screen after SplashScreen if user already logged in -->
         <meta-data
