@@ -77,6 +77,8 @@ public abstract class AbsHomeActivity extends BaseActivity
             "com.eceb";
     private static final String APPS_ECSB_PACKAGE =
             "com.ecsb";
+    private static final String APPS_MHBS_TRAINING =
+            "edu.iupui.soic.biohealth.plhi.mhbs";
 
     private static final int DEFAULT_ORDER_IN_CATEGORY = 100;
 
@@ -154,6 +156,8 @@ public abstract class AbsHomeActivity extends BaseActivity
             isSelected = openApp(APPS_ECEB_PACKAGE);
         }else if (menuItemId == R.id.drawer_item_ECSB) {
             isSelected = openApp(APPS_ECSB_PACKAGE);
+        }else if (menuItemId == R.id.drawer_item_mHBSTraining) {
+            isSelected = openApp(APPS_MHBS_TRAINING);
         }else if (menuItemId == R.id.drawer_item_profile) {
             attachFragmentDelayed(getProfileFragment());
             isSelected = true;

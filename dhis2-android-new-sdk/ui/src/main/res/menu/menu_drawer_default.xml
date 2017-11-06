@@ -80,6 +80,10 @@
                         android:id="@+id/drawer_item_ECSB"
                         android:orderInCategory="200"
                         android:title="Essential Care for Small Babies"/>
+                    <item
+                        android:id="@+id/drawer_item_mHBSTraining"
+                        android:orderInCategory="200"
+                        android:title="mHBS Training Application"/>
                 </group>
             </menu>
         </item>

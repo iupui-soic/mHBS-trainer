@@ -73,6 +73,8 @@ public class MainActivity extends AbsHomeActivity {
             "com.eceb";
     private static final String APPS_ECSB_PACKAGE =
             "com.ecsb";
+    private static final String APPS_MHBS_TRAINING =
+            "edu.iupui.soic.biohealth.plhi.mhbs";
 
 
     @Override
@@ -209,6 +211,8 @@ public class MainActivity extends AbsHomeActivity {
             isSelected = openApp(APPS_ECEB_PACKAGE);
         } else if (menuItemId == org.hisp.dhis.client.sdk.ui.R.id.drawer_item_ECSB) {
             isSelected = openApp(APPS_ECSB_PACKAGE);
+        }else if (menuItemId == org.hisp.dhis.client.sdk.ui.R.id.drawer_item_mHBSTraining) {
+            isSelected = openApp(APPS_MHBS_TRAINING);
         }
         /*else if (menuItemId == R.id.drawer_item_help) {
             attachFragment(getHelpFragment());
