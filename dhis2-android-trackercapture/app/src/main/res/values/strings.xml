@@ -30,7 +30,7 @@
 
 <resources>
 
-    <string name="app_name">mHBS (Powered by DHIS2)</string>
+    <string name="app_name">mHBS Tracker (Powered by DHIS2)</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="register_new_event">Register new event</string>
@@ -79,7 +79,7 @@
     <string name="out_of_generated_ids">You are out of automatically generated IDs. Please synchronise to download new ones</string>
     <string name="generic_error">Error. Please retry</string>
     <string name="re_open">Re-open</string>
-    <string name="app_shortname">mHBS</string>
+    <string name="app_shortname">mHBS Tracker</string>
 
 
 </resources>
