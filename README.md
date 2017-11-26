@@ -22,6 +22,9 @@ This is a DHIS2 tracker capture android application which is customized for mHBS
 
 **Link for the project building screen share video:**  https://youtu.be/8sJVdGz_mJw
 
+**Link to updated mHBS tracker capture**
+We have migrated tracker capture to the following repository:
+* https://github.com/iupui-soic/dhis2-android-trackercapture
 
 **Test the application with following Credentials:**  
 - Server: http://gw174.iu.xsede.org/
