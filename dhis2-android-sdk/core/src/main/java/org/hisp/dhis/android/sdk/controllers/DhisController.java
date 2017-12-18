@@ -47,6 +47,23 @@ import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 import org.hisp.dhis.android.sdk.persistence.preferences.DateTimeManager;
 import org.hisp.dhis.android.sdk.persistence.preferences.LastUpdatedManager;
+import org.hisp.dhis.android.sdk.synchronization.data.enrollment.EnrollmentLocalDataSource;
+import org.hisp.dhis.android.sdk.synchronization.data.enrollment.EnrollmentRemoteDataSource;
+import org.hisp.dhis.android.sdk.synchronization.data.enrollment.EnrollmentRepository;
+import org.hisp.dhis.android.sdk.synchronization.data.event.EventLocalDataSource;
+import org.hisp.dhis.android.sdk.synchronization.data.event.EventRemoteDataSource;
+import org.hisp.dhis.android.sdk.synchronization.data.event.EventRepository;
+import org.hisp.dhis.android.sdk.synchronization.data.faileditem.FailedItemRepository;
+import org.hisp.dhis.android.sdk.synchronization.data.trackedentityinstance
+        .TrackedEntityInstanceLocalDataSource;
+import org.hisp.dhis.android.sdk.synchronization.data.trackedentityinstance.TrackedEntityInstanceRemoteDataSource;
+import org.hisp.dhis.android.sdk.synchronization.data.trackedentityinstance
+        .TrackedEntityInstanceRepository;
+import org.hisp.dhis.android.sdk.synchronization.domain.app.SyncAppUseCase;
+import org.hisp.dhis.android.sdk.synchronization.domain.enrollment.IEnrollmentRepository;
+import org.hisp.dhis.android.sdk.synchronization.domain.trackedentityinstance
+        .ITrackedEntityInstanceRepository;
+import org.hisp.dhis.android.sdk.synchronization.domain.trackedentityinstance.SyncTrackedEntityInstanceUseCase;
 import org.hisp.dhis.android.sdk.utils.SyncDateWrapper;
 import org.hisp.dhis.client.sdk.ui.AppPreferencesImpl;
 
@@ -102,35 +119,52 @@ public final class DhisController {
         return dhisApi;
     }
 
+    static void syncRemotelyDeletedData(Context context) throws APIException, IllegalStateException {
+        LoadingController.syncRemotelyDeletedData(context, getInstance().getDhisApi());
+    }
+
     /**
      * Initiates synchronization with server. Updates MetaData, sends locally saved data, loads
      * new data values from server.
      *
      * @param context
      */
-    static void synchronize(final Context context)
+    static void synchronize(final Context context, SyncStrategy syncStrategy)
             throws APIException, IllegalStateException {
         Dhis2Application.getEventBus().post(new UiEvent(UiEvent.UiEventType.SYNCING_START));
         sendData();
-        loadData(context);
+        loadData(context, syncStrategy);
         getInstance().getSyncDateWrapper().setLastSyncedNow();
     }
 
     public static void forceSynchronize(Context context) throws APIException, IllegalStateException {
         Dhis2Application.getEventBus().post(new UiEvent(UiEvent.UiEventType.SYNCING_START));
         sendData();
-        LoadingController.loadMetaData(context, getInstance().getDhisApi(), true);
-        LoadingController.loadDataValues(context, getInstance().getDhisApi());
+        LoadingController.loadMetaData(context, SyncStrategy.DOWNLOAD_ALL, getInstance().getDhisApi());
+        LoadingController.loadDataValues(context, SyncStrategy.DOWNLOAD_ALL, getInstance().getDhisApi());
         getInstance().getSyncDateWrapper().setLastSyncedNow();
     }
 
-    static void loadData(Context context) throws APIException, IllegalStateException {
-        LoadingController.loadMetaData(context, getInstance().getDhisApi(), false);
-        LoadingController.loadDataValues(context, getInstance().getDhisApi());
+    static void loadData(Context context, SyncStrategy syncStrategy)  throws APIException, IllegalStateException {
+        LoadingController.loadMetaData(context, syncStrategy, getInstance().getDhisApi());
+        LoadingController.loadDataValues(context, syncStrategy, getInstance().getDhisApi());
     }
 
     static void sendData() throws APIException, IllegalStateException {
-        TrackerController.sendLocalData(getInstance().getDhisApi());
+        EnrollmentLocalDataSource enrollmentLocalDataSource = new EnrollmentLocalDataSource();
+        EnrollmentRemoteDataSource enrollmentRemoteDataSource = new EnrollmentRemoteDataSource(DhisController.getInstance().getDhisApi());
+        IEnrollmentRepository enrollmentRepository = new EnrollmentRepository(enrollmentLocalDataSource, enrollmentRemoteDataSource);
+
+        EventLocalDataSource mLocalDataSource = new EventLocalDataSource();
+        EventRemoteDataSource mRemoteDataSource = new EventRemoteDataSource(DhisController.getInstance().getDhisApi());
+        EventRepository eventRepository = new EventRepository(mLocalDataSource, mRemoteDataSource);
+        FailedItemRepository failedItemRepository = new FailedItemRepository();
+
+        TrackedEntityInstanceLocalDataSource trackedEntityInstanceLocalDataSource = new TrackedEntityInstanceLocalDataSource();
+        TrackedEntityInstanceRemoteDataSource trackedEntityInstanceRemoteDataSource = new TrackedEntityInstanceRemoteDataSource(DhisController.getInstance().getDhisApi());
+        ITrackedEntityInstanceRepository trackedEntityInstanceRepository = new TrackedEntityInstanceRepository(trackedEntityInstanceLocalDataSource, trackedEntityInstanceRemoteDataSource);
+        SyncAppUseCase syncAppUseCase = new SyncAppUseCase(trackedEntityInstanceRepository, enrollmentRepository, eventRepository, failedItemRepository);
+        syncAppUseCase.execute();
     }
 
     static UserAccount logInUser(HttpUrl serverUrl, Credentials credentials) throws APIException {

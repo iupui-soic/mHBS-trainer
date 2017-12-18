@@ -47,7 +47,7 @@
         <LinearLayout
             android:id="@+id/login_views_container"
             android:layout_width="390dp"
-            android:layout_height="390dp"
+            android:layout_height="340dp"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -57,10 +57,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="10dp"
-                android:adjustViewBounds="false"
+                android:adjustViewBounds="true"
                 android:contentDescription="@string/description"
-                android:src="@drawable/hbb"
-                />
+                android:src="@drawable/dhis2_logo" />
 
             <org.hisp.dhis.android.sdk.ui.views.FontEditText
                 android:id="@+id/server_url"

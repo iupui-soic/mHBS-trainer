@@ -29,6 +29,8 @@
 
 package org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry;
 
+import static android.text.TextUtils.isEmpty;
+
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.support.v4.app.FragmentManager;
@@ -41,19 +43,15 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.hisp.dhis.android.sdk.R;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.events.OnDetailedInfoButtonClick;
-import org.hisp.dhis.android.sdk.ui.fragments.dataentry.RowValueChangedEvent;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue;
 import org.hisp.dhis.android.sdk.persistence.models.Event;
+import org.hisp.dhis.android.sdk.ui.fragments.dataentry.RowValueChangedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
-import static android.text.TextUtils.isEmpty;
-
-public class EventDatePickerRow extends Row {
-    private static final String EMPTY_FIELD = "";
-    private static final String DATE_FORMAT = "YYYY-MM-dd";
+public class EventDatePickerRow extends AbsDatePickerRow {
+    private static final String TAG = "EventDatePickerRow";
     private final Event mEvent;
     private final boolean mAllowDatesInFuture;
 
@@ -130,7 +128,8 @@ public class EventDatePickerRow extends Row {
 //            this.detailedInfoButton = detailedInfoButton;
 
             dateSetListener = new DateSetListener(pickerInvoker);
-            invokerListener = new OnEditTextClickListener(context, dateSetListener, allowDatesInFuture);
+            invokerListener = new OnEditTextClickListener(context, dateSetListener,
+                    allowDatesInFuture, pickerInvoker);
             clearButtonListener = new ClearButtonListener(pickerInvoker);
 
             clearButton.setOnClickListener(clearButtonListener);
@@ -152,30 +151,6 @@ public class EventDatePickerRow extends Row {
             pickerInvoker.setText(eventDate);
         }
 
-    }
-
-    private static class OnEditTextClickListener implements OnClickListener {
-        private final Context context;
-        private final DateSetListener listener;
-        private final boolean allowDatesInFuture;
-
-        public OnEditTextClickListener(Context context,
-                                       DateSetListener listener, boolean allowDatesInFuture) {
-            this.context = context;
-            this.listener = listener;
-            this.allowDatesInFuture = allowDatesInFuture;
-        }
-
-        @Override
-        public void onClick(View view) {
-            LocalDate currentDate = new LocalDate();
-            DatePickerDialog picker = new DatePickerDialog(context, listener,
-                    currentDate.getYear(), currentDate.getMonthOfYear() - 1, currentDate.getDayOfMonth());
-            if(!allowDatesInFuture) {
-                picker.getDatePicker().setMaxDate(DateTime.now().getMillis());
-            }
-            picker.show();
-        }
     }
 
     private static class ClearButtonListener implements OnClickListener {
@@ -227,7 +202,7 @@ public class EventDatePickerRow extends Row {
             String newValue = date.toString(DATE_FORMAT);
             textView.setText(newValue);
 
-            if (!newValue.equals(value.getValue())) {
+            if (event.getEventDate() == null || !newValue.equals(value.getValue())) {
                 value.setValue(newValue);
                 event.setEventDate(value.getValue());
                 Dhis2Application.getEventBus().post(new RowValueChangedEvent(value, DataEntryRowTypes.EVENT_DATE.toString()));

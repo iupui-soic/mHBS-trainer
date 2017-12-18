@@ -40,8 +40,6 @@ import com.raizlabs.android.dbflow.sql.language.Update;
 import org.hisp.dhis.android.sdk.controllers.DhisController;
 import org.hisp.dhis.android.sdk.network.APIException;
 import org.hisp.dhis.android.sdk.network.DhisApi;
-import org.hisp.dhis.android.sdk.network.response.ApiResponse2;
-import org.hisp.dhis.android.sdk.network.response.ImportSummary2;
 import org.hisp.dhis.android.sdk.persistence.models.ApiResponse;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue$Table;
@@ -92,7 +90,9 @@ final class TrackerDataSender {
             }
         }
         List<Event> events = new Select().from(Event.class).where
-                (Condition.column(Event$Table.FROMSERVER).is(false)).queryList();
+                (Condition.column(Event$Table.FROMSERVER).is(false))
+                .and(Condition.column(Event$Table.STATUS).isNot(Event.STATUS_DELETED))
+                .queryList();
 
         List<Event> eventsWithFailedThreshold = new Select().from(Event.class)
                 .join(FailedItem.class, Join.JoinType.LEFT)
@@ -100,6 +100,7 @@ final class TrackerDataSender {
                 .where(Condition.column(FailedItem$Table.ITEMTYPE).eq(FailedItem.EVENT))
                 .and(Condition.column(FailedItem$Table.FAILCOUNT).greaterThan(3))
                 .and(Condition.column(Event$Table.FROMSERVER).is(false))
+                .and(Condition.column(Event$Table.STATUS).isNot(Event.STATUS_DELETED))
                 .queryList();
 
         List<Event> eventsToPost = new ArrayList<>();
@@ -209,7 +210,11 @@ final class TrackerDataSender {
             return;
         }
 
-        Enrollment enrollment = TrackerController.getEnrollment(event.getEnrollment());
+        Enrollment cancelledEnrollment = TrackerController.getCancelledEnrollment(event.getEnrollment());
+        if (cancelledEnrollment != null && !cancelledEnrollment.isFromServer()) { // the cancelled enrollment should be pushed before.
+            sendEnrollmentChanges(dhisApi, cancelledEnrollment, false);
+        }
+        Enrollment enrollment = TrackerController.getNotCancelledEnrollment(event.getEnrollment());
         if (enrollment != null && !enrollment.isFromServer()) { // if enrollment is unsent, send it before events
             sendEnrollmentChanges(dhisApi, enrollment, false);
         }
@@ -264,20 +269,6 @@ final class TrackerDataSender {
         }
     }
 
-    private static void updateEventReferences(long localId, String newReference) {
-        new Update(DataValue.class).set(Condition.column
-                (DataValue$Table.EVENT).is
-                (newReference)).where(Condition.column(DataValue$Table.LOCALEVENTID).is(localId)).async().execute();
-
-        new Update(Event.class).set(Condition.column
-                (Event$Table.EVENT).is
-                (newReference), Condition.column(Event$Table.FROMSERVER).
-                is(true)).where(Condition.column(Event$Table.LOCALID).is(localId)).async().execute();
-        Event event = new Event();
-        event.save();
-        event.delete();//for triggering modelchangelistener
-    }
-
     private static void UpdateEventTimestamp(Event event, DhisApi dhisApi) throws APIException {
         try {
             final Map<String, String> QUERY_PARAMS = new HashMap<>();
@@ -291,63 +282,6 @@ final class TrackerDataSender {
             event.save();
         } catch (APIException apiException) {
             NetworkUtils.handleApiException(apiException);
-        }
-    }
-
-    static void postEnrollmentBatch(DhisApi dhisApi, List<Enrollment> enrollments) throws APIException {
-        Map<String, Enrollment> enrollmentMap = new HashMap<>();
-        List<ImportSummary2> importSummaries = null;
-
-        ApiResponse2 apiResponse = null;
-        try {
-            Map<String, List<Enrollment>> map = new HashMap<>();
-            map.put("enrollments", enrollments);
-            apiResponse = dhisApi.postEnrollments(map);
-
-            importSummaries = apiResponse.getImportSummaries();
-
-            for (Enrollment enrollment : enrollments) {
-                enrollmentMap.put(enrollment.getUid(), enrollment);
-            }
-
-            // check if all items were synced successfully
-            if (importSummaries != null) {
-                SystemInfo systemInfo = dhisApi.getSystemInfo();
-                DateTime enrollmentUploadTime = systemInfo.getServerDate();
-                for (ImportSummary2 importSummary : importSummaries) {
-                    Enrollment enrollment = enrollmentMap.get(importSummary.getReference());
-                    System.out.println("IMPORT SUMMARY: " + importSummary.getDescription());
-                    if (ImportSummary2.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                            ImportSummary2.Status.OK.equals(importSummary.getStatus())) {
-                        enrollment.setFromServer(true);
-                        enrollment.setCreated(enrollmentUploadTime.toString());
-                        enrollment.setLastUpdated(enrollmentUploadTime.toString());
-                        enrollment.save();
-                        clearFailedItem(FailedItem.ENROLLMENT, enrollment.getLocalId());
-                        //UpdateEnrollmentTimestamp(enrollment, dhisApi);
-                    }
-                }
-            }
-
-        } catch (APIException apiException) {
-            //batch sending failed. Trying to re-send one by one
-            sendEnrollmentChanges(dhisApi, enrollments, false);
-
-        }
-    }
-
-    static void sendEnrollmentChanges(DhisApi dhisApi, boolean sendEvents) throws APIException {
-        List<Enrollment> enrollments = new Select().from(Enrollment.class).where(Condition.column(Enrollment$Table.FROMSERVER).is(false)).queryList();
-        if (dhisApi == null) {
-            dhisApi = DhisController.getInstance().getDhisApi();
-            if (dhisApi == null) {
-                return;
-            }
-        }
-        if (enrollments.size() <= 1) {
-            sendEnrollmentChanges(dhisApi, enrollments, sendEvents);
-        } else if (enrollments.size() > 1) {
-            postEnrollmentBatch(dhisApi, enrollments);
         }
     }
 
@@ -464,7 +398,9 @@ final class TrackerDataSender {
         Log.d(CLASS_TAG, "updating enrollment references");
         new Update(Event.class).set(Condition.column
                 (Event$Table.ENROLLMENT).is
-                (newReference)).where(Condition.column(Event$Table.LOCALENROLLMENTID).is(localId)).async().execute();
+                (newReference)).where(
+                Condition.column(Event$Table.LOCALENROLLMENTID).is(localId)).and(
+                Condition.column(Event$Table.STATUS).isNot(Event.STATUS_DELETED)).async().execute();
 
         new Update(Enrollment.class).set(Condition.column
                 (Enrollment$Table.ENROLLMENT).is
@@ -526,6 +462,86 @@ final class TrackerDataSender {
                 return;
             }
         }
+        Map<String, TrackedEntityInstance> relatedTeis = new HashMap<String,
+                TrackedEntityInstance>();
+        SystemInfo systemInfo = DhisController.getInstance().getDhisApi().getSystemInfo();
+        DateTime serverDate = systemInfo.getServerDate();
+        relatedTeis = getRecursiveRelationatedTeis(trackedEntityInstance, relatedTeis);
+        if(relatedTeis.size()>1) {
+            pushTeiWithoutRelationFirst(relatedTeis, serverDate);
+            trackedEntityInstance.setCreated(serverDate.toString());
+            trackedEntityInstance.setCreatedAtClient(serverDate.toString());
+            trackedEntityInstance.setFromServer(true);
+            sendTrackedEntityInstance(dhisApi, trackedEntityInstance, sendEnrollments);
+        }else {
+            sendTrackedEntityInstance(dhisApi, trackedEntityInstance, sendEnrollments);
+        }
+    }
+
+
+    private static Map<String, TrackedEntityInstance> getRecursiveRelationatedTeis(
+            TrackedEntityInstance trackedEntityInstance,
+            Map<String, TrackedEntityInstance> relatedTeiList) {
+        if (trackedEntityInstance.getRelationships() != null
+                && trackedEntityInstance.getRelationships().size() > 0) {
+            for (Relationship relationship : trackedEntityInstance.getRelationships()) {
+                if (relationship.getTrackedEntityInstanceB().equals(
+                        trackedEntityInstance.getUid())) {
+                    String target = relationship.getTrackedEntityInstanceA();
+                    relatedTeiList = addRelatedNotPushedTeis(relatedTeiList, target);
+                } else if (relationship.getTrackedEntityInstanceA().equals(
+                        trackedEntityInstance.getUid())) {
+                    String target = relationship.getTrackedEntityInstanceB();
+                    relatedTeiList = addRelatedNotPushedTeis(relatedTeiList, target);
+                }
+            }
+        }
+        return relatedTeiList;
+    }
+
+    private static Map<String, TrackedEntityInstance> addRelatedNotPushedTeis(
+            Map<String, TrackedEntityInstance> relatedTeiList, String target) {
+        TrackedEntityInstance relatedTrackedEntityInstance =
+                TrackerController.getTrackedEntityInstance(target);
+        if (!relatedTrackedEntityInstance.isFromServer()
+                && relatedTrackedEntityInstance.getCreated() == null) {
+            if (!relatedTeiList.containsKey(relatedTrackedEntityInstance.getUid())) {
+                relatedTeiList.put(relatedTrackedEntityInstance.getUid(),
+                        relatedTrackedEntityInstance);
+                relatedTeiList = getRecursiveRelationatedTeis(relatedTrackedEntityInstance,
+                        relatedTeiList);
+            }
+        }
+        return relatedTeiList;
+    }
+
+    private static void pushTeiWithoutRelationFirst(
+            Map<String, TrackedEntityInstance> trackedEntityInstances, DateTime serverDate) {
+        List<TrackedEntityInstance> trackerEntityInstancesWithRelations = new ArrayList<>();
+        if (trackedEntityInstances.size() > 0) {
+            for (TrackedEntityInstance trackedEntityInstance : trackedEntityInstances.values()) {
+                trackerEntityInstancesWithRelations.add(trackedEntityInstance);
+                //set relationships as null
+                trackedEntityInstance.setRelationships(new ArrayList<Relationship>());
+                TrackerController.sendTrackedEntityInstanceChanges(
+                        DhisController.getInstance().getDhisApi(), trackedEntityInstance, false);
+            }
+            for (TrackedEntityInstance trackedEntityInstance :
+                    trackerEntityInstancesWithRelations) {
+                if (trackedEntityInstance.getRelationships().size() > 0) {
+                    trackedEntityInstance.setFromServer(false);
+                    TrackerController.sendTrackedEntityInstanceChanges(
+                            DhisController.getInstance().getDhisApi(), trackedEntityInstance, true);
+                    trackedEntityInstance.setCreated(serverDate.toString());
+                    trackedEntityInstance.setLastUpdated(serverDate.toString());
+                    trackedEntityInstance.save();
+                }
+            }
+        }
+    }
+
+    private static void sendTrackedEntityInstance(DhisApi dhisApi,
+            TrackedEntityInstance trackedEntityInstance, boolean sendEnrollments) {
         boolean success;
         if (trackedEntityInstance.getCreated() == null) {
             success = postTrackedEntityInstance(trackedEntityInstance, dhisApi);
@@ -540,9 +556,9 @@ final class TrackerDataSender {
 
     static void postTrackedEntityInstanceBatch(DhisApi dhisApi, List<TrackedEntityInstance> trackedEntityInstances) throws APIException {
         Map<String, TrackedEntityInstance> trackedEntityInstanceMap = new HashMap<>();
-        List<ImportSummary2> importSummaries = null;
+        List<ImportSummary> importSummaries = null;
 
-        ApiResponse2 apiResponse = null;
+        ApiResponse apiResponse = null;
         try {
             Map<String, List<TrackedEntityInstance>> map = new HashMap<>();
             map.put("trackedEntityInstances", trackedEntityInstances);
@@ -558,11 +574,10 @@ final class TrackerDataSender {
             if (importSummaries != null) {
                 SystemInfo systemInfo = dhisApi.getSystemInfo();
                 DateTime eventUploadTime = systemInfo.getServerDate();
-                for (ImportSummary2 importSummary : importSummaries) {
+                for (ImportSummary importSummary : importSummaries) {
                     TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceMap.get(importSummary.getReference());
                     System.out.println("IMPORT SUMMARY: " + importSummary.getDescription());
-                    if (ImportSummary2.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                            ImportSummary2.Status.OK.equals(importSummary.getStatus())) {
+                    if (importSummary.isSuccessOrOK()) {
                         trackedEntityInstance.setFromServer(true);
                         trackedEntityInstance.setCreated(eventUploadTime.toString());
                         trackedEntityInstance.setLastUpdated(eventUploadTime.toString());
@@ -803,4 +818,35 @@ final class TrackerDataSender {
         }
         return null;
     }
+
+    public static void deleteLocallyDeletedEvents(DhisApi dhisApi) {
+        List<Event> events = TrackerController.getDeletedEvents();
+        Log.d(CLASS_TAG, "got this many events to be removed:" + events.size());
+        for (Event event : events) {
+            deleteEvent(dhisApi, event);
+        }
+    }
+
+
+    static void deleteEvent(DhisApi dhisApi, Event event) throws APIException {
+        if (event == null) {
+            return;
+        }
+        try {
+            Response response = dhisApi.deleteEvent(event.getUid());
+            if (response.getStatus() == 200) {
+                ImportSummary importSummary = getImportSummary(response);
+                handleImportSummary(importSummary, FailedItem.EVENT, event.getLocalId());
+                if (ImportSummary.SUCCESS.equals(importSummary.getStatus()) ||
+                        ImportSummary.OK.equals(importSummary.getStatus())) {
+                    // delete locally event
+                    event.delete();
+                    clearFailedItem(FailedItem.EVENT, event.getLocalId());
+                }
+            }
+        } catch (APIException apiException) {
+            NetworkUtils.handleEventSendException(apiException, event);
+        }
+    }
+
 }

@@ -135,4 +135,25 @@ public class ImportSummary extends BaseModel {
     public int getId() {
         return id;
     }
+
+    public boolean isSuccessOrOK() {
+        //When a batch list have conflicts, the response is success but the api response should be error.
+        return (ImportSummary.Status.SUCCESS.equals(status) || ImportSummary.Status.OK.equals(status))
+                || ((getStatus().equals(SUCCESS) && ((getConflicts()==null) || getConflicts().size()==0)) || getStatus().equals(OK));
+    }
+
+    public boolean isError() {
+        //When a batch list have conflicts, the response is success but the api response should be error.
+        return ImportSummary.Status.ERROR.equals(status) || ImportSummary.ERROR.equals(getStatus()) || (getConflicts()!=null && getConflicts().size()>0);
+    }
+
+    public boolean isConflictOnBatchPush() {
+        //When a batch list have conflicts, the response is success but the api response should be error.
+        return (getStatus().equals(SUCCESS) && ((getConflicts()!=null) && getConflicts().size()>0));
+    }
+
+    public enum Status {
+        SUCCESS, OK, ERROR
+    }
+
 }

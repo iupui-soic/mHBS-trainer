@@ -42,6 +42,7 @@ import org.hisp.dhis.android.sdk.persistence.models.ProgramStage;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramStageDataElement;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
+import org.hisp.dhis.android.sdk.utils.api.ValueType;
 import org.hisp.dhis.android.sdk.utils.support.DateUtils;
 import org.hisp.dhis.android.sdk.utils.support.ExpressionUtils;
 import org.hisp.dhis.android.sdk.utils.support.MathUtils;
@@ -83,12 +84,7 @@ public class ProgramIndicatorService {
         
         Double value = getValue(programInstance, null, programIndicator);
 
-        if (value != null && !Double.isNaN(value)) {
-            value = MathUtils.getRounded(value, 2);
-            return String.valueOf(value);
-        }
-
-        return null;
+        return TextUtils.fromDouble(value);
     }
 
     /**
@@ -105,12 +101,7 @@ public class ProgramIndicatorService {
         
         Double value = getValue(null, event, programIndicator);
 
-        if (value != null && !Double.isNaN(value)) {
-            value = MathUtils.getRounded(value, 2);
-            return String.valueOf(value);
-        }
-
-        return null;
+        return TextUtils.fromDouble(value);
     }
 
     /**
@@ -183,6 +174,8 @@ public class ProgramIndicatorService {
                     matcher.appendReplacement(description, "Enrollment date");
                 } else if (ProgramIndicator.INCIDENT_DATE.equals(uid)) {
                     matcher.appendReplacement(description, "Incident date");
+                } else if (ProgramIndicator.EVENT_DATE.equals(uid)) {
+                        matcher.appendReplacement(description, "Event date");
                 } else if (ProgramIndicator.VALUE_COUNT.equals(uid)) {
                     matcher.appendReplacement(description, "Value count");
                 }
@@ -326,12 +319,12 @@ public class ProgramIndicatorService {
     // -------------------------------------------------------------------------
 
     /**
-     * @param programInstance can be null if event is not null in case single event without reg
+     * @param enrollmentProgramInstance can be null if event is not null in case single event without reg
      * @param event           can be null if programInstance is not null
      * @param indicator
      * @return
      */
-    private static Double getValue(Enrollment programInstance, Event event, ProgramIndicator indicator) {
+    private static Double getValue(Enrollment enrollmentProgramInstance, Event event, ProgramIndicator indicator) {
         StringBuffer buffer = new StringBuffer();
 
         String expression = indicator.getExpression();
@@ -340,7 +333,7 @@ public class ProgramIndicatorService {
 
         int valueCount = 0;
         int zeroPosValueCount = 0;
-        Event programStageInstance = null;
+        Event eventProgramStageInstance = null;
         Map<String, DataValue> dataElementToDataValues = new HashMap<>();
 
         while (matcher.find()) {
@@ -352,21 +345,24 @@ public class ProgramIndicatorService {
                 String programStageUid = uid;
 
                 if (programStageUid != null && de != null) {
-                    if (programInstance == null) { //in case single event without reg
-                        if(programStageInstance == null) {
-                            programStageInstance = event;
-                            if (programStageInstance.getDataValues() != null) {
-                                for (DataValue dataValue : programStageInstance.getDataValues()) {
+                    if (enrollmentProgramInstance == null) { //in case single event without reg
+                        if(eventProgramStageInstance == null) {
+                            eventProgramStageInstance = event;
+                            if (eventProgramStageInstance.getDataValues() != null) {
+                                for (DataValue dataValue : eventProgramStageInstance.getDataValues()) {
                                     dataElementToDataValues.put(dataValue.getDataElement(), dataValue);
                                 }
                             }
                         }
                     } else {
-                        if (programStageInstance == null || !programStageInstance.getUid().equals(programStageUid)) {
-                            programStageInstance = TrackerController.getEvent(programInstance.getLocalId(), programStageUid);
+                        if (eventProgramStageInstance == null || !eventProgramStageInstance.getUid().equals(programStageUid)) {
+                            eventProgramStageInstance = TrackerController.getEvent(enrollmentProgramInstance.getLocalId(), programStageUid);
+                            if(eventProgramStageInstance == null){
+                                continue;
+                            }
                             dataElementToDataValues.clear();
-                            if (programStageInstance.getDataValues() != null) {
-                                for(DataValue dataValue: programStageInstance.getDataValues()) {
+                            if (eventProgramStageInstance.getDataValues() != null) {
+                                for(DataValue dataValue: eventProgramStageInstance.getDataValues()) {
                                     dataElementToDataValues.put(dataValue.getDataElement(), dataValue);
                                 }
                             }
@@ -374,16 +370,23 @@ public class ProgramIndicatorService {
                     }
 
                     DataValue dataValue;
-                    if (programStageInstance.getDataValues() == null) {
+                    if (eventProgramStageInstance.getDataValues() == null) {
                         continue;
                     }
                     dataValue = dataElementToDataValues.get(de);
 
                     String value;
                     if (dataValue == null || dataValue.getValue() == null || dataValue.getValue().isEmpty()) {
-                        value = NULL_REPLACEMENT;
+                        value = "0";
                     } else {
-                        if(dataValue.getValue().endsWith(".")) {
+                        if(MetaDataController.getDataElement(dataValue.getDataElement()).getValueType()== ValueType.BOOLEAN){
+                            if(dataValue.getValue().equals("true")){
+                                value="1";
+                            }else{
+                                value="0";
+                            }
+                        }
+                        else if(dataValue.getValue().endsWith(".")) {
                             value = (dataValue.getValue() + "0");
                         }
                         else if(!(dataValue.getValue().contains("."))) {
@@ -398,16 +401,16 @@ public class ProgramIndicatorService {
                         zeroPosValueCount = isZeroOrPositive(value) ? (zeroPosValueCount + 1) : zeroPosValueCount;
                     }
 
-                    matcher.appendReplacement(buffer, value);
+                    matcher.appendReplacement(buffer, TextUtils.quote(value));
                 } else {
                     continue;
                 }
             } else if (ProgramIndicator.KEY_ATTRIBUTE.equals(key)) {
-                if (programInstance != null) { //in case single event without reg
+                if (enrollmentProgramInstance != null) { //in case single event without reg
 
                     if (uid != null) {
                         TrackedEntityAttributeValue attributeValue = TrackerController.getTrackedEntityAttributeValue(
-                                uid, programInstance.getLocalTrackedEntityInstanceId());
+                                uid, enrollmentProgramInstance.getLocalTrackedEntityInstanceId());
                         String value;
                         if (attributeValue == null || attributeValue.getValue() == null || attributeValue.getValue().isEmpty()) {
                             value = NULL_REPLACEMENT;
@@ -417,7 +420,7 @@ public class ProgramIndicatorService {
                             valueCount++;
                             zeroPosValueCount = isZeroOrPositive(value) ? (zeroPosValueCount + 1) : zeroPosValueCount;
                         }
-                        matcher.appendReplacement(buffer, value);
+                        matcher.appendReplacement(buffer, TextUtils.quote(value));
                     } else {
                         continue;
                     }
@@ -431,20 +434,22 @@ public class ProgramIndicatorService {
                     continue;
                 }
             } else if (ProgramIndicator.KEY_PROGRAM_VARIABLE.equals(key)) {
-                if (programInstance != null) { //in case of single event without reg
+                if (enrollmentProgramInstance != null) { //in case of single event without reg
                     Date currentDate = new Date();
                     Date date = null;
 
                     if (ProgramIndicator.ENROLLMENT_DATE.equals(uid)) {
-                        date = DateUtils.getMediumDate(programInstance.getEnrollmentDate());
+                        date = DateUtils.parseDate(enrollmentProgramInstance.getEnrollmentDate());
                     } else if (ProgramIndicator.INCIDENT_DATE.equals(uid)) {
-                        date = DateUtils.getMediumDate(programInstance.getIncidentDate());
+                        date = DateUtils.parseDate(enrollmentProgramInstance.getIncidentDate());
                     } else if (ProgramIndicator.CURRENT_DATE.equals(uid)) {
                         date = currentDate;
+                    } else if (ProgramIndicator.EVENT_DATE.equals(uid)) {
+                        date = DateUtils.parseDate(enrollmentProgramInstance.getEvents().get(0).getEventDate());
                     }
 
                     if (date != null) {
-                        matcher.appendReplacement(buffer, DateUtils.daysBetween(currentDate, date) + "");
+                        matcher.appendReplacement(buffer, TextUtils.quote(DateUtils.getMediumDateString(date)));
                     }
                 }
             }
@@ -480,7 +485,10 @@ public class ProgramIndicatorService {
             value = ExpressionUtils.evaluateToDouble(expression, null);
         } catch (JexlException e) {
             e.printStackTrace();
-            value = new Double(0);
+            value = null;
+        } catch (IllegalStateException e){
+            e.printStackTrace();
+            value = null;
         }
         return value;
     }

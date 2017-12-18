@@ -42,7 +42,6 @@ import org.hisp.dhis.android.sdk.events.LoadingMessageEvent;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.BaseSerializableModel;
 import org.hisp.dhis.android.sdk.ui.dialogs.CustomDialogFragment;
-import org.hisp.dhis.android.sdk.ui.dialogs.ItemStatusDialogFragment;
 import org.hisp.dhis.android.sdk.ui.fragments.progressdialog.ProgressDialogFragment;
 
 /**
@@ -77,7 +76,7 @@ public final class UiUtils {
             @Override
             public void run() {
                 new CustomDialogFragment(title, message,
-                        "OK", null).show(activity.getFragmentManager(), title);
+                        activity.getString(R.string.ok_option), null).show(activity.getFragmentManager(), title);
             }
         });
     }
@@ -89,7 +88,7 @@ public final class UiUtils {
             @Override
             public void run() {
                 new CustomDialogFragment(title, message,
-                        "OK", iconId, null).show(activity.getFragmentManager(), title);
+                        activity.getString(R.string.ok_option), iconId, null).show(activity.getFragmentManager(), title);
             }
         });
     }
@@ -100,7 +99,7 @@ public final class UiUtils {
             @Override
             public void run() {
                 new CustomDialogFragment(title, message,
-                        "OK", onConfirmClickListener).show(activity.getFragmentManager(), title);
+                        activity.getString(R.string.ok_option), onConfirmClickListener).show(activity.getFragmentManager(), title);
             }
         });
     }
@@ -148,14 +147,13 @@ public final class UiUtils {
      * Sends an event with feedback to user on loading. Picked up in LoadingFragment.
      *
      * @param message
+     * @param eventType
      */
-    public static void postProgressMessage(final String message) {
+    public static void postProgressMessage(final String message, final LoadingMessageEvent.EventType eventType) {
         new Thread() {
             @Override
             public void run() {
-                LoadingMessageEvent event = new LoadingMessageEvent();
-                event.message = message;
-                Dhis2Application.bus.post(event);
+                Dhis2Application.bus.post(new LoadingMessageEvent(message, eventType));
             }
         }.start();
     }

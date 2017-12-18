@@ -34,15 +34,20 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.raizlabs.android.dbflow.sql.builder.Condition;
+import com.raizlabs.android.dbflow.sql.language.Join;
 import com.raizlabs.android.dbflow.sql.language.Select;
 import com.raizlabs.android.dbflow.sql.queriable.StringQuery;
 
 import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.controllers.LoadingController;
 import org.hisp.dhis.android.sdk.controllers.ResourceController;
+import org.hisp.dhis.android.sdk.controllers.SyncStrategy;
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.events.LoadingMessageEvent;
+import org.hisp.dhis.android.sdk.events.UiEvent;
 import org.hisp.dhis.android.sdk.network.APIException;
 import org.hisp.dhis.android.sdk.network.DhisApi;
+import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue$Table;
 import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
@@ -56,6 +61,8 @@ import org.hisp.dhis.android.sdk.persistence.models.Program;
 import org.hisp.dhis.android.sdk.persistence.models.ProgramTrackedEntityAttribute;
 import org.hisp.dhis.android.sdk.persistence.models.Relationship;
 import org.hisp.dhis.android.sdk.persistence.models.Relationship$Table;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute;
+import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttribute$Table;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityAttributeValue$Table;
 import org.hisp.dhis.android.sdk.persistence.models.TrackedEntityInstance;
@@ -102,6 +109,11 @@ public final class TrackerController extends ResourceController {
         return true;
     }
 
+    public static TrackedEntityInstance getTrackedEntityInstanceByUid(String trackedEntityInstanceUid) {
+        return new Select().from(TrackedEntityInstance.class).where(Condition.column
+                (TrackedEntityInstance$Table.TRACKEDENTITYINSTANCE).is(trackedEntityInstanceUid)).querySingle();
+    }
+
     public static List<Relationship> getRelationships(String trackedEntityInstance) {
         return new Select().from(Relationship.class).where(Condition.column
                 (Relationship$Table.TRACKEDENTITYINSTANCEA).is(trackedEntityInstance)).
@@ -127,6 +139,15 @@ public final class TrackerController extends ResourceController {
                 is(trackedEntityInstance.getLocalId())).queryList();
     }
 
+    public static List<Enrollment> getEnrollments(TrackedEntityInstance trackedEntityInstance,
+            String programUId, String orgUnit) {
+        return new Select().from(Enrollment.class).where(Condition.column(Enrollment$Table.LOCALTRACKEDENTITYINSTANCEID).
+                is(trackedEntityInstance.getLocalId()))
+                .and(Condition.column(Enrollment$Table.STATUS).is(Enrollment.COMPLETED))
+                .and(Condition.column(Enrollment$Table.PROGRAM).is(programUId))
+                .and(Condition.column(Enrollment$Table.ORGUNIT).is(orgUnit)).queryList();
+    }
+
     /**
      * Returns a list of enrollments for a given program and tracked entity instance
      *
@@ -140,6 +161,29 @@ public final class TrackerController extends ResourceController {
                 and(Condition.column(Enrollment$Table.LOCALTRACKEDENTITYINSTANCEID).
                         is(trackedEntityInstance.getLocalId())).queryList();
         return enrollments;
+    }
+
+    public static Enrollment getLastEnrollment(String program,
+            TrackedEntityInstance trackedEntityInstance) {
+        Enrollment enrollments = new Select().from(Enrollment.class).
+                where(Condition.column(Enrollment$Table.PROGRAM).is(program)).
+                and(Condition.column(Enrollment$Table.LOCALTRACKEDENTITYINSTANCEID).
+                        is(trackedEntityInstance.getLocalId()))
+                .orderBy(false, Enrollment$Table.LOCALID).querySingle();
+        return enrollments;
+    }
+
+    public static Enrollment getCancelledEnrollment(String enrollment) {
+        return new Select().from(Enrollment.class).where(Condition.column
+                (Enrollment$Table.ENROLLMENT).is(enrollment))
+                .and(Condition.column(Enrollment$Table.STATUS).is(Enrollment.CANCELLED)).querySingle();
+    }
+
+
+    public static Enrollment getNotCancelledEnrollment(String enrollment) {
+        return new Select().from(Enrollment.class).where(Condition.column
+                (Enrollment$Table.ENROLLMENT).is(enrollment))
+                .and(Condition.column(Enrollment$Table.STATUS).isNot(Enrollment.CANCELLED)).querySingle();
     }
 
     public static Enrollment getEnrollment(String enrollment) {
@@ -194,6 +238,33 @@ public final class TrackerController extends ResourceController {
 
         return new StringQuery<Event>(Event.class, rawSqlQuery).queryList();
     }
+    /**
+     * Returns a list of events for a given org unit and from server
+     */
+    public static List<Event> getAllConflictingAndNotConflictingEvents(String organisationUnitId, String programId,
+            boolean isFromServer) {
+        List<Event> events = new Select().from(Event.class)
+                .join(FailedItem.class, Join.JoinType.LEFT)
+                .on(Condition.column(FailedItem$Table.ITEMID).eq(Event$Table.LOCALID)).where(Condition.column
+                (Event$Table.ORGANISATIONUNITID).is(organisationUnitId)).
+                and(Condition.column(Event$Table.PROGRAMID).is(programId))
+                .and(Condition.column(Event$Table.FROMSERVER).is(isFromServer))
+                .or(Condition.column(FailedItem$Table.ITEMTYPE).is("Event"))
+                .orderBy(false, Event$Table.LASTUPDATED).queryList();
+        return events;
+    }
+
+    /**
+     * Loads datavalues from the server and stores it in local persistence.
+     */
+    public static void syncRemotelyDeletedData(Context context, DhisApi dhisApi)
+            throws APIException {
+        UiUtils.postProgressMessage(context.getString(R.string.synchronize_deleted_data), LoadingMessageEvent.EventType.REMOVE_DATA);
+        TrackerDataLoader.deleteRemotelyDeletedData(context, dhisApi);
+        Dhis2Application.getEventBus().post(new UiEvent(UiEvent.UiEventType.SYNCING_END));
+        UiUtils.postProgressMessage("",LoadingMessageEvent.EventType.FINISH);
+
+    }
 
     /**
      * Returns a list of events for the given server-assigned UID. Note that if possible,
@@ -214,7 +285,9 @@ public final class TrackerController extends ResourceController {
      * @return
      */
     public static List<Event> getEventsByEnrollment(long localEnrollmentId) {
-        return new Select().from(Event.class).where(Condition.column(Event$Table.LOCALENROLLMENTID).is(localEnrollmentId)).queryList();
+        return new Select().from(Event.class).where(
+                Condition.column(Event$Table.LOCALENROLLMENTID).is(localEnrollmentId)).and(
+                Condition.column(Event$Table.STATUS).isNot(Event.STATUS_DELETED)).queryList();
     }
 
     /**
@@ -224,10 +297,22 @@ public final class TrackerController extends ResourceController {
      * @param programId
      * @return
      */
-    public static List<Event> getEvents(String organisationUnitId, String programId) {
+    public static List<Event> getNotDeletedEvents(String organisationUnitId, String programId) {
         List<Event> events = new Select().from(Event.class).where(Condition.column
                 (Event$Table.ORGANISATIONUNITID).is(organisationUnitId)).
-                and(Condition.column(Event$Table.PROGRAMID).is(programId)).orderBy(false, Event$Table.LASTUPDATED).queryList();
+                and(Condition.column(Event$Table.PROGRAMID).is(programId)).and(
+                Condition.column(Event$Table.STATUS).isNot(Event.STATUS_DELETED)).orderBy(false,
+                Event$Table.LASTUPDATED).queryList();
+        return events;
+    }
+
+    /**
+     * Returns a list of events for a given org unit and from server
+     */
+    public static List<Event> getDeletedEvents() {
+        List<Event> events = new Select().from(Event.class)
+                .where(Condition.column(Event$Table.STATUS).is(Event.STATUS_DELETED))
+                .orderBy(false, Event$Table.LASTUPDATED).queryList();
         return events;
     }
 
@@ -302,6 +387,14 @@ public final class TrackerController extends ResourceController {
                 (Condition.column(TrackedEntityInstance$Table.LOCALID).is(localId)).querySingle();
     }
 
+    public static List<TrackedEntityInstance> getTrackedEntityInstances(String organisationUnitUId) {
+        return new Select().from(TrackedEntityInstance.class).where
+                (Condition.column(TrackedEntityInstance$Table.ORGUNIT).is(organisationUnitUId)).queryList();
+    }
+
+    public static List<TrackedEntityInstance> getTrackedEntityInstances() {
+        return new Select().from(TrackedEntityInstance.class).queryList();
+    }
     /*
    * Returns a list of tracked entity attribute values for an instance in a selected program
    * @param trackedEntityInstance
@@ -379,6 +472,24 @@ public final class TrackerController extends ResourceController {
     }
 
     /**
+     * Returns a list of all visible trackedEntityAttributeValues for a given TEI
+     *
+     * @param trackedEntityInstance
+     * @return
+     */
+    public static List<TrackedEntityAttributeValue> getVisibleTrackedEntityAttributeValues
+    (long trackedEntityInstance) {
+        return new Select().from(TrackedEntityAttributeValue.class)
+                .join(TrackedEntityAttribute.class, Join.JoinType.LEFT)
+                .on(Condition.column(TrackedEntityAttribute$Table.ID).eq(TrackedEntityAttributeValue$Table.TRACKEDENTITYATTRIBUTEID))
+                .where(Condition.column
+                        (TrackedEntityAttributeValue$Table.LOCALTRACKEDENTITYINSTANCEID).is(trackedEntityInstance))
+                .and(Condition.column
+                        (TrackedEntityAttribute$Table.DISPLAYINLISTNOPROGRAM).is(true))
+                .orderBy(true, TrackedEntityAttribute$Table.SORTORDERINLISTNOPROGRAM).queryList();
+    }
+
+    /**
      * Returns a list of failed items from the database, or null if there are none.
      * Failed items are items that have failed to upload and sync with the server for some reason
      *
@@ -404,51 +515,34 @@ public final class TrackerController extends ResourceController {
      * Sets all flags for all loaded data values to false, and all updated dates to null
      */
     public static void clearDataValueLoadedFlags() {
-        List<OrganisationUnit> assignedOrganisationUnits = MetaDataController.getAssignedOrganisationUnits();
+        List<OrganisationUnit> assignedOrganisationUnits =
+                MetaDataController.getAssignedOrganisationUnits();
         for (OrganisationUnit organisationUnit : assignedOrganisationUnits) {
             if (organisationUnit.getId() == null)
                 break;
             List<Program> programsForOrgUnit = new ArrayList<>();
-            List<Program> programsForOrgUnitSEWoR = MetaDataController.getProgramsForOrganisationUnit
-                    (organisationUnit.getId(),
-                            ProgramType.WITHOUT_REGISTRATION);
+            List<Program> programsForOrgUnitSEWoR =
+                    MetaDataController.getProgramsForOrganisationUnit
+                            (organisationUnit.getId(),
+                                    ProgramType.WITHOUT_REGISTRATION);
             if (programsForOrgUnitSEWoR != null)
                 programsForOrgUnit.addAll(programsForOrgUnitSEWoR);
 
             for (Program program : programsForOrgUnit) {
                 if (program.getUid() == null)
                     break;
-                DateTimeManager.getInstance().deleteLastUpdated(ResourceType.EVENTS, organisationUnit.getId() + program.getUid());
+                DateTimeManager.getInstance().deleteLastUpdated(ResourceType.EVENTS,
+                        organisationUnit.getId() + program.getUid());
             }
         }
     }
 
     /**
-     * Loads user generated data from the server. Which data is loaded is determined by enabling
-     * or disabling flags in DHIS 2.
-     */
-    public static void synchronizeDataValues(Context context, DhisApi dhisApi) throws APIException {
-        sendLocalData(dhisApi);
-        loadDataValues(context, dhisApi);
-    }
-
-    /**
-     * Tries to send locally stored data to the server
-     */
-    public static void sendLocalData(DhisApi dhisApi) throws APIException {
-        Log.d(CLASS_TAG, "sending local data");
-        MetaDataController.getTrackedEntityAttributeGeneratedValues();
-        TrackerDataSender.sendTrackedEntityInstanceChanges(dhisApi, false);
-        TrackerDataSender.sendEnrollmentChanges(dhisApi, false);
-        TrackerDataSender.sendEventChanges(dhisApi);
-    }
-
-    /**
      * Loads datavalues from the server and stores it in local persistence.
      */
-    public static void loadDataValues(Context context, DhisApi dhisApi) throws APIException {
-        UiUtils.postProgressMessage(context.getString(R.string.loading_metadata));
-        TrackerDataLoader.updateDataValueDataItems(context, dhisApi);
+    public static void loadDataValues(Context context, DhisApi dhisApi, SyncStrategy syncStrategy) throws APIException {
+        UiUtils.postProgressMessage(context.getString(R.string.loading_metadata), LoadingMessageEvent.EventType.METADATA);
+        TrackerDataLoader.updateDataValueDataItems(context, dhisApi, syncStrategy);
     }
 
     public static List<TrackedEntityInstance> queryTrackedEntityInstancesDataFromServer(DhisApi dhisApi,
@@ -456,7 +550,7 @@ public final class TrackerController extends ResourceController {
                                                                                         String programUid,
                                                                                         String queryString,
                                                                                         TrackedEntityAttributeValue... params) throws APIException {
-        return TrackerDataLoader.queryTrackedEntityInstancesDataFromServer(dhisApi, organisationUnitUid, programUid, queryString, params);
+        return TrackerDataLoader.queryTrackedEntityInstanceDataFromServer(dhisApi, organisationUnitUid, programUid, queryString, params);
     }
 
     public static List<TrackedEntityInstance> queryTrackedEntityInstancesDataFromAllAccessibleOrgUnits(DhisApi dhisApi,
@@ -468,8 +562,8 @@ public final class TrackerController extends ResourceController {
         return TrackerDataLoader.queryTrackedEntityInstancesDataFromAllAccessibleOrgunits(dhisApi, organisationUnitUid, programUid, queryString, detailedSearch, params);
     }
 
-    public static List<TrackedEntityInstance> getTrackedEntityInstancesDataFromServer(DhisApi dhisApi, List<TrackedEntityInstance> trackedEntityInstances, boolean getEnrollments) throws APIException {
-        return TrackerDataLoader.getTrackedEntityInstancesDataFromServer(dhisApi, trackedEntityInstances, getEnrollments);
+    public static List<TrackedEntityInstance> getTrackedEntityInstancesDataFromServer(DhisApi dhisApi, List<TrackedEntityInstance> trackedEntityInstances, boolean getEnrollments, boolean getRecursiveRelations) throws APIException {
+        return TrackerDataLoader.getTrackedEntityInstancesDataFromServer(dhisApi, trackedEntityInstances, getEnrollments, getRecursiveRelations);
     }
 
     public static void getEnrollmentDataFromServer(DhisApi dhisApi, String uid, boolean getEvents, DateTime serverDateTime) throws APIException {
@@ -505,6 +599,7 @@ public final class TrackerController extends ResourceController {
     public static void sendTrackedEntityInstanceChanges(DhisApi dhisApi, TrackedEntityInstance trackedEntityInstance, boolean sendEnrollments) throws APIException {
         TrackerDataSender.sendTrackedEntityInstanceChanges(dhisApi, trackedEntityInstance, sendEnrollments);
     }
+
 
     public static List<Enrollment> getActiveEnrollments() {
         List<Enrollment> activeEnrollments = new Select().from(Enrollment.class)
@@ -572,5 +667,35 @@ public final class TrackerController extends ResourceController {
                 + " ORDER BY " + Event$Table.DUEDATE;
 
         return new StringQuery<Event>(Event.class, rawSqlQuery).queryList();
+    }
+
+    public static void refreshRelationsByTrackedEntity(DhisApi dhisApi, String trackedEntityInstance) {
+        TrackerDataLoader.refreshRelationshipsByTrackedEntityInstance(dhisApi, trackedEntityInstance);
+    }
+
+    public static void updateTrackedEntityInstances(DhisApi dhisApi,
+            List<TrackedEntityInstance> trackedEntityInstances, DateTime serverDateTime) {
+        for(TrackedEntityInstance trackedEntityInstance:trackedEntityInstances) {
+            TrackerDataLoader.getTrackedEntityInstanceDataFromServer(
+                    dhisApi, trackedEntityInstance.getUid(), true, true,
+                    serverDateTime);
+        }
+    }
+
+
+    /**
+     * Returns the number of the given value by given trackedentityattribute
+     *
+     * @param value
+     * @return
+     */
+    public static int countTrackedEntityAttributeValue(TrackedEntityAttributeValue value) {
+        return (int) new Select().count().from(TrackedEntityAttributeValue.class).where(
+                Condition.column(TrackedEntityAttributeValue$Table.
+                        VALUE).eq(value.getValue()))
+                .and(Condition.column(TrackedEntityAttributeValue$Table.
+                        TRACKEDENTITYATTRIBUTEID).eq(value.getTrackedEntityAttributeId()))
+                .and(Condition.column(TrackedEntityAttributeValue$Table.
+                        LOCALTRACKEDENTITYINSTANCEID).isNot(value.getLocalTrackedEntityInstanceId())).count();
     }
 }

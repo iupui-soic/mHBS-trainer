@@ -16,25 +16,10 @@ import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemDetailsFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment;
-import com.github.barteksc.pdfviewer.PDFView;
 
 public class ResourcesActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener{
     FragmentManager fragmentManager = getSupportFragmentManager();
 
-// Create static context of pdf from plugin
-    static PDFView pdfView;
-
-// Creates a local instance of download
-    String pdfName = "pdf.pdf";
-
-
-
-//    TODO:// Check url link against database
-/*
-   Views PDF from online
-    String pdfStreamLink = "http://www.pdf995.com/samples/pdf.pdf";
-    Uri pdfStream = Uri.parse(pdfStreamLink);
-*/
 
 
     @Override
@@ -78,25 +63,6 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
                 .addToBackStack(null)
                 .commit();
 
-//        fixme: UNCOMMENT FOR DOWNLOADS__pdfView running through downloads not working properly
-/*       String pdfPlace = "android.resource://" + getPackageName() + "/raw/" + pdfName;
-        Log.d("hi", pdfPlace);*//*
-
-        pdfView.fromAsset(pdfName)
-                .defaultPage(1)
-                .enableSwipe(true)
-                 .load();*/
-
-//        fixme: UNCOMMENT FOR STREAM__pdfView from uri not passing correctly
-
-/*
-        pdfView.fromUri(pdfStream)
-               .defaultPage(1)
-               .enableSwipe(true)
-               .onLoad(onLoadCompleteListener)
-                .onPageChange(this)
-                .load();
-*/
     }
 
     // for returning via the menu back button rather than button click

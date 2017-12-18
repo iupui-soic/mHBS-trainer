@@ -36,9 +36,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.hisp.dhis.android.sdk.R;
+import org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry.autocompleterow.TextRow;
 import org.hisp.dhis.android.sdk.ui.adapters.rows.events.OnDetailedInfoButtonClick;
 
-public abstract class NonEditableTextViewRow extends Row {
+public abstract class NonEditableTextViewRow extends TextRow {
 
     protected String mValue;
 
@@ -60,12 +61,11 @@ public abstract class NonEditableTextViewRow extends Row {
         } else {
             View root = inflater.inflate(
                     R.layout.listview_row_indicator, container, false);
-//            detailedInfoButton = root.findViewById(R.id.detailed_info_button_layout); // need to keep reference
+            View detailedInfoButton = root.findViewById(R.id.detailed_info_button_layout); // need to keep reference
             holder = new ViewHolder(
                     (TextView) root.findViewById(R.id.text_label),
-                    (TextView) root.findViewById(R.id.indicator_row)
-
-            );
+                    (TextView) root.findViewById(R.id.indicator_row),
+                    detailedInfoButton);
 
             root.setTag(holder);
             view = root;
@@ -80,16 +80,17 @@ public abstract class NonEditableTextViewRow extends Row {
         else
             holder.textValue.setEnabled(true);
 
-//        holder.detailedInfoButton.setOnClickListener(new OnDetailedInfoButtonClick(this)); // add this when support for indicator.getDescription
+        holder.detailedInfoButton.setOnClickListener(new OnDetailedInfoButtonClick(this));
         holder.textValue.setText(mValue);
 
-//        if(isDetailedInfoButtonHidden())
-//        {
-//            holder.detailedInfoButton.setVisibility(View.INVISIBLE);
-//        }
-//        else {
-//            holder.detailedInfoButton.setVisibility(View.VISIBLE);
-//        }
+        if(isDetailedInfoButtonHidden())
+        {
+            holder.detailedInfoButton.setVisibility(View.INVISIBLE);
+        }
+        else {
+            holder.detailedInfoButton.setVisibility(View.VISIBLE);
+        }
+        holder.textValue.setOnEditorActionListener(mOnEditorActionListener);
 
         return view;
     }
@@ -105,13 +106,13 @@ public abstract class NonEditableTextViewRow extends Row {
     public static class ViewHolder {
         final TextView textLabel;
         final TextView textValue;
-//        final View detailedInfoButton;
+        final View detailedInfoButton;
 
         public ViewHolder(TextView textLabel,
-                          TextView textValue) {
+                          TextView textValue, View detailedInfoButton) {
             this.textLabel = textLabel;
             this.textValue = textValue;
-//            this.detailedInfoButton = detailedInfoButton;
+            this.detailedInfoButton = detailedInfoButton;
 
         }
     }

@@ -29,6 +29,8 @@
 
 package org.hisp.dhis.android.sdk.ui.adapters.rows.dataentry;
 
+import static android.text.TextUtils.isEmpty;
+
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.support.v4.app.FragmentManager;
@@ -43,16 +45,13 @@ import org.hisp.dhis.android.sdk.R;
 import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
 import org.hisp.dhis.android.sdk.persistence.models.DataValue;
 import org.hisp.dhis.android.sdk.persistence.models.Enrollment;
-import org.hisp.dhis.android.sdk.ui.adapters.rows.events.OnDetailedInfoButtonClick;
 import org.hisp.dhis.android.sdk.ui.fragments.dataentry.RowValueChangedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
-import static android.text.TextUtils.isEmpty;
 
-
-public class IncidentDatePickerRow extends AbsEnrollmentDatePickerRow {
-
+public class IncidentDatePickerRow extends AbsDatePickerRow {
+    private static final String TAG = "IncidentDatePickerRow";
     private Enrollment mEnrollment;
     private String mLabel;
 
@@ -100,7 +99,7 @@ public class IncidentDatePickerRow extends AbsEnrollmentDatePickerRow {
 
     @Override
     public int getViewType() {
-        return super.getViewType();
+        return DataEntryRowTypes.ENROLLMENT_DATE.ordinal();
     }
 
     private class DatePickerRowHolder {
@@ -119,7 +118,8 @@ public class IncidentDatePickerRow extends AbsEnrollmentDatePickerRow {
 //            this.detailedInfoButton = detailedInfoButton;
 
             dateSetListener = new DateSetListener(pickerInvoker);
-            invokerListener = new OnEditTextClickListener(context, dateSetListener);
+            invokerListener = new OnEditTextClickListener(context, dateSetListener,
+                    false, pickerInvoker);
             clearButtonListener = new ClearButtonListener(pickerInvoker);
 
             clearButton.setOnClickListener(clearButtonListener);
@@ -148,25 +148,7 @@ public class IncidentDatePickerRow extends AbsEnrollmentDatePickerRow {
 
     }
 
-    private static class OnEditTextClickListener implements View.OnClickListener {
-        private final Context context;
-        private final DateSetListener listener;
 
-        public OnEditTextClickListener(Context context,
-                                       DateSetListener listener) {
-            this.context = context;
-            this.listener = listener;
-        }
-
-        @Override
-        public void onClick(View view) {
-            LocalDate currentDate = new LocalDate();
-            DatePickerDialog picker = new DatePickerDialog(context, listener,
-                    currentDate.getYear(), currentDate.getMonthOfYear() - 1, currentDate.getDayOfMonth());
-            picker.getDatePicker().setMaxDate(DateTime.now().getMillis());
-            picker.show();
-        }
-    }
     private static class ClearButtonListener implements View.OnClickListener {
         private final TextView textView;
         private Enrollment enrollment;

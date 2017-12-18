@@ -1,0 +1,4 @@
+[submodule "mHBS_training/sdk"]
+	path = mHBS_training/sdk
+	url = https://github.com/dhis2/dhis2-android-sdk.git
+	branch = tracker-capture
