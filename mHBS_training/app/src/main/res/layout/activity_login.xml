@@ -27,7 +27,7 @@
   ~  */
   -->
 
-<!--mod: keep this layout the same name as the one in core (activity_login.xml)
+<!--mod: keep this layout the same name as the one in core (activity_login22.xml)
         allows custom image to override layout in core-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
