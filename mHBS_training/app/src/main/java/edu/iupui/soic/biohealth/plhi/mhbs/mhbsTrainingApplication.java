@@ -46,7 +46,6 @@ public class mhbsTrainingApplication extends Dhis2Application {
         if(userAccount!=null) {
             Class<?> mainActivity = getMainActivity();
             Intent i = new Intent(getApplicationContext(), mainActivity);
-            Log.d("Test", "in mhbs Training Application");
             startActivity(i);
         }
 
