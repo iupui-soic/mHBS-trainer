@@ -3,58 +3,60 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="edu.iupui.soic.biohealth.plhi.mhbs">
 
-    <uses-sdk tools:overrideLibrary=":core" />
+    <uses-sdk tools:overrideLibrary=":core,:ui" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
-        android:name="edu.iupui.soic.biohealth.plhi.mhbs.mhbsTrainingApplication"
+        android:name=".mhbsTrainingApplication"
         android:allowBackup="true"
         android:icon="@drawable/hbb"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        tools:replace="android:theme"
-        android:theme="@style/AppTheme">
-
+        android:theme="@style/AppTheme"
+        tools:replace="android:theme">
         <activity
             android:name="org.hisp.dhis.android.sdk.ui.activities.LoginActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:theme="@style/mHBSLoginScreenTheme"
             android:windowSoftInputMode="adjustResize">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
-
         <activity
-            android:name="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.INFO" />
+            </intent-filter>
+           </activity>
         <activity android:name=".activities.ProgramPortalActivity" />
         <activity android:name=".activities.ResourcesActivity" />
         <activity
             android:name=".activities.VideosActivity"
-            android:label="@string/title_activity_videos"
-            />
+            android:label="@string/title_activity_videos" />
         <activity
             android:name=".activities.CoursesActivity"
-            android:label="@string/title_activity_courses"
-             />
+            android:label="@string/title_activity_courses" />
         <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.DownloadsActivity" />
         <activity android:name=".activities.InfoActivity" />
-        <activity android:name=".activities.FavoritesActivity"/>
+        <activity android:name=".activities.FavoritesActivity" />
 
         <!-- Specify the next screen after SplashScreen if user already logged in -->
         <meta-data
@@ -64,5 +66,4 @@
             android:name="io.fabric.ApiKey"
             android:value="b40e830e776f80dffd15e8df6ba58733a36b1e48" />
     </application>
-
 </manifest>

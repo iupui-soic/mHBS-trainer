@@ -47,9 +47,9 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
 
-        // holder.mIdView.setText(mValues.get(position).id);
-        // holder.mTitleView.setText(mValues.get(position).title);
-        // holder.mInstitutionView.setText(mValues.get(position).institution);
+        holder.mIdView.setText(mValues.get(position).id);
+        holder.mTitleView.setText(mValues.get(position).title);
+    //    holder.mInstitutionView.setText(mValues.get(position).institution);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,8 +71,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mIdView;
-//        public final TextView mTitleView;
-//        public final TextView mInstitutionView;
+        public final TextView mTitleView;
+        public final TextView mInstitutionView;
 
         public DummyItem mItem;
 
@@ -80,8 +80,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             super(view);
             mView = view;
             mIdView = (TextView) view.findViewById(R.id.titleImage);
-//            mTitleView = (TextView) view.findViewById(R.id.titleLocation);
-//            mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
+            mTitleView = (TextView) view.findViewById(R.id.titleLocation);
+            mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
 
         }
 
