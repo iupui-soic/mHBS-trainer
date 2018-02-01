@@ -1,35 +1,28 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.adapters;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
-import android.view.ContextThemeWrapper.*;
 
-import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment.OnListFragmentInteractionListener;
-import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent.DummyItem;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources.ResourceItem;
 
 import java.util.List;
 
-import static edu.iupui.soic.biohealth.plhi.mhbs.R.id.parent;
-import static java.security.AccessController.getContext;
-
 /**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link ResourceItem} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<ResourceItem> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public MyItemRecyclerViewAdapter(List<ResourceItem> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -74,7 +67,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         public final TextView mTitleView;
         public final TextView mInstitutionView;
 
-        public DummyItem mItem;
+        public ResourceItem mItem;
 
         public ViewHolder(View view) {
             super(view);
@@ -82,7 +75,6 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             mIdView = (TextView) view.findViewById(R.id.titleImage);
             mTitleView = (TextView) view.findViewById(R.id.titleLocation);
             mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
-
         }
 
         @Override

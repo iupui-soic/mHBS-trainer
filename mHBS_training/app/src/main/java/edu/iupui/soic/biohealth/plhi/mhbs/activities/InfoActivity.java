@@ -23,7 +23,7 @@ public class InfoActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp(){
-        //TODO: when going back, keep nav drawer open
+        // TODO: when going back, keep nav drawer open
         finish();
         return true;
     }

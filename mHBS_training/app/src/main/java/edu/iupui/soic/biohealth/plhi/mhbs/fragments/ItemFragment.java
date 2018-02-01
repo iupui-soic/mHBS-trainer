@@ -16,8 +16,8 @@ import android.view.ViewGroup;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.adapters.MyItemRecyclerViewAdapter;
-import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent;
-import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent.DummyItem;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources.ResourceItem;
 
 public class ItemFragment extends Fragment {
 
@@ -67,7 +67,7 @@ public class ItemFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.ITEMS, mListener));
         }
         return view;
     }
@@ -93,6 +93,6 @@ public class ItemFragment extends Fragment {
 
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(ResourceItem item);
     }
 }

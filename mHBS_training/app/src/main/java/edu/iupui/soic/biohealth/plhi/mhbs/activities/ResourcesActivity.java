@@ -4,16 +4,14 @@
 
 package edu.iupui.soic.biohealth.plhi.mhbs.activities;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
-import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemDetailsFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment;
 
@@ -48,7 +46,7 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
         ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
 
         Bundle args = new Bundle();

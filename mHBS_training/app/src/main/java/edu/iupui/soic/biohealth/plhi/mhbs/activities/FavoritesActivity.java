@@ -10,7 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
-import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemDetailsFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment;
 
@@ -32,7 +32,7 @@ public class FavoritesActivity extends AppCompatActivity implements ItemFragment
 
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
         ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
 
         Bundle args = new Bundle();

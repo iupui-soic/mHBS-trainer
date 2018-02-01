@@ -4,11 +4,15 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
-import edu.iupui.soic.biohealth.plhi.mhbs.dummy.DummyContent;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemDetailsFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment;
 
@@ -18,6 +22,8 @@ This class calls a list fragment which brings up the available videos in a list 
 
 public class VideosActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
     FragmentManager fragmentManager = getSupportFragmentManager();
+    DocumentResources resourceGrabber = new DocumentResources();
+
     public static String PACKAGE_NAME;
 
 
@@ -48,15 +54,15 @@ public class VideosActivity extends AppCompatActivity implements ItemFragment.On
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
         ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
 
         Bundle args = new Bundle();
         // Communicate with Fragment using Bundle
         detailsFragment.setArguments(args);
+        // Populate list with resources from web API
+        resourceGrabber.getParsedResourceItems();
 
-        // when we interact with an item, begin a new details fragment
-        // TODO: will need to pass item data to the new fragment
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.video_fragment_container, detailsFragment)

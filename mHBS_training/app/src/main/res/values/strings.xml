@@ -28,5 +28,8 @@
     <string name="title_activity_favorites">FavoritesActivity</string>
     <string name="search">Search</string>
     <string name="resourceKey">resourceKey</string>
+    <string name="resourceURL">https://mhbs.info/api/documents</string>
+    <string name="resourceActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity</string>
+    <string name="videoActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.VideosActivity</string>
 
 </resources>
