@@ -1,9 +1,9 @@
 
 package edu.iupui.soic.biohealth.plhi.mhbs;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -20,8 +20,17 @@ public class mhbsTrainingApplication extends Dhis2Application {
 
     @Override
     public void onCreate() {
-        super.onCreate();
 
+        /*TODO: Here we can send a broadcast to tracker capture. If the user is logged in,
+        * Create an instance of LoginActivity and call handleUser();
+        *
+        * Consider adding a prompt to confirm the user is logged in for
+        * the case a user is logged in tracker capture while a separate user
+        * wants to user our app
+        *
+        * Consider adding logout functionality
+         */
+        super.onCreate();
         final Fabric fabric = new Fabric.Builder(this)
                 .kits(new Crashlytics())
                 .debuggable(true)
