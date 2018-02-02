@@ -27,7 +27,7 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
     // TODO: Replace this sample XML with actual URL
     // url for downloading documents from DHIS2 Web API
    /// / private static final String URL = "https://api.androidhive.info/pizza/?format=xml";
-    private static final String URL = "https://mhbs.info/api/documents";
+    private static final String URL = "https://mhbs.info/api/documents.xml";
     // contain list of resources
     public static final List<ResourceItem> ITEMS = new ArrayList<ResourceItem>();
     private static String password;
@@ -95,9 +95,7 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
             XmlPullParser xPP = Xml.newPullParser();
             xPP.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
             // set input stream
-            xPP.setInput(in,"UTF-8");
-            // fire up the Pull parser, get the next available tag
-            xPP.nextTag();
+            xPP.setInput(in,null);
             // return pull parser
             return xPP;
         }catch(IOException | XmlPullParserException e){
@@ -127,12 +125,11 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
         // defines the first outer XML tag
         //parser.require(XmlPullParser.START_TAG, null, "menu");
         parser.nextTag();
-        parser.require(XmlPullParser.START_TAG, null, "documents");
+        parser.require(XmlPullParser.START_TAG, null, "metadata");
         // while we did not reach the closing tag to START_TAG
         while (parser.next() != XmlPullParser.END_TAG) {
             //
             if (parser.getEventType() != XmlPullParser.START_TAG) {
-                Log.d("Test", "Continuing");
                 continue;
             }
             String name = parser.getName();
@@ -149,14 +146,14 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
     // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     private String readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
-        parser.require(XmlPullParser.START_TAG, null, "item");
+        parser.require(XmlPullParser.START_TAG, null, "documents");
         String id = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
-            if (name.equals("id")) {
+            if (name.equals("document")) {
                 id = readId(parser);
             } else {
                 skip(parser);
@@ -186,10 +183,12 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
     // Pull ID's from document API
     private String readId(XmlPullParser parser) throws IOException, XmlPullParserException {
         String id = "";
-        parser.require(XmlPullParser.START_TAG, null, "id");
-        id = readText(parser);
+     //   parser.require(XmlPullParser.START_TAG, null, "document");
+        id = parser.getAttributeValue(null,"id");
+
+      //  id = readText(parser);
         Log.d("try Title", "Try parsing error " + id);
-        parser.require(XmlPullParser.END_TAG, null, "id");
+   //     parser.require(XmlPullParser.END_TAG, null, "document");
         return id;
     }
 
@@ -243,9 +242,9 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
     @Override
     // results display here
     protected void onPostExecute(List result) {
-//        for (int i=0; i<result.size(); i++) {
-         //   Log.d("Test", result.get(i).toString());
-    //    }
+        for (int i=0; i<result.size(); i++) {
+            Log.d("Test", result.get(i).toString());
+        }
     }
 
     /**
