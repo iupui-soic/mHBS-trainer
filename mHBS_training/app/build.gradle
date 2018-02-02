@@ -20,7 +20,7 @@ apply plugin: 'checkstyle'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '23.0.2'
     defaultConfig {
         applicationId "edu.iupui.soic.biohealth.plhi.mhbs"
         minSdkVersion 21
@@ -88,5 +88,6 @@ dependencies {
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support:multidex:1.0.1'
+    compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.5'
     testCompile 'junit:junit:4.12'
 }

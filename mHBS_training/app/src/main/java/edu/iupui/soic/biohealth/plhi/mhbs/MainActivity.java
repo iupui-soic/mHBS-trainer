@@ -43,12 +43,14 @@ import edu.iupui.soic.biohealth.plhi.mhbs.activities.FavoritesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.ProgramPortalActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SearchActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SettingsActivity;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     Button btn_Videos, btn_Resources, btn_Courses;
     Switch sw_offlineMode;
     TextView tv_switch_status, dhis_user_name, dhis_user_email;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // get the user details from login
         UserAccount userAccount = MetaDataController.getUserAccount();
 
-        if (userAccount != null) {
+        if(userAccount!=null){
             // Change the user id and email to match login details
             dhis_user_name = (TextView) header.findViewById(R.id.dhis_user_name);
             dhis_user_email = (TextView) header.findViewById(R.id.dhis_user_email);
@@ -205,10 +207,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Intent launchIntent = getPackageManager().getLaunchIntentForPackage(trackerCapture);
             if (launchIntent != null) {
                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                //null pointer check in case package name was not found
-                /*TODO: bypass tracker login when hitting this button
-                *I think SplashActivity has related information to this
-                */
                 startActivity(launchIntent);
             } else {
                 // tracker capture not on phone
@@ -226,9 +224,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
     }
 
-    public void startVideos(View view) {
-        callProgramPortal(view.getTag().toString());
-    }
+    public void startVideos(View view) {callProgramPortal(view.getTag().toString());}
 
     public void startResources(View view) {
         callProgramPortal(view.getTag().toString());

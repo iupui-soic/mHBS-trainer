@@ -20,6 +20,7 @@ public class mhbsTrainingApplication extends Dhis2Application {
 
     @Override
     public void onCreate() {
+        super.onCreate();
 
         /*TODO: Here we can send a broadcast to tracker capture. If the user is logged in,
         * Create an instance of LoginActivity and call handleUser();
@@ -30,7 +31,6 @@ public class mhbsTrainingApplication extends Dhis2Application {
         *
         * Consider adding logout functionality
          */
-        super.onCreate();
         final Fabric fabric = new Fabric.Builder(this)
                 .kits(new Crashlytics())
                 .debuggable(true)
@@ -43,6 +43,7 @@ public class mhbsTrainingApplication extends Dhis2Application {
         if(userAccount!=null) {
             Class<?> mainActivity = getMainActivity();
             Intent i = new Intent(getApplicationContext(), mainActivity);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
         }else if(isTrackerInstalled(getString(R.string.trackerCapture))){
             // broadcast to tracker to receive login information
@@ -50,6 +51,7 @@ public class mhbsTrainingApplication extends Dhis2Application {
             intent.setAction("edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity");
             sendBroadcast(intent);
         }
+
     }
 
     @Override

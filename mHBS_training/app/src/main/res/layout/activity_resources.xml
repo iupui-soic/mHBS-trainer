@@ -12,4 +12,20 @@
         android:layout_height="match_parent" />
 
 
+    <FrameLayout
+        android:id="@+id/video_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></FrameLayout>
+
+
+    <ProgressBar
+        android:id="@+id/iBar"
+        style="@android:style/Widget.Material.ProgressBar.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:theme="@style/CircularProgress"
+         />
+
 </android.support.constraint.ConstraintLayout>
