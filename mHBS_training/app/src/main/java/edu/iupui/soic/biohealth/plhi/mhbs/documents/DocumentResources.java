@@ -1,6 +1,7 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Xml;
 
@@ -8,6 +9,7 @@ import org.hisp.dhis.android.sdk.controllers.DhisController;
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import javax.net.ssl.HttpsURLConnection;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -28,6 +30,8 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
     private static final String URL = "https://mhbs.info/api/documents";
     // contain list of resources
     public static final List<ResourceItem> ITEMS = new ArrayList<ResourceItem>();
+    private static String password;
+    private static String username;
 
     /**
      * A map of sample (resource) items, by ID.
@@ -84,7 +88,6 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
     */
     private XmlPullParser tryDownloadingXMLData() {
         try{
-            // TODO: authenticate is not logging the user in, the HTML from the login is still getting grabbed instead of xml
             authenticateUser();
             InputStream in = downloadUrl(URL);
 
@@ -118,6 +121,7 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
 
 
     private List processReceivedData(XmlPullParser parser) throws XmlPullParserException, IOException {
+        // TODO: currently this parsing mechanism isn't tailored to our XML, will work on that next
         // hold resources
         List entries = new ArrayList();
         // defines the first outer XML tag
@@ -163,12 +167,20 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
 
     public static InputStream downloadUrl(String urlString) throws IOException {
         URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setDoInput(true);
-        conn.connect();
-        InputStream stream = conn.getInputStream();
-        return stream;
+        HttpURLConnection conn = (HttpsURLConnection) url.openConnection();
+        // make sure our authentication matches the default authentication in a format that auth understands
+        String authorization = username + ":" + password;
+        String encodedAuth="Basic "+Base64.encode(authorization.getBytes(),0);
+        // attach the auth request to the connection
+        conn.setRequestProperty("Authorization", encodedAuth);
+        int responseCode = conn.getResponseCode();
+        // proceed if authorized
+        if (responseCode == 200) {
+
+            InputStream stream = conn.getInputStream();
+            return stream;
+        }
+        return null;
     }
 
     // Pull ID's from document API
@@ -231,9 +243,9 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
     @Override
     // results display here
     protected void onPostExecute(List result) {
-        for (int i=0; i<result.size(); i++) {
-            Log.d("Test", result.get(i).toString());
-        }
+//        for (int i=0; i<result.size(); i++) {
+         //   Log.d("Test", result.get(i).toString());
+    //    }
     }
 
     /**
@@ -256,13 +268,15 @@ public class DocumentResources extends AsyncTask<Object, String, List> {
         }
     }
 
+    // sets as default auth to compare with auth attached to URL conn
     private void authenticateUser() {
-        final String username = DhisController.getInstance().getSession().getCredentials().getUsername();
-        final String pw = DhisController.getInstance().getSession().getCredentials().getPassword();
+        username = DhisController.getInstance().getSession().getCredentials().getUsername();
+        password = DhisController.getInstance().getSession().getCredentials().getPassword();
         Authenticator.setDefault(new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, pw.toCharArray());
+                return new PasswordAuthentication(username, password.toCharArray());
             }
         });
+
     }
 }
