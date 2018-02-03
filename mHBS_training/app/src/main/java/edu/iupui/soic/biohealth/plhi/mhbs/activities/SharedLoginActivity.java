@@ -57,29 +57,31 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         setContentView(org.hisp.dhis.android.sdk.R.layout.activity_login);
 
         // will reach here if we came from the sidebar of tracker
-        if(DhisController.isUserLoggedIn()){
+        if (DhisController.isUserLoggedIn()) {
             launchMainActivity();
             finish();
         }
-        // these are required for both normal logging as well as logging in from tracker
+        // required UI elements
         setUpCommonUi();
 
         // If there are extras, they are existing user credentials from tracker-capture
         extras = getIntent().getExtras();
 
-        // if we have credentials -> bypass normal login
+        // if we have credentials, we can bypass the normal login
         if (extras != null) {
             trackerFlag = true;
             loginFromTracker();
         }
 
-        // using sentinel bool flag, if false, we can't log in from tracker -> login as normal
+        /* login from tracker, the flag is false if LoginFromTracker fails
+        /  or if there is no existing user from tracker-capture, then proceed with
+           a traditional login */
         if (!trackerFlag) {
-            // otherwise, login as normal
             setupUI();
         }
 
     }
+
     public void loginFromTracker() {
 
         if (extras != null) {
@@ -90,7 +92,7 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
                     usernameEditText.setText(creds.get(0));
                     passwordEditText.setText(creds.get(1));
                     serverEditText.setText(creds.get(2));
-                }else{
+                } else {
                     // something went wrong so we will just login as normally
                     trackerFlag = false;
                 }
@@ -305,86 +307,3 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         super.onBackPressed();
     }
 }
-
-
-
-
-/*
-package edu.iupui.soic.biohealth.plhi.mhbs.activities;
-
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.support.annotation.LayoutRes;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-
-import com.squareup.okhttp.HttpUrl;
-
-import org.hisp.dhis.android.sdk.controllers.DhisController;
-import org.hisp.dhis.android.sdk.controllers.DhisService;
-import org.hisp.dhis.android.sdk.network.Credentials;
-import org.hisp.dhis.android.sdk.network.DhisApi;
-import org.hisp.dhis.android.sdk.network.Session;
-import org.hisp.dhis.android.sdk.network.SessionManager;
-import org.hisp.dhis.android.sdk.persistence.Dhis2Application;
-import org.hisp.dhis.android.sdk.persistence.Dhis2Database;
-import org.hisp.dhis.android.sdk.persistence.preferences.AppPreferences;
-import org.hisp.dhis.android.sdk.services.StartPeriodicSynchronizerService;
-import org.hisp.dhis.android.sdk.ui.activities.LoginActivity;
-
-import java.util.ArrayList;
-
-import edu.iupui.soic.biohealth.plhi.mhbs.R;
-
-
-public class SharedLoginActivity extends LoginActivity {
-    EditText usernameEditText, passwordEditText, serverEditText;
-    ArrayList<String> value;
-    Bundle extras;
-    AppPreferences mPrefs;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        extras = getIntent().getExtras();
-        super.onCreate(savedInstanceState);
-
-        if (extras != null) {
-            value = extras.getStringArrayList("key:session");
-            try{
-                Log.d("test",value.toString());
-            }catch(Exception e){
-                Log.d("Test",e.getMessage());
-            }
-
-            if (value != null) {
-
-                usernameEditText = (EditText) findViewById(org.hisp.dhis.android.sdk.R.id.username);
-                passwordEditText = (EditText) findViewById(org.hisp.dhis.android.sdk.R.id.password);
-                serverEditText = (EditText) findViewById(org.hisp.dhis.android.sdk.R.id.server_url);
-
-                if (usernameEditText != null && passwordEditText != null && serverEditText != null) {
-                    usernameEditText.setText(value.get(0));
-                    passwordEditText.setText(value.get(1));
-                    serverEditText.setText(value.get(2));
-                }
-                login(value.get(0),value.get(1),value.get(2));
-                DhisService.logInUser(HttpUrl.parse(serverEditText.getText().toString()), new Credentials(usernameEditText.getText().toString(), passwordEditText.getText().toString()));
-                Session sesh = new Session(HttpUrl.parse(serverEditText.getText().toString()), new Credentials(usernameEditText.getText().toString(), passwordEditText.getText().toString()));
-                DhisService.confirmUser(new Credentials(usernameEditText.getText().toString(), passwordEditText.getText().toString()));
-                Button loginButton = (Button) findViewById(org.hisp.dhis.android.sdk.R.id.login_button);
-                loginButton.performClick();
-            }
-        }
-    }
-
-
-    @Override
-    public void onClick(View v) {
-        launchMainActivity();
-    }
-}
-
-*/
