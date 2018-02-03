@@ -4,11 +4,18 @@
 
 package edu.iupui.soic.biohealth.plhi.mhbs;
 
+import android.app.AppOpsManager;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Process;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +31,9 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
@@ -39,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Button btn_Videos, btn_Resources, btn_Courses;
     Switch sw_offlineMode;
     TextView tv_switch_status, dhis_user_name, dhis_user_email;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // get the user details from login
         UserAccount userAccount = MetaDataController.getUserAccount();
 
-        if(userAccount!=null){
+        if (userAccount != null) {
             // Change the user id and email to match login details
             dhis_user_name = (TextView) header.findViewById(R.id.dhis_user_name);
             dhis_user_email = (TextView) header.findViewById(R.id.dhis_user_email);
@@ -139,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public boolean onClose() {
                 setItemsVisibility(menu, searchItem, true);
                 //TODO: remove after testing
-                Log.d("hi", "visible");
+                Log.d("Test", "visible");
                 return false;
             }
         });
@@ -216,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void shortToastMessage(String s) {
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
     }
-
 
     public void startVideos(View view) {
         callProgramPortal(view.getTag().toString());
