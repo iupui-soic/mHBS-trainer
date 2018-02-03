@@ -28,5 +28,6 @@
     <string name="title_activity_favorites">FavoritesActivity</string>
     <string name="search">Search</string>
     <string name="resourceKey">resourceKey</string>
+    <string name="sharedLoginActivity">edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity</string>
 
 </resources>
