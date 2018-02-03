@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,8 @@ public class ItemFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
     private int mColumnCount = 1;
+    private String activity = "";
+
     private OnListFragmentInteractionListener mListener;
 
     /**
@@ -50,12 +53,15 @@ public class ItemFragment extends Fragment {
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            activity = getArguments().getString("resourceKey");
+            Log.d("Test item fragment", activity);
+
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
 
         // Set the adapter
@@ -67,7 +73,13 @@ public class ItemFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.ITEMS, mListener));
+            // TODO: Fix appending the same document items
+            Log.d("Test",activity);
+            if (activity.equals("Videos")) {
+                recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.VIDEO_MAP, mListener));
+            } else if (activity.equals("Resources")) {
+                recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.PDF_MAP, mListener));
+            }
         }
         return view;
     }

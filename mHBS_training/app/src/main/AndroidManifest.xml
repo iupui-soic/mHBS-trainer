@@ -43,14 +43,6 @@
 
         <activity android:name=".activities.ProgramPortalActivity" />
         <activity android:name=".activities.ResourcesActivity" />
-        <activity
-            android:name=".activities.VideosActivity"
-            android:label="@string/title_activity_videos"
-            />
-        <activity
-            android:name=".activities.CoursesActivity"
-            android:label="@string/title_activity_courses"
-             />
         <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.DownloadsActivity" />

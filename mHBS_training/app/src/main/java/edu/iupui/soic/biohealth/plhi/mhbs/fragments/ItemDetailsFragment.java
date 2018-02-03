@@ -28,43 +28,45 @@ public class ItemDetailsFragment extends Fragment {
 
     // raw URL TODO: change to database data pulled in
     String pdfURL = "http://unec.edu.az/application/uploads/2014/12/pdf-sample.pdf";
-    //String VideoURL = "";
-    //    Stringifies value for download stream
-    // String fileName = "emergency";
     VideoView videoView;
-
+    private static String ACTIVITY = "";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-    }
+            // Load the dummy title specified by the fragment
+            // arguments. In a real-world scenario, use a Loader
+            // to load title from a title provider.
+
+        }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         // Inflate the xml file for the fragment
+        //View rootView = inflater.inflate(R.layout.fragment_item_details, parent, true);
         View rootView = inflater.inflate(R.layout.fragment_item_details, parent, false);
         // if we called from the Videos Activity Context
-        if (getContext().getClass().toString().equals(getText(R.string.videoActivity).toString())) {
+        if (getContext().getClass().toString().contains(ACTIVITY)) {
             // find the video view and attach to rootview
             videoView = (VideoView) rootView.findViewById(R.id.video_details_item);
         }
         // if we called from the ResourceActivity (PDF) Context
-        else if (getContext().getClass().toString().equals(getText(R.string.resourceActivity).toString())) {
+        else if (getContext().getClass().toString().contains(ACTIVITY)) {
+          // TODO: FOR HANDLING DOWNLOAD PERMISSIONS
+            /*
             if (ContextCompat.checkSelfPermission(this.getActivity(),
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
-                Log.d("Test", "We have permission");
-                //   ResourceItemDownloader downloader = new ResourceItemDownloader();
-                //  downloader.DownloadFiles(this);
+
             }
+            */
 
             // TODO: replace with PDF renderer, the following is  a placeholder
             WebView webView = (WebView) rootView.findViewById(R.id.webview_details_item);
             webView.getSettings().setJavaScriptEnabled(true);
             String url = "http://docs.google.com/gview?embedded=true&url=" + pdfURL;
             webView.loadUrl(url);
-
 
         }
         return rootView;
