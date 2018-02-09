@@ -41,8 +41,6 @@ public class ProgramPortalActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                // TODO: instead of hardcoding the cases, abstractify names, this is just a quick placeholder way
-                //TODO: pass the name of the program clicked to get appropriate resources
                 startActivity(new Intent(ProgramPortalActivity.this, ResourcesActivity.class).putExtra("resourceKey", data));
             }
         });

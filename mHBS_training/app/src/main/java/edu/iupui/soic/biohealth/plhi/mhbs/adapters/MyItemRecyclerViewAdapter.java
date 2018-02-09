@@ -5,12 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import edu.iupui.soic.biohealth.plhi.mhbs.R;
-
-import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment.OnListFragmentInteractionListener;
-import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources.ResourceItem;
 
 import java.util.List;
+
+import edu.iupui.soic.biohealth.plhi.mhbs.R;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources.ResourceItem;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment.OnListFragmentInteractionListener;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link ResourceItem} and makes a call to the

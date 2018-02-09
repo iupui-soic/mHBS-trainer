@@ -24,8 +24,8 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_resources);
+        // we will pass this to our fragment bundle
         ACTIVITY = getIntent().getStringExtra("resourceKey");
-        Log.d("Test", ACTIVITY + "in Resources");
 
         // set the action bar to implement going back
         ActionBar myToolbar = this.getSupportActionBar();

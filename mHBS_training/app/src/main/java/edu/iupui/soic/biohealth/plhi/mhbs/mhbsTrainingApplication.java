@@ -43,6 +43,7 @@ public class mhbsTrainingApplication extends Dhis2Application {
         if(userAccount!=null) {
             Class<?> mainActivity = getMainActivity();
             Intent i = new Intent(getApplicationContext(), mainActivity);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
         }else if(isTrackerInstalled(getString(R.string.trackerCapture))){
             // broadcast to tracker to receive login information

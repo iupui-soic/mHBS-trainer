@@ -76,9 +76,9 @@ public class ItemFragment extends Fragment {
             // TODO: Fix appending the same document items
             Log.d("Test",activity);
             if (activity.equals("Videos")) {
-                recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.VIDEO_MAP, mListener));
+                recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.VIDEO_RESOURCES, mListener));
             } else if (activity.equals("Resources")) {
-                recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.PDF_MAP, mListener));
+                recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DocumentResources.PDF_RESOURCES, mListener));
             }
         }
         return view;

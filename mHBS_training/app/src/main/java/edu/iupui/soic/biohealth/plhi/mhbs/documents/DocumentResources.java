@@ -1,6 +1,5 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
-import android.content.ClipData;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
@@ -17,31 +16,23 @@ import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class DocumentResources extends AsyncTask<String, String, List<DocumentResources.ResourceItem>> {
     // url for downloading documents from DHIS2 Web API
     private static final String URL = "https://mhbs.info/api/documents";
-    // contain list of resource Items
-    public static final List<ResourceItem> ITEMS = new ArrayList<>();
-    // contain a list of Ids of all resources
+    // List of IDs associated with a resource parsed from /api/documents
     private List resourcesFound = new ArrayList<>();
-    // holders for auth credentials for getting API data
+    // holders for auth credentials to access API
     private static String password;
     private static String username;
-    // Keys to parse various types of resources
-    private static final String XMLRESOURCES = "XMLResources";
-    public static final List<ResourceItem> VIDEO_MAP = new ArrayList<>();
-    public static final List<ResourceItem> PDF_MAP = new ArrayList<>();
-
-    /**
-     * A map of sample (resource) items, by ID.
-     */
-    private static final int COUNT = 5;
+    // To request parsing xml resources instead of individual resources
+    private final String XMLRESOURCES = "XmlResources";
+    // Holds video resources to populate list in
+    public static final List<ResourceItem> VIDEO_RESOURCES = new ArrayList<>();
+    public static final List<ResourceItem> PDF_RESOURCES = new ArrayList<>();
 
     /**
      * A resource item representing a piece of content.
@@ -63,21 +54,12 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         }
     }
 
-    private static void addItem(List<ResourceItem> ItemMap, ResourceItem item) {
-        ItemMap.add(item);
-      //  ItemMap.put(item.id, item);
+    // used to separate video and pdf items which were parsed from XML
+    private static void addItem(List<ResourceItem> ResourceList, ResourceItem item) {
+        ResourceList.add(item);
     }
 
-    private static String makeDetails(int position) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Details about Item: ").append(position);
-        for (int i = 0; i < position; i++) {
-            builder.append("\nMore details information here.");
-        }
-        return builder.toString();
-    }
-
-    // initializes async task to get resource items
+    // initializer for async task to get resource items
     public static void getParsedResourceItems(String Activity) {
         new DocumentResources().execute(Activity);
     }
@@ -85,37 +67,39 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     @Override
     // Starts a new Async task to get XML in background
     protected List<ResourceItem> doInBackground(String... act) {
-
-        String activity = act[0];
-        /* remove last character from the calling type
-        * within XML there exists contentType which state pdf or video
-        * we will use this to check if the resource contains the activity which is calling
+        // pass in the type of resource we want depending on which button user clicked
+        String resourceToParse = act[0];
+        /* strip char from the resource to parse
+        * within XML there exists contentType which contains "pdf" or "video"
+        * When clicking the Video button, the calling activity is passed "Videos"
         */
-        String videoResource = removeLastChar(activity).toLowerCase();
+        String videoResource = removeLastChar(resourceToParse).toLowerCase();
         // we will use this to see if the caller is pdf resources
-        Boolean isResources = activity.equals("Resources");
+        Boolean isResources = resourceToParse.equals("Resources");
 
         // if we already have video items, we don't want to download them again (for the moment)
-        if ((isResources && PDF_MAP.isEmpty()) || VIDEO_MAP.isEmpty()) {
+        if ((isResources && PDF_RESOURCES.isEmpty()) || VIDEO_RESOURCES.isEmpty()) {
             // Try to pull in the DHISAPI XML and initialize XmlPullParser
             XmlPullParser xPP = tryDownloadingXMLData(URL + ".xml");
             // Now, try to get a list of data pulled from the XML
             resourcesFound = tryParsingXmlData(xPP, XMLRESOURCES);
             if (resourcesFound != null) {
                 // depending on activity, parse different resources
-                List resource = tryParsingXmlData(xPP, activity);
-                // TODO: reduce this
-                // Look through whole list of resources and parse to seperate content maps
-                for (int i = 0; i < resource.size(); i++) {
+                List resource = tryParsingXmlData(xPP, resourceToParse);
+
+                // TODO: improve/ cleanup
+                int i = 0;
+                while (i < resource.size()) {
                     if (resource.get(i).toString().contains(videoResource)) {
-                        addItem(VIDEO_MAP, new ResourceItem(resource.get(i).toString(), resourcesFound.get(i).toString(), null));
+                        addItem(VIDEO_RESOURCES, new ResourceItem(resourcesFound.get(i + 2).toString(), resourcesFound.get(i + 1).toString(), null));
                     } else if (isResources && resource.get(i).toString().contains("pdf")) {
-                        addItem(PDF_MAP, new ResourceItem(resource.get(i).toString(), resourcesFound.get(i).toString(), null));
+                        addItem(PDF_RESOURCES, new ResourceItem(resourcesFound.get(i + 1).toString(), resourcesFound.get(i).toString(), null));
                     }
+                    i++;
                 }
             }
         }
-        return (isResources) ? PDF_MAP : VIDEO_MAP;
+        return (isResources) ? PDF_RESOURCES : VIDEO_RESOURCES;
     }
 
     /*
@@ -127,12 +111,13 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             authenticateUser();
             InputStream in = downloadUrl(url);
             // get a new pull parser and create new pull parser
-            XmlPullParser xPP = Xml.newPullParser();
-            xPP.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+            XmlPullParser parser = Xml.newPullParser();
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
             // set input stream
-            xPP.setInput(in, null);
+            parser.setInput(in, null);
+            parser.nextTag();
             // return pull parser
-            return xPP;
+            return parser;
         } catch (IOException | XmlPullParserException e) {
             Log.e("XmlPullParserException", e.getMessage());
         }
@@ -162,8 +147,10 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     private List processResources(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<String> entries = new ArrayList<>();
         for (int i = 0; i < resourcesFound.size(); i++) {
-            // for each entry resource already found parse the XML data so we can get their types
-            entries.add(tryParsingResources(parser, resourcesFound.get(i).toString()));
+            if (i % 2 == 0) {
+                // for each entry resource already found parse the XML data so we can get their types
+                entries.add(tryParsingResources(parser, resourcesFound.get(i).toString()));
+            }
         }
         return entries;
     }
@@ -179,7 +166,6 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
 
     // parses contentTypes from document resources
     private String tryParsingResourceType(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.nextTag();
         String contentType = "";
         parser.require(XmlPullParser.START_TAG, null, "document");
         // while we did not reach the closing tag to START_TAG
@@ -222,8 +208,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     // processes list of all document resources, not individual document resources
     private List processReceivedData(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<String> entries = new ArrayList<>();
-        // start parser
-        parser.nextTag();
+        String id = "";
+        String title = "";
         // defines the first outer XML tag
         parser.require(XmlPullParser.START_TAG, null, "metadata");
         // while we did not reach the end of document
@@ -231,42 +217,15 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
-            // check the name of the current tag
-            String name = parser.getName();
-            // if documents, start parsing
-            if (name.equals("documents")) {
-                entries = readEntry(parser);
-            } else {
-                // otherwise skip
-                skip(parser);
+            if (parser.getName().equals("document")) {
+                id = readId(parser);
+                entries.add(id);
+            }
+            if (parser.getName().equals("displayName")) {
+                title = parser.nextText();
+                entries.add(title);
             }
         }
-        return entries;
-    }
-
-    // Parses the contents of an entry. If it encounters a document, hands them off
-    // to their respective "read" methods for processing. Otherwise, skips the tag.
-    private List<String> readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List<String> entries = new ArrayList<>();
-        // start off at documents
-        parser.require(XmlPullParser.START_TAG, null, "documents");
-        // while the next tag is not the end of document
-        while (parser.next() != XmlPullParser.END_DOCUMENT) {
-            // continue if the event is a text or end tag
-            if (parser.getEventType() != XmlPullParser.START_TAG) {
-                continue;
-            }
-            // check the opening tag, is it a document?
-            String name = parser.getName();
-            if (name.equals("document")) {
-                // read the id
-                entries.add(readId(parser));
-            } else {
-                // if it's not a document, skip it
-                skip(parser);
-            }
-        }
-        // return id
         return entries;
     }
 
@@ -277,10 +236,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         String tag = parser.getName();
         if (tag.equals("document")) {
             id = parser.getAttributeValue(null, "id");
-            // skip displayName attribute
-            skip(parser);
+            parser.nextTag();
         }
-        parser.require(XmlPullParser.END_TAG, null, "document");
         return id;
     }
 

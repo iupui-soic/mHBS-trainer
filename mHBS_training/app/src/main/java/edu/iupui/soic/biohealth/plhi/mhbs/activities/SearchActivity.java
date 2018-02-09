@@ -7,6 +7,7 @@ package edu.iupui.soic.biohealth.plhi.mhbs.activities;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 
 
