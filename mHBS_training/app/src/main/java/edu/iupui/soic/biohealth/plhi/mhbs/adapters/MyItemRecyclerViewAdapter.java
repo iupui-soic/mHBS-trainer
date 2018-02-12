@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
@@ -19,14 +20,17 @@ import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment.OnListFragmentI
  */
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
-    private final List<ResourceItem> mValues;
-    private final OnListFragmentInteractionListener mListener;
+    private static List<ResourceItem> mValues = new ArrayList<>();
+    private OnListFragmentInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(List<ResourceItem> items, OnListFragmentInteractionListener listener) {
-        mValues = items;
-        mListener = listener;
+    public MyItemRecyclerViewAdapter(OnListFragmentInteractionListener mListener) {
+      this.mListener = mListener;
     }
 
+
+    public void addItems(List<ResourceItem> items){
+        mValues = items;
+    }
 
 
     @Override
@@ -39,10 +43,9 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-
-        holder.mIdView.setText(mValues.get(position).id);
         holder.mTitleView.setText(mValues.get(position).title);
-    //    holder.mInstitutionView.setText(mValues.get(position).institution);
+        //    holder.mInstitutionView.setText(mValues.get(position).institution);
+        //  holder.mIdView.setText(mValues.get(position).id);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,7 +66,6 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView mIdView;
         public final TextView mTitleView;
         public final TextView mInstitutionView;
 
@@ -72,8 +74,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.titleImage);
-            mTitleView = (TextView) view.findViewById(R.id.titleLocation);
+            mTitleView = (TextView) view.findViewById(R.id.titleResource);
             mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
         }
 
@@ -82,4 +83,5 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             return super.toString();
         }
     }
+
 }

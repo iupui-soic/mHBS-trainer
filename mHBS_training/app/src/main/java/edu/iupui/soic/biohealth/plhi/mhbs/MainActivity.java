@@ -237,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // when each button is clicked, we call the program portal activity and display program options per resource chosen
     public void callProgramPortal(String resourceType) {
-        DocumentResources.getParsedResourceItems(resourceType);
         Intent intent = new Intent(this, ProgramPortalActivity.class);
         intent.putExtra(getString(R.string.resourceKey), resourceType);
         startActivity(intent);

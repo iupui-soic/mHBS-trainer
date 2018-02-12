@@ -20,6 +20,8 @@ import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import edu.iupui.soic.biohealth.plhi.mhbs.adapters.MyItemRecyclerViewAdapter;
+
 public class DocumentResources extends AsyncTask<String, String, List<DocumentResources.ResourceItem>> {
     // url for downloading documents from DHIS2 Web API
     private static final String URL = "https://mhbs.info/api/documents";
@@ -31,8 +33,9 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     // To request parsing xml resources instead of individual resources
     private final String XMLRESOURCES = "XmlResources";
     // Holds video resources to populate list in
-    public static final List<ResourceItem> VIDEO_RESOURCES = new ArrayList<>();
-    public static final List<ResourceItem> PDF_RESOURCES = new ArrayList<>();
+    private static final List<ResourceItem> VIDEO_RESOURCES = new ArrayList<>();
+    private static final List<ResourceItem> PDF_RESOURCES = new ArrayList<>();
+    private AsyncResponse delegate = null;
 
     /**
      * A resource item representing a piece of content.
@@ -59,10 +62,11 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         ResourceList.add(item);
     }
 
-    // initializer for async task to get resource items
+    /* initializer for async task to get resource items
     public static void getParsedResourceItems(String Activity) {
         new DocumentResources().execute(Activity);
     }
+    */
 
     @Override
     // Starts a new Async task to get XML in background
@@ -86,19 +90,22 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             if (resourcesFound != null) {
                 // depending on activity, parse different resources
                 List resource = tryParsingXmlData(xPP, resourceToParse);
-
-                // TODO: improve/ cleanup
                 int i = 0;
+                // each i in resource array maps to a set of ids and titles (2(i), 2(i)+1) in resourcesFound
                 while (i < resource.size()) {
-                    if (resource.get(i).toString().contains(videoResource)) {
-                        addItem(VIDEO_RESOURCES, new ResourceItem(resourcesFound.get(i + 2).toString(), resourcesFound.get(i + 1).toString(), null));
-                    } else if (isResources && resource.get(i).toString().contains("pdf")) {
-                        addItem(PDF_RESOURCES, new ResourceItem(resourcesFound.get(i + 1).toString(), resourcesFound.get(i).toString(), null));
+                    // if resource element contains a video & videos were requested (!isResources)
+                    if (!isResources && resource.get(i).toString().contains(videoResource)) {
+                        addItem(VIDEO_RESOURCES, new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
+                        // we need to check if the resource is a pdf AND if a pdf was requested
+                    } else if (resource.get(i).toString().contains("pdf")) {
+                        addItem(PDF_RESOURCES, new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
                     }
                     i++;
                 }
+
             }
         }
+        // return a list of either pdf or video resources
         return (isResources) ? PDF_RESOURCES : VIDEO_RESOURCES;
     }
 
@@ -276,13 +283,20 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
                     break;
             }
         }
+    }
 
+    public interface AsyncResponse {
+        void processFinish(List<ResourceItem> output);
+    }
+
+    public DocumentResources(AsyncResponse delegate){
+        this.delegate = delegate;
     }
 
     @Override
     // results display here
     protected void onPostExecute(List<ResourceItem> items) {
-        // TODO: process resource ITEMS
+        delegate.processFinish(items);
     }
 
     // helper function to trim activity string

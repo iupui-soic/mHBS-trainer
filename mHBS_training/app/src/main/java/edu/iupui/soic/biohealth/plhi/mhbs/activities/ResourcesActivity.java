@@ -5,6 +5,7 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.activities;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -13,20 +14,19 @@ import android.view.MenuItem;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
-import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemDetailsFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.PdfDetailsFragment;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.VideoDetailsFragment;
 
 public class ResourcesActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
     FragmentManager fragmentManager = getSupportFragmentManager();
-    private static String ACTIVITY = "";
+    private String ACTIVITY = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_resources);
-        // we will pass this to our fragment bundle
         ACTIVITY = getIntent().getStringExtra("resourceKey");
-
         // set the action bar to implement going back
         ActionBar myToolbar = this.getSupportActionBar();
         if (myToolbar != null) {
@@ -47,11 +47,14 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
 
     @Override
     public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
-        ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
-     //   detailsFragment.setArguments(getBundle());
+        Fragment detailsFragment;
+        if(ACTIVITY=="Videos"){
+            detailsFragment =  new VideoDetailsFragment();
+        }else{
+            detailsFragment = new PdfDetailsFragment();
 
-        // when we interact with an item, begin a new details fragment
-        // TODO: will need to pass item data to the new fragment
+        }
+
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.res_fragment_container, detailsFragment)
@@ -78,7 +81,7 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     private Bundle getBundle() {
         Bundle args = new Bundle();
         // Communicate with Fragment using Bundle
-        args.putString("resourceKey", ACTIVITY);
+        args.putString("resourceKey", getIntent().getStringExtra("resourceKey"));
         return args;
     }
 }
