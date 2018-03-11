@@ -6,7 +6,9 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -80,10 +82,10 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
 
     }
     public void loginFromTracker() {
-
         if (extras != null) {
             ArrayList<String> creds;
             creds = extras.getStringArrayList(requestKey);
+            //TODO: test
             if (creds != null) {
                 if (usernameEditText != null && passwordEditText != null && serverEditText != null) {
                     usernameEditText.setText(creds.get(0));
@@ -188,11 +190,13 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         }
 
         mPrefs.putServerUrl(serverURL);
-
+        // set shared preferences for use in http auth for web api
+        sendToSharedPref(username,password);
         login(serverURL, username, password);
     }
 
     public void login(String serverUrl, String username, String password) {
+
         if (!trackerFlag) {
             showProgress();
         }
@@ -303,4 +307,14 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         System.exit(0);
         super.onBackPressed();
     }
+
+    // send to shared preferences for use in other places in our app
+    private void sendToSharedPref(String username, String password){
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences("credentials",0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("username", username);
+        editor.putString("password", password);
+        editor.commit();
+    }
+
 }

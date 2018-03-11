@@ -1,11 +1,13 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
 import android.os.AsyncTask;
+import android.os.Process;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Xml;
 
 import org.hisp.dhis.android.sdk.controllers.DhisController;
+import org.hisp.dhis.android.sdk.network.Credentials;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -20,11 +22,11 @@ import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import edu.iupui.soic.biohealth.plhi.mhbs.adapters.MyItemRecyclerViewAdapter;
+import static android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY;
 
 public class DocumentResources extends AsyncTask<String, String, List<DocumentResources.ResourceItem>> {
     // url for downloading documents from DHIS2 Web API
-    private static final String URL = "https://mhbs.info/api/documents";
+    private final String URL = "https://mhbs.info/api/documents";
     // List of IDs associated with a resource parsed from /api/documents
     private List resourcesFound = new ArrayList<>();
     // holders for auth credentials to access API
@@ -36,7 +38,6 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     private static final List<ResourceItem> VIDEO_RESOURCES = new ArrayList<>();
     private static final List<ResourceItem> PDF_RESOURCES = new ArrayList<>();
     private AsyncResponse delegate = null;
-
     /**
      * A resource item representing a piece of content.
      */
@@ -58,31 +59,25 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     }
 
     // used to separate video and pdf items which were parsed from XML
-    private static void addItem(List<ResourceItem> ResourceList, ResourceItem item) {
-        ResourceList.add(item);
+    private static void addItem(String itemType, ResourceItem item) {
+        if(itemType.equals("Video")) {
+            VIDEO_RESOURCES.add(item);
+        }else {
+            PDF_RESOURCES.add(item);
+        }
     }
-
-    /* initializer for async task to get resource items
-    public static void getParsedResourceItems(String Activity) {
-        new DocumentResources().execute(Activity);
-    }
-    */
 
     @Override
     // Starts a new Async task to get XML in background
     protected List<ResourceItem> doInBackground(String... act) {
+        Process.setThreadPriority(THREAD_PRIORITY_URGENT_DISPLAY);
+
         // pass in the type of resource we want depending on which button user clicked
         String resourceToParse = act[0];
-        /* strip char from the resource to parse
-        * within XML there exists contentType which contains "pdf" or "video"
-        * When clicking the Video button, the calling activity is passed "Videos"
-        */
-        String videoResource = removeLastChar(resourceToParse).toLowerCase();
         // we will use this to see if the caller is pdf resources
         Boolean isResources = resourceToParse.equals("Resources");
-
         // if we already have video items, we don't want to download them again (for the moment)
-        if ((isResources && PDF_RESOURCES.isEmpty()) || VIDEO_RESOURCES.isEmpty()) {
+        if(DocumentResources.VIDEO_RESOURCES.isEmpty() || DocumentResources.PDF_RESOURCES.isEmpty()){
             // Try to pull in the DHISAPI XML and initialize XmlPullParser
             XmlPullParser xPP = tryDownloadingXMLData(URL + ".xml");
             // Now, try to get a list of data pulled from the XML
@@ -93,16 +88,15 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
                 int i = 0;
                 // each i in resource array maps to a set of ids and titles (2(i), 2(i)+1) in resourcesFound
                 while (i < resource.size()) {
-                    // if resource element contains a video & videos were requested (!isResources)
-                    if (!isResources && resource.get(i).toString().contains(videoResource)) {
-                        addItem(VIDEO_RESOURCES, new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
-                        // we need to check if the resource is a pdf AND if a pdf was requested
+                    // if resource element contains a video
+                    if (resource.get(i).toString().contains("video")) {
+                        addItem("Video", new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
+                        // check if the resource contains a pdf
                     } else if (resource.get(i).toString().contains("pdf")) {
-                        addItem(PDF_RESOURCES, new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
+                        addItem("Pdf", new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
                     }
                     i++;
                 }
-
             }
         }
         // return a list of either pdf or video resources
@@ -266,7 +260,6 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         return null;
     }
 
-
     // skip undesired tags
     private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
         if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -287,6 +280,7 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
 
     public interface AsyncResponse {
         void processFinish(List<ResourceItem> output);
+        Credentials getCredentials();
     }
 
     public DocumentResources(AsyncResponse delegate){
@@ -296,24 +290,30 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     @Override
     // results display here
     protected void onPostExecute(List<ResourceItem> items) {
-        delegate.processFinish(items);
+            delegate.processFinish(items);
     }
-
-    // helper function to trim activity string
-    private static String removeLastChar(String str) {
-        return str.substring(0, str.length() - 1);
-    }
-
 
     // sets as default auth to compare with auth attached to URL conn
     private void authenticateUser() {
-        username = DhisController.getInstance().getSession().getCredentials().getUsername();
-        password = DhisController.getInstance().getSession().getCredentials().getPassword();
-        Authenticator.setDefault(new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password.toCharArray());
-            }
-        });
+        if(DhisController.isUserLoggedIn()) {
+            username = DhisController.getInstance().getSession().getCredentials().getUsername();
+            password = DhisController.getInstance().getSession().getCredentials().getPassword();
+        }
+        //TODO: debug hanging @ credentials
+     //   else{
+            /*
+                Credentials credentials = delegate.getCredentials();
+                username = credentials.getUsername();
+                password = credentials.getPassword();
+                Log.d("Test", "hanging");
+                //hanging here..
+                */
+        //   }
+            Authenticator.setDefault(new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password.toCharArray());
+                }
+            });
 
     }
 

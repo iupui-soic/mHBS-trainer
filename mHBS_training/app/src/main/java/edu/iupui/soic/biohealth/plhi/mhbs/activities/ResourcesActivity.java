@@ -5,12 +5,15 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+
+import java.util.List;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
@@ -48,12 +51,17 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     @Override
     public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
         Fragment detailsFragment;
-        if(ACTIVITY=="Videos"){
+        if(ACTIVITY.equals("Videos")){
             detailsFragment =  new VideoDetailsFragment();
         }else{
             detailsFragment = new PdfDetailsFragment();
 
         }
+
+        Bundle b = new Bundle();
+        b.putString("resourceId", item.id);
+        b.putString("resourceKey", ACTIVITY);
+        detailsFragment.setArguments(b);
 
         fragmentManager
                 .beginTransaction()
