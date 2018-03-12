@@ -38,6 +38,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     private static final List<ResourceItem> VIDEO_RESOURCES = new ArrayList<>();
     private static final List<ResourceItem> PDF_RESOURCES = new ArrayList<>();
     private AsyncResponse delegate = null;
+    public static boolean CURRENTLY_DOWNLOADING = false;
+
     /**
      * A resource item representing a piece of content.
      */
@@ -71,6 +73,7 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     // Starts a new Async task to get XML in background
     protected List<ResourceItem> doInBackground(String... act) {
         Process.setThreadPriority(THREAD_PRIORITY_URGENT_DISPLAY);
+        CURRENTLY_DOWNLOADING = true;
 
         // pass in the type of resource we want depending on which button user clicked
         String resourceToParse = act[0];
@@ -291,7 +294,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     @Override
     // results display here
     protected void onPostExecute(List<ResourceItem> items) {
-            delegate.processFinish(items);
+        CURRENTLY_DOWNLOADING = false;
+        delegate.processFinish(items);
     }
 
     // sets as default auth to compare with auth attached to URL conn

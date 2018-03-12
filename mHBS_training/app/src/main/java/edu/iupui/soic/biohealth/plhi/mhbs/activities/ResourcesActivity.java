@@ -13,10 +13,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 
+import org.w3c.dom.Document;
+
 import java.util.List;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.ResourceItemDownloader;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.PdfDetailsFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.VideoDetailsFragment;
@@ -72,17 +75,23 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
 
     // for returning via the menu back button rather than button click
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                // pop off fragments if we can
-                if (fragmentManager.getBackStackEntryCount() > 1) {
-                    fragmentManager.popBackStack();
-                    return true;
-                }
-                super.onBackPressed();
+        if (DocumentResources.CURRENTLY_DOWNLOADING) {
+            return false;
+        }else {
 
-            default:
-                return super.onOptionsItemSelected(item);
+            switch (item.getItemId()) {
+                case android.R.id.home:
+                    // pop off fragments if we can
+                    if (fragmentManager.getBackStackEntryCount() > 1) {
+                        fragmentManager.popBackStack();
+                        return true;
+                    }
+                    super.onBackPressed();
+
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
+
         }
     }
 
@@ -92,4 +101,5 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
         args.putString("resourceKey", getIntent().getStringExtra("resourceKey"));
         return args;
     }
+
 }
