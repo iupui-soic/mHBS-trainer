@@ -69,7 +69,6 @@ public class ResourceItemDownloader {
        //  authorization we pass to download manager
         String muriURL = "https://mhbs.info/api/documents/";
         String urlString = muriURL + downloadId + "/data";
-        Log.d("Test", "here");
         // parse url, set download to path, add authorization and enqueue the request
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(urlString));
 
@@ -132,13 +131,14 @@ public class ResourceItemDownloader {
 
     // sets as default auth to compare with auth attached to URL conn
     private void authenticateUser() {
+        if(DhisController.isUserLoggedIn()) {
             username = DhisController.getInstance().getSession().getCredentials().getUsername();
             password = DhisController.getInstance().getSession().getCredentials().getPassword();
-        if(username.equals("") || password.equals("")) {
+        }
+        else{
             SharedPreferences sharedPref = pContext.getSharedPreferences("credentials", Context.MODE_PRIVATE);
             username = sharedPref.getString("username", "NULL");
             password = sharedPref.getString("password", "NULL");
-
         }
             Authenticator.setDefault(new Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {

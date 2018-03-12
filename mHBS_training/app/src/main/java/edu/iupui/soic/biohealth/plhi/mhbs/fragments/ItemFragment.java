@@ -120,14 +120,14 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
         void onListFragmentInteraction(ResourceItem item);
     }
 
-    public Credentials getCredentials(){
+
+public Credentials getCredentials(){
         String username = "";
         String password = "";
-        // TODO: fix hardcode
         SharedPreferences sharedPref = getContext().getSharedPreferences("credentials", 0);
         username = sharedPref.getString("username", "NULL");
         password = sharedPref.getString("password", "NULL");
-        Log.d("Test", username);
-        return new Credentials(username,password);
+        Credentials credentials = new Credentials(username,password);
+    return credentials;
     }
 }

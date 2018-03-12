@@ -78,6 +78,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         Boolean isResources = resourceToParse.equals("Resources");
         // if we already have video items, we don't want to download them again (for the moment)
         if(DocumentResources.VIDEO_RESOURCES.isEmpty() || DocumentResources.PDF_RESOURCES.isEmpty()){
+            // user authentification
+            authenticateUser();
             // Try to pull in the DHISAPI XML and initialize XmlPullParser
             XmlPullParser xPP = tryDownloadingXMLData(URL + ".xml");
             // Now, try to get a list of data pulled from the XML
@@ -109,7 +111,6 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     */
     private XmlPullParser tryDownloadingXMLData(String url) {
         try {
-            authenticateUser();
             InputStream in = downloadUrl(url);
             // get a new pull parser and create new pull parser
             XmlPullParser parser = Xml.newPullParser();
@@ -299,21 +300,17 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             username = DhisController.getInstance().getSession().getCredentials().getUsername();
             password = DhisController.getInstance().getSession().getCredentials().getPassword();
         }
-        //TODO: debug hanging @ credentials
-     //   else{
-            /*
-                Credentials credentials = delegate.getCredentials();
-                username = credentials.getUsername();
-                password = credentials.getPassword();
-                Log.d("Test", "hanging");
-                //hanging here..
-                */
-        //   }
+        else{
+            Credentials credentials = delegate.getCredentials();
+            username = credentials.getUsername();
+            password = credentials.getPassword();
+        }
             Authenticator.setDefault(new Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(username, password.toCharArray());
                 }
             });
+
 
     }
 
