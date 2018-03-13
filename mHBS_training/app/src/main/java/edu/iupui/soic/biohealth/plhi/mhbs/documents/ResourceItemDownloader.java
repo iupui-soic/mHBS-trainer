@@ -7,13 +7,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.support.v4.content.FileProvider;
 import android.util.Base64;
 import android.util.Log;
 
 import org.hisp.dhis.android.sdk.controllers.DhisController;
 
-import java.io.File;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
@@ -58,9 +56,8 @@ public class ResourceItemDownloader {
             receiver.onReceive(pContext, intent);
         } else {
             // item not on device, try to download
-          // downloadURL();
+            downloadURL();
         }
-        downloadURL();
     }
 
     // for downloading content
@@ -85,13 +82,12 @@ public class ResourceItemDownloader {
         }else {
             fileItem = downloadId + ".pdf";
         }
-        // item is in internal storage
         if(path.contains("app_mhbsDocs")){
             request.setDestinationInExternalFilesDir(pContext,path,fileItem);
         }else{
-            // item is in external storage
             request.setDestinationInExternalPublicDir(path, fileItem);
         }
+
         DownloadManager manager = (DownloadManager) pContext.getSystemService(Context.DOWNLOAD_SERVICE);
 
         try {

@@ -2,7 +2,6 @@ package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
 import android.content.Context;
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 
@@ -25,14 +24,12 @@ public class ResourceItemDownloaderUtil {
 
     public void tryCreateDirectory() {
         // create external directory to send downloads
-        /*
         if (isExternalStorageWritable()) {
             resourceDir = createExternalDir();
         } else {
-        */
             // sometimes external is unmounted, so we will send to internal in that case
             resourceDir = createInternalDir();
-       // }
+        }
     }
 
     /* Checks if external storage is available for read and write */
@@ -66,11 +63,7 @@ public class ResourceItemDownloaderUtil {
     // create a folder on app's internal directory storage
     private File createInternalDir() {
         File dir = pContext.getDir(dirName, Context.MODE_PRIVATE);
-        File subDir = new File(dir, dirName);
-        if (!subDir.exists()) {
-            subDir.mkdirs();
-        }
-        return subDir;
+        return dir;
     }
 
     // checks both external and then internal if no file found in external

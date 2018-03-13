@@ -5,9 +5,10 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.fragments;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -46,25 +47,9 @@ public class VideoDetailsFragment extends Fragment implements ResourceItemDownlo
         // Inflate the xml for the fragment
         View rootView = inflater.inflate(R.layout.fragment_video_details, parent, false);
         // find and return the view
+        videoView = (VideoView) rootView.findViewById(R.id.video_details_item);
+        mView = rootView;
         return rootView;
-    }
-
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        mView = view;
-      /*  videoView = (VideoView) view.findViewById(R.id.video_details_item);
-        if (openVideo != null) {
-            //Use a media controller so that you can scroll the video contents
-            //and also to pause, start the video.
-            MediaController mediaController = new MediaController(getActivity());
-            mediaController.setAnchorView(videoView);
-            //  videoView.setMediaController(mediaController);
-            videoView.setVideoPath(openVideo.getPath());
-            //  videoView.requestFocus();
-            videoView.start();
-        }
-        */
     }
 
     private boolean checkRunTimePermissions() {
@@ -78,18 +63,25 @@ public class VideoDetailsFragment extends Fragment implements ResourceItemDownlo
 
     @Override
     public void onDownloadFinish(String fileName) {
+
+        Log.d("Test", "FILE NAME" + fileName);
+        File parentDir = getContext().getExternalFilesDir(null);
         // file is in internal storage
-        String path = getActivity().getFilesDir().getAbsolutePath();
-      //  File newFile = new File(path + )
-        Log.d("Test", path);
         if (fileName.contains("app_mhbsDocs")) {
-            //TODO: make this more eloquent...
-            openVideo = new File("/storage/emulated/0/Android/data/edu.iupui.soic.biohealth.plhi.mhbs/files/data/user/0/edu.iupui.soic.biohealth.plhi.mhbs/app_mhbsDocs/mhbsDocs/" + itemToDownload + ".webm");
+            // always points to internal memory (note, automatically concatenates app_ by default)
+            File dir = getContext().getDir("mhbsDocs", Context.MODE_PRIVATE);
+            File internalFile = new File(parentDir + "/" + dir);
+            openVideo = new File(internalFile + "/" + itemToDownload + ".webm");
         } else {
-            // file in external storage
-            openVideo = new File("/storage/emulated/0/" + fileName + "/" + itemToDownload + ".webm");
+            openVideo = new File(Environment.getExternalStorageDirectory().getPath() + fileName + "/" + itemToDownload + ".webm");
         }
-        videoView = (VideoView) mView.findViewById(R.id.video_details_item);
+        // note if we try to call video here, the onCreateView hasn't been created yet
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         if (openVideo != null) {
             //Use a media controller so that you can scroll the video contents
             //and also to pause, start the video.
@@ -98,11 +90,9 @@ public class VideoDetailsFragment extends Fragment implements ResourceItemDownlo
             //  videoView.setMediaController(mediaController);
             videoView.setVideoPath(openVideo.getPath());
             //  videoView.requestFocus();
-            videoView.start();
+              videoView.start();
         }
+
+
     }
-
-    // /storage/emulated/legacy/Android/data/edu.iupui.soic.biohealth.plhi.mhbs/files/app_mhbsDocs/mhbsDocs/nJpFTm8PNb5-1.webm
-
-
-}
+    }

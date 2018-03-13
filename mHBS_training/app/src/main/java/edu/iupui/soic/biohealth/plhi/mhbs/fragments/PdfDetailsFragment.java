@@ -5,8 +5,10 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.fragments;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -25,6 +27,7 @@ import edu.iupui.soic.biohealth.plhi.mhbs.documents.ResourceItemDownloader;
 public class PdfDetailsFragment extends Fragment implements ResourceItemDownloader.DownloadResponse {
     private String itemToDownload = "";
     private File openResource;
+    private View pView;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,13 +46,7 @@ public class PdfDetailsFragment extends Fragment implements ResourceItemDownload
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         // Inflate the xml file for the fragment
         View rootView = inflater.inflate(R.layout.fragment_pdf_details, parent, false);
-
-        PDFView pdfView = (PDFView) rootView.findViewById(R.id.pdfView);
-        //TODO: error handling in ResourceDownloader if we couldnt download or find file and checks
-        // if exists here as well
-        if (openResource != null) {
-            pdfView.fromFile(openResource).enableDoubletap(true).enableSwipe(true).scrollHandle(new DefaultScrollHandle(getContext())).swipeHorizontal(false).defaultPage(0).load();
-        }
+        pView = rootView;
         return rootView;
     }
 
@@ -67,11 +64,18 @@ public class PdfDetailsFragment extends Fragment implements ResourceItemDownload
     public void onDownloadFinish(String fileName) {
         // the resource lies in internal storage
         if (fileName.contains("app_mhbsDocs")) {
-            //TODO: make this more eloquent...
-            openResource = new File("/storage/emulated/0/Android/data/edu.iupui.soic.biohealth.plhi.mhbs/files/data/user/0/edu.iupui.soic.biohealth.plhi.mhbs/app_mhbsDocs/mhbsDocs/" + itemToDownload + ".pdf");
+            File parentDir = getContext().getExternalFilesDir(null);
+            // always points to internal memory (note, automatically concatenates app_ by default)
+            File dir = getContext().getDir("mhbsDocs", Context.MODE_PRIVATE);
+            File internalFile = new File(parentDir +"/" + dir);
+            openResource =  new File(internalFile + "/" + itemToDownload + ".pdf");
         } else {
             // resource is in external storage
-            openResource = new File("/storage/self/primary/" + fileName + "/" + itemToDownload + ".pdf");
+            openResource = new File(Environment.getExternalStorageDirectory().getPath() + fileName + "/" + itemToDownload + ".pdf");
+        }
+        PDFView pdfView = (PDFView) pView.findViewById(R.id.pdfView);
+        if (openResource != null) {
+            pdfView.fromFile(openResource).enableDoubletap(true).enableSwipe(true).scrollHandle(new DefaultScrollHandle(getContext())).swipeHorizontal(false).defaultPage(0).load();
         }
     }
 }
