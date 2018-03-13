@@ -7,11 +7,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.support.v4.content.FileProvider;
 import android.util.Base64;
 import android.util.Log;
 
 import org.hisp.dhis.android.sdk.controllers.DhisController;
 
+import java.io.File;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
@@ -56,31 +58,39 @@ public class ResourceItemDownloader {
             receiver.onReceive(pContext, intent);
         } else {
             // item not on device, try to download
-            downloadURL();
+          // downloadURL();
         }
-
+        downloadURL();
     }
 
     // for downloading content
     private void downloadURL() {
         // we need to auth the user to access web api materials
         authenticateUser();
-
        //  authorization we pass to download manager
         String muriURL = "https://mhbs.info/api/documents/";
         String urlString = muriURL + downloadId + "/data";
         // parse url, set download to path, add authorization and enqueue the request
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(urlString));
-
-        //TODO change location based on internal/ext
+        String path = rdUtil.getResourceDir().getAbsolutePath();
+        // authentication
+        String authorization = username + ":" + password;
+        byte[] data = authorization.getBytes();
+        String base64 = Base64.encodeToString(data, Base64.DEFAULT);
+        request.addRequestHeader("Authorization", "Basic " + base64);
+        // hold file item
+        String fileItem;
         if(itemType.equals("Videos")){
-            String authorization = username + ":" + password;
-            request.setDestinationInExternalPublicDir(rdUtil.getResourceDir().getAbsolutePath(), downloadId + ".webm");
-            byte[] data = authorization.getBytes();
-            String base64 = Base64.encodeToString(data, Base64.DEFAULT);
-            request.addRequestHeader("Authorization", "Basic " + base64);
+            fileItem = downloadId + ".webm";
         }else {
-            request.setDestinationInExternalPublicDir(rdUtil.getResourceDir().getAbsolutePath(), downloadId + ".pdf");
+            fileItem = downloadId + ".pdf";
+        }
+        // item is in internal storage
+        if(path.contains("app_mhbsDocs")){
+            request.setDestinationInExternalFilesDir(pContext,path,fileItem);
+        }else{
+            // item is in external storage
+            request.setDestinationInExternalPublicDir(path, fileItem);
         }
         DownloadManager manager = (DownloadManager) pContext.getSystemService(Context.DOWNLOAD_SERVICE);
 

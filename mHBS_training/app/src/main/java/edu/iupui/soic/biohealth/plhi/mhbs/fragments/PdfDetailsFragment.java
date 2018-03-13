@@ -65,8 +65,13 @@ public class PdfDetailsFragment extends Fragment implements ResourceItemDownload
 
     @Override
     public void onDownloadFinish(String fileName) {
-        //TODO: this is for external only, check where internals go
-        openResource = new File("/storage/self/primary/" + fileName + "/" + itemToDownload + ".pdf");
-
+        // the resource lies in internal storage
+        if (fileName.contains("app_mhbsDocs")) {
+            //TODO: make this more eloquent...
+            openResource = new File("/storage/emulated/0/Android/data/edu.iupui.soic.biohealth.plhi.mhbs/files/data/user/0/edu.iupui.soic.biohealth.plhi.mhbs/app_mhbsDocs/mhbsDocs/" + itemToDownload + ".pdf");
+        } else {
+            // resource is in external storage
+            openResource = new File("/storage/self/primary/" + fileName + "/" + itemToDownload + ".pdf");
+        }
     }
 }
