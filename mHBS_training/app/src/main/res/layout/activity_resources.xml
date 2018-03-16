@@ -1,31 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity">
+    android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/res_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-
-    <FrameLayout
-        android:id="@+id/video_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"></FrameLayout>
-
-
-    <ProgressBar
-        android:id="@+id/iBar"
-        style="@android:style/Widget.Material.ProgressBar.Large"
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:indeterminate="true"
-        android:theme="@style/CircularProgress"
-         />
+        android:orientation="vertical"
+        android:weightSum="1"
+        tools:context="edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity">
 
-</android.support.constraint.ConstraintLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Click to View Content"
+                android:textSize="20sp" />
+
+
+            <ImageButton
+                android:id="@+id/btn_allPrograms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FFF"
+                android:scaleType="fitXY"
+                android:src="@drawable/viewallprograms"
+                tools:layout_editor_absoluteX="0dp"
+                tools:layout_editor_absoluteY="107dp" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#c0c0c0" />
+
+            <ImageButton
+                android:id="@+id/btn_HelpingBabiesSurvive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="#FFF"
+                android:scaleType="centerCrop"
+                android:src="@drawable/helpingmotherssurvive"
+                tools:layout_editor_absoluteX="0dp"
+                tools:layout_editor_absoluteY="379dp" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#c0c0c0" />
+
+            <ImageButton
+                android:id="@+id/btn_HelpingMothersSurvive"
+                android:layout_width="400dp"
+                android:layout_height="350dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:background="#FFF"
+                android:scaleType="fitXY"
+                android:src="@drawable/helpingbabiesbreathe" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#c0c0c0" />
+
+            <ImageButton
+                android:id="@+id/btn_EssentialCare"
+                android:layout_width="400dp"
+                android:layout_height="350dp"
+                android:layout_gravity="center"
+                android:background="#FFF"
+                android:scaleType="centerCrop"
+                android:src="@drawable/essentialcareforsmallbabies"
+                tools:layout_editor_absoluteX="0dp"
+                tools:layout_editor_absoluteY="694dp" />
+
+        </LinearLayout>
+
+
+
+        <ProgressBar
+            android:id="@+id/iBar"
+            style="@android:style/Widget.Material.ProgressBar.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="284dp"
+            android:indeterminate="true"
+            android:theme="@style/CircularProgress"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/video_fragment_container" />
+
+        <FrameLayout
+            android:id="@+id/res_fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white"
+            android:visibility="invisible"
+            />
+
+        <FrameLayout
+            android:id="@+id/video_fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"/>
+
+    </android.support.constraint.ConstraintLayout>
+</ScrollView>
+
+
+

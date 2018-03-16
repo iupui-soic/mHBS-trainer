@@ -40,4 +40,9 @@ public class DownloadsActivity extends AppCompatActivity implements ItemFragment
     public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
 
     }
+
+    @Override
+    public void onFragmentComplete() {
+
+    }
 }

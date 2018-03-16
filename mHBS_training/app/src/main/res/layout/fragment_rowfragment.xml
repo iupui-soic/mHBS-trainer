@@ -11,12 +11,13 @@
             android:layout_width="match_parent">
 
 
-
             <ImageView
-                android:id="@+id/textView2"
+                android:id="@+id/thumbnail"
                 android:layout_width="194dp"
                 android:layout_height="100dp"
-                android:background="#31b9b9" />
+                android:scaleType="center"
+                android:src="@drawable/mhbs_video_placeholder"
+                android:visibility="visible" />
 
             <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"

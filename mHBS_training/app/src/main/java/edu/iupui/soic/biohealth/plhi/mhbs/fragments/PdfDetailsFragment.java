@@ -67,12 +67,17 @@ public class PdfDetailsFragment extends Fragment implements ResourceItemDownload
             File parentDir = getContext().getExternalFilesDir(null);
             // always points to internal memory (note, automatically concatenates app_ by default)
             File dir = getContext().getDir("mhbsDocs", Context.MODE_PRIVATE);
-            File internalFile = new File(parentDir +"/" + dir);
-            openResource =  new File(internalFile + "/" + itemToDownload + ".pdf");
+            File internalFile = new File(parentDir + "/" + dir);
+            openResource = new File(internalFile + "/" + itemToDownload + ".pdf");
         } else {
             // resource is in external storage
             openResource = new File(Environment.getExternalStorageDirectory().getPath() + fileName + "/" + itemToDownload + ".pdf");
         }
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         PDFView pdfView = (PDFView) pView.findViewById(R.id.pdfView);
         if (openResource != null) {
             pdfView.fromFile(openResource).enableDoubletap(true).enableSwipe(true).scrollHandle(new DefaultScrollHandle(getContext())).swipeHorizontal(false).defaultPage(0).load();

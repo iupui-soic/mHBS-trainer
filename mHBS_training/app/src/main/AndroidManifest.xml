@@ -43,7 +43,6 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
-        <activity android:name=".activities.ProgramPortalActivity" />
         <activity android:name=".activities.ResourcesActivity" />
         <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.SettingsActivity" />

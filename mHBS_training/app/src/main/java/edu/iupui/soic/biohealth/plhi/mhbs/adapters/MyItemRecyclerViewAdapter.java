@@ -1,11 +1,19 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.adapters;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,13 +30,14 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     private static List<ResourceItem> mValues = new ArrayList<>();
     private OnListFragmentInteractionListener mListener;
+    private Boolean isPDF;
 
     public MyItemRecyclerViewAdapter(OnListFragmentInteractionListener mListener) {
-      this.mListener = mListener;
+        this.mListener = mListener;
     }
 
 
-    public void addItems(List<ResourceItem> items){
+    public void addItems(List<ResourceItem> items) {
         mValues = items;
     }
 
@@ -44,6 +53,17 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mTitleView.setText(mValues.get(position).title);
+
+            if (mValues.get(position).bitmap != null) {
+
+                holder.mThumbnailView.setImageBitmap(mValues.get(position).bitmap);
+            } else {
+                //bitmap was not retrievable, display default image set in layout xml
+                setDefaultImage(holder);
+                //TODO: For items that were null, if they are downloaded
+                // then we can grab the thumbnail once they are downloaded
+
+        }
         //    holder.mInstitutionView.setText(mValues.get(position).institution);
         //  holder.mIdView.setText(mValues.get(position).id);
 
@@ -59,6 +79,11 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         });
     }
 
+    private void setDefaultImage(ViewHolder holder) {
+        int resourceId = holder.mThumbnailView.getResources().getIdentifier("mhbs_video_placeholder", "drawable", "edu.iupui.soic.biohealth.plhi.mhbs");
+        holder.mThumbnailView.setImageResource(resourceId);
+    }
+
     @Override
     public int getItemCount() {
         return mValues.size();
@@ -68,6 +93,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         public final View mView;
         public final TextView mTitleView;
         public final TextView mInstitutionView;
+        public final ImageView mThumbnailView;
 
         public ResourceItem mItem;
 
@@ -76,6 +102,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             mView = view;
             mTitleView = (TextView) view.findViewById(R.id.titleResource);
             mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
+            mThumbnailView = (ImageView) view.findViewById(R.id.thumbnail);
         }
 
         @Override

@@ -6,6 +6,7 @@ package edu.iupui.soic.biohealth.plhi.mhbs.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import org.hisp.dhis.android.sdk.network.Credentials;
+import org.w3c.dom.DOMConfiguration;
 
 import java.util.List;
 
@@ -35,8 +37,6 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
     private OnListFragmentInteractionListener mListener;
     private MyItemRecyclerViewAdapter mAdapter;
     private ProgressBar progressBar;
-    private boolean progFlag = true;
-
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -47,6 +47,8 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static ItemFragment newInstance(int columnCount) {
+        Log.d("Test", "fragment");
+
         ItemFragment fragment = new ItemFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
@@ -57,6 +59,7 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("Test", "onfragcreate");
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
@@ -69,9 +72,10 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
+        progressBar = (ProgressBar) getActivity().findViewById(R.id.iBar);
+        Log.d("Test", "oncreatefragview");
 
-        if (progFlag) {
-            progressBar = (ProgressBar) getActivity().findViewById(R.id.iBar);
+        if (DocumentResources.CURRENTLY_DOWNLOADING) {
             progressBar.setVisibility(View.VISIBLE);
         }
 
@@ -112,12 +116,13 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
         // TODO: this only should happen once per pdf/video
         mAdapter.addItems(output);
         mAdapter.notifyDataSetChanged();
-        progressBar.setVisibility(View.GONE);
-        progFlag = false;
+        mListener.onFragmentComplete();
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(ResourceItem item);
+        void onFragmentComplete();
     }
 
 

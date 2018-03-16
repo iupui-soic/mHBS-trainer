@@ -42,4 +42,9 @@ public class FavoritesActivity extends AppCompatActivity implements ItemFragment
     public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
 
     }
+
+    @Override
+    public void onFragmentComplete() {
+
+    }
 }
