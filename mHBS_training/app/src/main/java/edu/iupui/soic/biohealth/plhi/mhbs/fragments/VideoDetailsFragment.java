@@ -7,12 +7,14 @@ package edu.iupui.soic.biohealth.plhi.mhbs.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.MediaController;
 import android.widget.VideoView;
 
 import java.io.File;
@@ -50,6 +52,7 @@ public class VideoDetailsFragment extends Fragment {
 
         if (videoView != null && openVideo != null) {
             try {
+                videoView.setMediaController(new MediaController(getActivity()));
                 //TODO: Attach MediaController
                 videoView.setVideoPath(openVideo.getPath());
                 videoView.requestFocus();
