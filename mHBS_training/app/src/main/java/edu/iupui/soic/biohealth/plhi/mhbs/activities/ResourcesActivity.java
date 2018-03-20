@@ -48,9 +48,10 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
         super.onCreate(savedInstanceState);
         // set view to program portal buttons and ui elements
         setContentView(R.layout.activity_resources);
+
+        //TODO: this is temporary to display course fragment for programmer testing
         ACTIVITY = getIntent().getStringExtra("resourceKey");
         if (ACTIVITY.equals("Courses")) {
-            Log.d("Test", ACTIVITY + " ACT ");
             beginCourse();
         } else {
             setupUI();
@@ -59,7 +60,6 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
             if (getIntent().getStringExtra("resourceKey") != null) {
                 // Get the name of the activity which was called (Video or Pdf or course)
                 ACTIVITY = getIntent().getStringExtra("resourceKey");
-                //TODO: temp workaround to display fragment
             } else {
                 ACTIVITY = getIntent().getStringExtra("itemType");
             }

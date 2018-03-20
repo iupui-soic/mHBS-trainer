@@ -5,6 +5,7 @@
 package edu.iupui.soic.biohealth.plhi.mhbs;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -28,14 +29,14 @@ import android.widget.Toast;
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
-import edu.iupui.soic.biohealth.plhi.mhbs.activities.DownloadsActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.FavoritesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SearchActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SettingsActivity;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.DownloadListFragment;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener, DownloadListFragment.OnFragmentInteractionListener {
     Button btn_Videos, btn_Resources, btn_Courses;
     Switch sw_offlineMode;
     TextView tv_switch_status, dhis_user_name, dhis_user_email;
@@ -191,8 +192,7 @@ Log.d("Test", "oncreate");
             Intent intent = new Intent(this, FavoritesActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_download) {
-            Intent intent = new Intent(this, DownloadsActivity.class);
-            startActivity(intent);
+            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new DownloadListFragment()).commit();
         } else if (id == R.id.nav_information) {
             Intent intent = new Intent(this, SearchActivity.class);
             startActivity(intent);
@@ -259,6 +259,11 @@ Log.d("Test", "oncreate");
     public void onResume(){
         Log.d("Test", "resuming");
         super.onResume();
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
     /*
     @Override

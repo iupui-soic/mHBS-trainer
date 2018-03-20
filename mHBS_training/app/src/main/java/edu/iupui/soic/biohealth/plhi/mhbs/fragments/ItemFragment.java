@@ -30,8 +30,6 @@ public class ItemFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
-    private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private MyItemRecyclerViewAdapter mAdapter;
     private ProgressBar progressBar;
@@ -73,6 +71,7 @@ public class ItemFragment extends Fragment {
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
+            int mColumnCount = 1;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
@@ -111,13 +110,4 @@ public class ItemFragment extends Fragment {
         this.output = output;
     }
 
-public Credentials getCredentials(){
-        String username = "";
-        String password = "";
-        SharedPreferences sharedPref = getContext().getSharedPreferences("credentials", 0);
-        username = sharedPref.getString("username", "NULL");
-        password = sharedPref.getString("password", "NULL");
-        Credentials credentials = new Credentials(username,password);
-    return credentials;
-    }
 }

@@ -2,14 +2,22 @@ package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResourceItemDownloaderUtil {
     private File resourceDir;
     private Context pContext;
     private final String dirName = "mhbsDocs";
     private String itemType;
+    public static List<String> allDownloads;
+
+    public ResourceItemDownloaderUtil() {
+
+    }
 
     public ResourceItemDownloaderUtil(Context pContext, String itemType) {
         this.pContext = pContext;
@@ -42,15 +50,15 @@ public class ResourceItemDownloaderUtil {
     private File createExternalDir() {
         File dir = null;
         // TODO: if pdf : go to DIRECTORY_DOCUMENTS if video : go to DIRECTORY_VIDEO
-        if(itemType.equals("Videos")) {
+        if (itemType.equals("Videos")) {
             dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-        }else {
+        } else {
             dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         }
-            // if "Documents" not created, create it
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
+        // if "Documents" not created, create it
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
         // create mHBS specific folder
         File subFile = new File(dir, dirName);
         if (!subFile.exists()) {
@@ -70,7 +78,7 @@ public class ResourceItemDownloaderUtil {
     public boolean checkDirForDownloads(String itemId) {
         Boolean found = false;
         if (isExternalStorageWritable()) {
-            File checkFile = new File( Environment.getExternalStorageDirectory().getPath() + resourceDir + "/");
+            File checkFile = new File(Environment.getExternalStorageDirectory().getPath() + resourceDir + "/");
             found = findItem(checkFile, itemId);
         }
         if (!found) {
@@ -83,7 +91,8 @@ public class ResourceItemDownloaderUtil {
 
     // check through directory
     private boolean findItem(File checkFile, String itemId) {
-        if(checkFile.list()!=null) {
+        Log.d("Test", "CHECK FILE" + checkFile.toString());
+        if (checkFile.list() != null) {
             for (int i = 0; i < checkFile.list().length; i++) {
                 if (checkFile.list()[i].contains(itemId)) {
                     return true;
@@ -94,4 +103,43 @@ public class ResourceItemDownloaderUtil {
         return false;
     }
 
+    // checks for all app specific downloads and sends to array
+    public void resourceFinder(Context context) {
+        List<File> fileArray = new ArrayList<>();
+        allDownloads = new ArrayList<>();
+
+        if (isExternalStorageWritable()) {
+            // External movie and documents folders
+            File movieDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+            File docDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+            // access custom mhbs downloads locations
+            File checkMovies = new File(Environment.getExternalStorageDirectory().getPath() + movieDir + "/" + dirName + "/");
+            File checkDocs = new File(Environment.getExternalStorageDirectory().getPath() + docDir + "/" + dirName + "/");
+            fileArray.add(checkMovies);
+            fileArray.add(checkDocs);
+        }
+
+        File checkInternal = context.getDir(dirName, Context.MODE_PRIVATE);
+        fileArray.add(checkInternal);
+
+        for(int i=0;i<fileArray.size();i++){
+            findDownloads(fileArray.get(i));
+        }
+    }
+
+    private void findDownloads(File checkFile) {
+        if (checkFile.list() != null) {
+            for (int i = 0; i < checkFile.list().length; i++) {
+                addDownloadsFound((checkFile.list()[i]));
+            }
+        }
+    }
+
+
+    private static void addDownloadsFound(String file) {
+       allDownloads.add(file);
+    }
+
 }
+
+

@@ -53,7 +53,6 @@
 
         <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.SettingsActivity" />
-        <activity android:name=".activities.DownloadsActivity" />
         <activity android:name=".activities.InfoActivity" />
         <activity android:name=".activities.FavoritesActivity" />
 
