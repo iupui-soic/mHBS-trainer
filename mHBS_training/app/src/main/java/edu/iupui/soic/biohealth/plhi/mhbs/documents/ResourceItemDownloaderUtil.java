@@ -2,6 +2,7 @@ package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
 import android.content.Context;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 
 import java.io.File;
@@ -137,8 +138,10 @@ public class ResourceItemDownloaderUtil {
 
 
     private static void addDownloadsFound(String file) {
+        Log.d("Test", "here ");
        allDownloads.add(file);
     }
+
 
 }
 

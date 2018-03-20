@@ -32,7 +32,6 @@ public class ItemFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private OnListFragmentInteractionListener mListener;
     private MyItemRecyclerViewAdapter mAdapter;
-    private ProgressBar progressBar;
     private List<DocumentResources.ResourceItem> output;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the

@@ -72,7 +72,7 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         }
     }
 
-
+    // Frames which download video thumbnails belonging to resource items
     public static class Frame {
         MediaMetadataRetriever frameRetriever;
         Map<String, String> headers;
@@ -354,14 +354,13 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
 
     public interface AsyncResponse {
         void processFinish(List<ResourceItem> output);
-
         Credentials getCredentials();
     }
 
     public DocumentResources(AsyncResponse delegate) {
         this.delegate = delegate;
     }
-
+    public DocumentResources(){}
     @Override
     // results display here
     protected void onPostExecute(List<ResourceItem> items) {
@@ -394,5 +393,9 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         });
 
 
+    }
+
+    public int getResourcesLength(){
+        return this.resourcesFound.size();
     }
 }

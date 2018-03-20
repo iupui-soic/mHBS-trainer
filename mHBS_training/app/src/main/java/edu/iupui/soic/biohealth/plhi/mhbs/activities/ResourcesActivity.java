@@ -39,8 +39,6 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL = 1;
     // may need to be cleared
     private ItemFragment itemFragment;
-    private String BACK_STACK_ROOT_FRAGMENT_TAG = "rootFragment";
-    private String BACK_STACK_CONTENT_FRAGMENT_TAG = "contentFragment";
     private ProgressBar progressBar;
 
     @Override
@@ -85,7 +83,7 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     }
 
 
-    private ItemFragment getItemFragment() {
+    public ItemFragment getItemFragment() {
         return this.itemFragment;
     }
 
@@ -188,6 +186,7 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     }
 
 
+    // return from downloading list content for Item fragment
     @Override
     public void processFinish(List<DocumentResources.ResourceItem> output) {
         progressBar.setVisibility(View.INVISIBLE);
@@ -196,10 +195,11 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
             setItemFragment(new ItemFragment());
             getItemFragment().setOutput(output);
         }
+
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.res_fragment_container, getItemFragment(), BACK_STACK_ROOT_FRAGMENT_TAG)
-                .addToBackStack(BACK_STACK_ROOT_FRAGMENT_TAG)
+                .add(R.id.res_fragment_container, getItemFragment())
+                .addToBackStack(null)
                 .commit();
     }
 
@@ -234,11 +234,10 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
         // now we can start our desired fragment.
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.content_fragment_container, contentFragment, BACK_STACK_CONTENT_FRAGMENT_TAG)
-                .addToBackStack(BACK_STACK_CONTENT_FRAGMENT_TAG)
+                .add(R.id.content_fragment_container, contentFragment)
+                .addToBackStack(null)
                 .commit();
 
-        // TODO: CLEAR resourceDIR & itemToDownload may be necessary
         // wait for callback setResourceStatus() to remove progressbar after download
     }
 }
