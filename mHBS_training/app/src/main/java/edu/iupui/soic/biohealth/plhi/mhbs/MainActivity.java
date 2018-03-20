@@ -224,22 +224,20 @@ Log.d("Test", "oncreate");
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
     }
 
-    public void startVideos(View view) {        Log.d("Test", "videos");
+    public void startVideos(View view) {
         callProgramPortal(view.getTag().toString());}
 
     public void startResources(View view) {
         callProgramPortal(view.getTag().toString());
-        Log.d("Test", "res");
     }
 
     public void startCourses(View view) {
         callProgramPortal(view.getTag().toString());
-        Log.d("Test", "course");
+        Log.d("Test", view.getTag().toString());
     }
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        Log.d("Test", "checkedchange");
         if (isChecked) {
             tv_switch_status.setText(R.string.toggleOn);
             // TODO - Add methods for online mode
@@ -251,7 +249,7 @@ Log.d("Test", "oncreate");
 
     // when each button is clicked, we call the program portal activity and display program options per resource chosen
     public void callProgramPortal(String resourceType) {
-        Log.d("Test", "callPP");
+        Log.d("Test", resourceType);
         Intent intent = new Intent(this, ResourcesActivity.class);
         intent.putExtra(getString(R.string.resourceKey), resourceType);
         startActivity(intent);

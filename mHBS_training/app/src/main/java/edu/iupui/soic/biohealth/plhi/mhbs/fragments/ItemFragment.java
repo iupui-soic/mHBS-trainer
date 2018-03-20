@@ -6,7 +6,6 @@ package edu.iupui.soic.biohealth.plhi.mhbs.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -19,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import org.hisp.dhis.android.sdk.network.Credentials;
-import org.w3c.dom.DOMConfiguration;
 
 import java.util.List;
 
@@ -28,7 +26,7 @@ import edu.iupui.soic.biohealth.plhi.mhbs.adapters.MyItemRecyclerViewAdapter;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources.ResourceItem;
 
-public class ItemFragment extends Fragment implements DocumentResources.AsyncResponse {
+public class ItemFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -37,47 +35,40 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
     private OnListFragmentInteractionListener mListener;
     private MyItemRecyclerViewAdapter mAdapter;
     private ProgressBar progressBar;
+    private List<DocumentResources.ResourceItem> output;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ItemFragment() {
-    }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
-    public static ItemFragment newInstance(int columnCount) {
-        Log.d("Test", "fragment");
+    public ItemFragment(){
 
-        ItemFragment fragment = new ItemFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("Test", "onfragcreate");
-
-        if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
-            String activity = getArguments().getString("resourceKey");
-            new DocumentResources(this).execute(activity);
-
+        if(output!=null) {
+            mAdapter = new MyItemRecyclerViewAdapter(mListener);
+            mAdapter.addItems(output);
+            mAdapter.notifyDataSetChanged();
+            mListener.onFragmentComplete();
         }
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-        progressBar = (ProgressBar) getActivity().findViewById(R.id.iBar);
-        Log.d("Test", "oncreatefragview");
-
-        if (DocumentResources.CURRENTLY_DOWNLOADING) {
-            progressBar.setVisibility(View.VISIBLE);
-        }
 
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
@@ -87,7 +78,6 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            mAdapter = new MyItemRecyclerViewAdapter(mListener);
             recyclerView.setAdapter(mAdapter);
         }
         return view;
@@ -111,20 +101,15 @@ public class ItemFragment extends Fragment implements DocumentResources.AsyncRes
         mListener = null;
     }
 
-    @Override
-    public void processFinish(List<ResourceItem> output) {
-        // TODO: this only should happen once per pdf/video
-        mAdapter.addItems(output);
-        mAdapter.notifyDataSetChanged();
-        mListener.onFragmentComplete();
-        progressBar.setVisibility(View.INVISIBLE);
-    }
 
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(ResourceItem item);
         void onFragmentComplete();
     }
 
+    public void setOutput(List<DocumentResources.ResourceItem> output){
+        this.output = output;
+    }
 
 public Credentials getCredentials(){
         String username = "";

@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.Uri;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Base64;
 import android.util.Log;
 
@@ -15,6 +17,8 @@ import org.hisp.dhis.android.sdk.controllers.DhisController;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
+
+import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
 
 
 public class ResourceItemDownloader {
@@ -30,13 +34,23 @@ public class ResourceItemDownloader {
     private ResourceItemDownloaderUtil rdUtil;
     private ResourceItemDownloader.DownloadResponse delegate = null;
 
-    public ResourceItemDownloader(Context pContext, String itemId, String itemType, DownloadResponse delegate) {
+    public ResourceItemDownloader(Context pContext, String itemId, ResourceItemDownloader.DownloadResponse delegate, String itemType) {
         this.pContext = pContext;
-        this.delegate = delegate;
         this.itemType = itemType;
+        this.delegate = delegate;
         downloadId = itemId;
         receiver = new DownloadCompleteReceiver();
     }
+
+    public String getDownloadId() {
+        return downloadId;
+    }
+
+
+    public String getItemType() {
+        return itemType;
+    }
+
     // create necessary directories to divert downloads to
     public void setupFiles() {
         Log.d("Test", "settingUpFiles");
@@ -117,21 +131,26 @@ public class ResourceItemDownloader {
         public void onReceive(Context context, Intent intent) {
             // get the refid from the download manager
             long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-
+            String id = getDownloadId();
             // remove it from our list
             list.remove(referenceId);
 
-            pContext.unregisterReceiver(this);
             if (list.isEmpty()) {
-                delegate.onDownloadFinish(rdUtil.getResourceDir().toString());
+
+                delegate.onDownloadFinish(rdUtil.getResourceDir().toString(), id);
             } else {
                 //TODO: item not found or downloaded
+                Log.d("Test", "Not Found");
             }
+            pContext.unregisterReceiver(this);
+
         }
+
     }
 
+
     public interface DownloadResponse {
-        void onDownloadFinish(String fileName);
+        void onDownloadFinish(String fileName, String itemToDownload);
     }
 
 

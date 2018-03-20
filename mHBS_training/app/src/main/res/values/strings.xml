@@ -32,5 +32,6 @@
     <string name="resourceActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity</string>
     <string name="videoActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.VideosActivity</string>
     <string name="sharedLoginActivity">edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity</string>
+    <string name="hbs">HBS</string>
 
 </resources>

@@ -216,8 +216,10 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         String type = tryParsingResourceType(parser);
 
         //index for videoFrame, some bit maps will be null, we still want to add these at the correct index mapping to video_resources
-        int bitMapIndex = -1;
-/*
+        //TODO: Uncomment for video thumbnails, currently slow. I believe if this (and the class in general)
+        // is improved, we can ge the time down.
+        /* int bitMapIndex = -1;
+
         // if it's a video, get the thumbnails
         if (type.equals("video/webm")) {
             Log.d("Test", "true");
@@ -228,7 +230,9 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
                 Log.d("Error", e.getMessage());
             }
         }
-        */
+*/
+        
+
         // return type of content
         return type;
     }

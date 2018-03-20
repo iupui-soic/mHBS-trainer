@@ -58,11 +58,9 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
                 holder.mThumbnailView.setImageBitmap(mValues.get(position).bitmap);
             } else {
-                //bitmap was not retrievable, display default image set in layout xml
-                setDefaultImage(holder);
+                //using the following function, you can display a static image if desired.
+               // setDefaultImage(holder);
                 //TODO: For items that were null, if they are downloaded
-                // then we can grab the thumbnail once they are downloaded
-
         }
         //    holder.mInstitutionView.setText(mValues.get(position).institution);
         //  holder.mIdView.setText(mValues.get(position).id);
@@ -79,11 +77,12 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         });
     }
 
+    /*
     private void setDefaultImage(ViewHolder holder) {
-        int resourceId = holder.mThumbnailView.getResources().getIdentifier("mhbs_video_placeholder", "drawable", "edu.iupui.soic.biohealth.plhi.mhbs");
-        holder.mThumbnailView.setImageResource(resourceId);
+      //  int resourceId = holder.mThumbnailView.getResources().getIdentifier("mhbs_video_placeholder", "drawable", "edu.iupui.soic.biohealth.plhi.mhbs");
+      //  holder.mThumbnailView.setImageResource(resourceId);
     }
-
+    */
     @Override
     public int getItemCount() {
         return mValues.size();
@@ -100,7 +99,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mTitleView = (TextView) view.findViewById(R.id.titleResource);
+            mTitleView = (TextView) view.findViewById(R.id.title);
             mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
             mThumbnailView = (ImageView) view.findViewById(R.id.thumbnail);
         }

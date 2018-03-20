@@ -43,7 +43,14 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
-        <activity android:name=".activities.ResourcesActivity" />
+        <activity
+            android:name=".activities.ResourcesActivity">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity" />
+
+        </activity>
+
         <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.DownloadsActivity" />
