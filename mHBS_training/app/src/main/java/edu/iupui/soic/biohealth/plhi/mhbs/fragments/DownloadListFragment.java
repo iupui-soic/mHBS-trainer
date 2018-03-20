@@ -26,7 +26,7 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
     private OnFragmentInteractionListener mListener;
     Snackbar mySnackbar;
     private List<String> downloadedIds;
-
+    private ListView listview;
     public DownloadListFragment() {
         // Required empty public constructor
     }
@@ -51,11 +51,7 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
         }else{
             Log.d("Test", "we did not have data");
         }
-        ListView listview =(ListView)rootView .findViewById(R.id.downloadListView);
-
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, ResourceItemDownloaderUtil.allDownloads);
-        listview.setAdapter(adapter);
+         listview =(ListView)rootView .findViewById(R.id.downloadListView);
         return rootView;
     }
 
@@ -114,12 +110,17 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
         mListener.onFragmentInteraction(true);
         List<String> ids;
         ids = idSplitter();
-
-        //now that we have ids, cross check with Doc
-
+        List<String> downloadedContent = new ArrayList<>();
         for(int i=0;i<ids.size();i++){
-            Log.d("Test", ids.get(i));
+            if(DocumentResources.resourcesFound.contains(ids.get(i))){
+                    downloadedContent.add(DocumentResources.resourcesFound.get(2*i+1).toString());
+            }
         }
+
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, downloadedContent);
+        listview.setAdapter(adapter);
 
     }
 
