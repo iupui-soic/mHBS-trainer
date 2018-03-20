@@ -1,8 +1,6 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.fragments;
 
-import android.content.ClipData;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -12,14 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 
 import org.hisp.dhis.android.sdk.network.Credentials;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
-import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.ResourceItemDownloader;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.ResourceItemDownloaderUtil;
@@ -28,7 +25,7 @@ import edu.iupui.soic.biohealth.plhi.mhbs.documents.ResourceItemDownloaderUtil;
 public class DownloadListFragment extends Fragment implements DocumentResources.AsyncResponse{
     private OnFragmentInteractionListener mListener;
     Snackbar mySnackbar;
-    ProgressBar myProgressBar;
+    private List<String> downloadedIds;
 
     public DownloadListFragment() {
         // Required empty public constructor
@@ -57,10 +54,21 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
         ListView listview =(ListView)rootView .findViewById(R.id.downloadListView);
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, ResourceItemDownloaderUtil.allDownloads);
+                new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, ResourceItemDownloaderUtil.allDownloads);
         listview.setAdapter(adapter);
         return rootView;
     }
+
+    // pull ids from format id.pdf or id.webm
+    private List<String> idSplitter(){
+        List<String> ids = new ArrayList<>();
+        for(int i=0;i< ResourceItemDownloaderUtil.allDownloads.size();i++){
+            String[] split = ResourceItemDownloaderUtil.allDownloads.get(i).split("\\.");
+            ids.add(split[0]);
+        }
+        return ids;
+    }
+
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(boolean status) {
@@ -104,6 +112,15 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
     public void processFinish(List<DocumentResources.ResourceItem> output) {
         mySnackbar.dismiss();
         mListener.onFragmentInteraction(true);
+        List<String> ids;
+        ids = idSplitter();
+
+        //now that we have ids, cross check with Doc
+
+        for(int i=0;i<ids.size();i++){
+            Log.d("Test", ids.get(i));
+        }
+
     }
 
     @Override
