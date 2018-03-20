@@ -45,13 +45,15 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_download_list, container, false);
-
+        listview =(ListView)rootView .findViewById(R.id.downloadListView);
         if(getDownloadMetaData(rootView)){
-            Log.d("Test", "we had data");
-        }else{
-            Log.d("Test", "we did not have data");
+            List<String> ids = idSplitter();
+            for(int i=0;i<ids.size();i++){
+                Log.d("test", ids.get(i));
+            }
+            //Log.d("test", DocumentResources.resourcesFound.size() + " ");
+            displayDownloadedContent(ids);
         }
-         listview =(ListView)rootView .findViewById(R.id.downloadListView);
         return rootView;
     }
 
@@ -63,14 +65,6 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
             ids.add(split[0]);
         }
         return ids;
-    }
-
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(boolean status) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(status);
-        }
     }
 
     private boolean getDownloadMetaData(View view){
@@ -110,18 +104,19 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
         mListener.onFragmentInteraction(true);
         List<String> ids;
         ids = idSplitter();
+        displayDownloadedContent(ids);
+    }
+
+    private void displayDownloadedContent(List<String> ids) {
         List<String> downloadedContent = new ArrayList<>();
-        for(int i=0;i<ids.size();i++){
-            if(DocumentResources.resourcesFound.contains(ids.get(i))){
-                    downloadedContent.add(DocumentResources.resourcesFound.get(2*i+1).toString());
+        for (int i = 0; i < ids.size(); i++) {
+            if (DocumentResources.resourcesFound.contains(ids.get(i))) {
+                downloadedContent.add(DocumentResources.resourcesFound.get(2 * i + 1).toString());
             }
         }
-
-
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, downloadedContent);
         listview.setAdapter(adapter);
-
     }
 
     @Override
@@ -132,4 +127,6 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(boolean status);
     }
+
+
 }

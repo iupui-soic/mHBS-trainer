@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.NavUtils;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
-Log.d("Test", "oncreate");
+        Log.d("Test", "oncreate");
         MenuInflater inflater = getMenuInflater();
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.main, menu);
@@ -193,7 +194,7 @@ Log.d("Test", "oncreate");
             Intent intent = new Intent(this, FavoritesActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_download) {
-            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new DownloadListFragment()).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new DownloadListFragment()).addToBackStack(null).commit();
         } else if (id == R.id.nav_information) {
             Intent intent = new Intent(this, SearchActivity.class);
             startActivity(intent);
@@ -271,6 +272,7 @@ Log.d("Test", "oncreate");
             progressBar.setVisibility(View.INVISIBLE);
         }
     }
+
     /*
     @Override
     public void onPostResume(){
