@@ -15,7 +15,8 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:src="@drawable/hbb"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true"
+            android:contentDescription="TODO" />
         <RelativeLayout
             android:layout_marginTop="50dp"
             android:layout_below="@+id/image_hbb"
@@ -23,18 +24,17 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true">
+
             <Button
                 android:id="@+id/btn_videos"
-                android:tag="@string/videos"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
+                android:layout_marginEnd="@dimen/main_activity_spaces_between_buttons"
+                android:background="@drawable/ic_video"
                 android:foreground="@drawable/ic_video"
-                android:foregroundTint="#FFFFFF"
                 android:foregroundGravity="center"
-                android:background="@drawable/buttonrounded"
-                android:layout_marginRight="@dimen/main_activity_spaces_between_buttons"
                 android:onClick="startVideos"
-                />
+                android:tag="@string/videos" />
 
             <TextView
                 android:layout_height="wrap_content"
@@ -46,50 +46,67 @@
                 android:textAlignment="center"/>
 
             <Button
-                android:layout_toRightOf="@+id/btn_videos"
                 android:id="@+id/btn_resources"
-                android:tag="@string/resources"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
+                android:layout_marginEnd="@dimen/main_activity_spaces_between_buttons"
+                android:tint="#004D40"
+                android:layout_toEndOf="@+id/btn_videos"
+                android:background="@drawable/ic_file"
                 android:foreground="@drawable/ic_file"
-                android:foregroundTint="#FFFFFF"
                 android:foregroundGravity="center"
-                android:background="@drawable/buttonrounded"
-                android:layout_marginRight="@dimen/main_activity_spaces_between_buttons"
                 android:onClick="startResources"
-                />
+                android:tag="@string/resources" />
 
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:text="@string/resources"
                 android:layout_below="@id/btn_resources"
-                android:layout_alignLeft="@id/btn_resources"
+                android:layout_alignStart="@id/btn_resources"
                 android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"
                 android:textAlignment="center"/>
 
             <Button
-                android:layout_toRightOf="@id/btn_resources"
                 android:id="@+id/btn_courses"
-                android:tag="@string/courses"
-
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
+                android:layout_toEndOf="@id/btn_resources"
+                android:background="@drawable/ic_courses"
                 android:foreground="@drawable/ic_courses"
-                android:foregroundTint="#FFFFFF"
                 android:foregroundGravity="center"
-                android:background="@drawable/buttonrounded"
-                android:onClick="startCourses" />
+                android:onClick="startCourses"
+                android:tag="@string/courses"
+                android:tint="#00695C" />
 
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:text="@string/courses"
                 android:layout_below="@id/btn_courses"
-                android:layout_alignLeft="@id/btn_courses"
+                android:layout_alignStart="@id/btn_courses"
                 android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"
                 android:textAlignment="center" />
 
         </RelativeLayout>
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/main_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+    <ProgressBar
+        android:id="@+id/downloadListProgressBar"
+        style="@android:style/Widget.Material.ProgressBar.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="284dp"
+        android:indeterminate="true"
+        android:theme="@style/CircularProgress"
+        android:visibility="invisible" />
 </RelativeLayout>

@@ -7,10 +7,10 @@
             android:id="@+id/nav_mHBS_tracker_app"
             android:icon="@drawable/ic_apps"
             android:title="@string/mHBS_Tracker" />
-        <item
+        <!--item
             android:id="@+id/nav_favorites"
             android:icon="@drawable/ic_star"
-            android:title="@string/favorites" />
+            android:title="@string/favorites" /-->
 
         <item
             android:id="@+id/nav_download"

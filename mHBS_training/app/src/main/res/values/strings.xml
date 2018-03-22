@@ -32,5 +32,13 @@
     <string name="resourceActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity</string>
     <string name="videoActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.VideosActivity</string>
     <string name="sharedLoginActivity">edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity</string>
+    <string name="hbs">HBS</string>
+    <string name="syncDownloads">Synchronizing downloads</string>
+    <string name="downloadFragmentTitle">Downloaded Content</string>
+    <string name="videoAppTitle">mHBS App Videos</string>
+    <string name="providerGuide">Provider Guide</string>
+    <string name="successfulDownload">Successfully Downloaded</string>
+
+
 
 </resources>

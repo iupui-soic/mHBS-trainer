@@ -1,5 +1,7 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Base64;
@@ -18,7 +20,9 @@ import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -28,7 +32,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     // url for downloading documents from DHIS2 Web API
     private final String URL = "https://mhbs.info/api/documents";
     // List of IDs associated with a resource parsed from /api/documents
-    private List resourcesFound = new ArrayList<>();
+    //TODO change to better solution from public static, Currently downloadlistfragment using
+    public static List resourcesFound = new ArrayList<>();
     // holders for auth credentials to access API
     private static String password;
     private static String username;
@@ -39,6 +44,9 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     private static final List<ResourceItem> PDF_RESOURCES = new ArrayList<>();
     private AsyncResponse delegate = null;
     public static boolean CURRENTLY_DOWNLOADING = false;
+    private List<Bitmap> videoFrame;
+    private Boolean isResources;
+    private static Frame myFrame;
 
     /**
      * A resource item representing a piece of content.
@@ -47,11 +55,16 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         public final String id;
         public final String title;
         public final String details;
+        public Bitmap bitmap;
 
         public ResourceItem(String id, String title, String details) {
             this.id = id;
             this.title = title;
             this.details = details;
+        }
+
+        public void setBitmap(Bitmap bitmap) {
+            this.bitmap = bitmap;
         }
 
         @Override
@@ -60,27 +73,62 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         }
     }
 
+    // Frames which download video thumbnails belonging to resource items
+    public static class Frame {
+        MediaMetadataRetriever frameRetriever;
+        Map<String, String> headers;
+
+        public Frame(String encodedAuth) {
+            // retriever for thumbnails
+            frameRetriever = new MediaMetadataRetriever();
+            // send HTTP headers
+            headers = new HashMap<>();
+            headers.put("Authorization", encodedAuth);
+        }
+
+
+        private Bitmap retrieveFrameFromVideo(String videoPath) throws Throwable {
+            String videoFrame = videoPath + "/data";
+            Bitmap bitmap = null;
+            try {
+                frameRetriever.setDataSource(videoFrame, headers);
+                bitmap = frameRetriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new Throwable("Exception in retrieveFrameFromVideo(String videoPath)" + e.getMessage());
+            } finally {
+                if (frameRetriever != null) {
+                    frameRetriever.release();
+                }
+            }
+            return bitmap;
+        }
+    }
+
+
     // used to separate video and pdf items which were parsed from XML
     private static void addItem(String itemType, ResourceItem item) {
-        if(itemType.equals("Video")) {
+        if (itemType.equals("Video")) {
             VIDEO_RESOURCES.add(item);
-        }else {
+        } else {
             PDF_RESOURCES.add(item);
         }
     }
+
 
     @Override
     // Starts a new Async task to get XML in background
     protected List<ResourceItem> doInBackground(String... act) {
         Process.setThreadPriority(THREAD_PRIORITY_URGENT_DISPLAY);
         CURRENTLY_DOWNLOADING = true;
+        videoFrame = new ArrayList<>();
 
         // pass in the type of resource we want depending on which button user clicked
         String resourceToParse = act[0];
         // we will use this to see if the caller is pdf resources
-        Boolean isResources = resourceToParse.equals("Resources");
+        isResources = resourceToParse.equals("Resources");
         // if we already have video items, we don't want to download them again (for the moment)
-        if(DocumentResources.VIDEO_RESOURCES.isEmpty() || DocumentResources.PDF_RESOURCES.isEmpty()){
+        if (DocumentResources.VIDEO_RESOURCES.isEmpty() || DocumentResources.PDF_RESOURCES.isEmpty()) {
             // user authentification
             authenticateUser();
             // Try to pull in the DHISAPI XML and initialize XmlPullParser
@@ -165,8 +213,29 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         String url = URL + "/" + id + ".xml";
         // first, make sure we can download the XML
         parser = tryDownloadingXMLData(url);
-        // next try to parse the XML
-        return tryParsingResourceType(parser);
+
+        String type = tryParsingResourceType(parser);
+
+        //index for videoFrame, some bit maps will be null, we still want to add these at the correct index mapping to video_resources
+        //TODO: Uncomment for video thumbnails, currently slow. I believe if this (and the class in general)
+        // is improved, we can ge the time down.
+        /* int bitMapIndex = -1;
+
+        // if it's a video, get the thumbnails
+        if (type.equals("video/webm")) {
+            Log.d("Test", "true");
+            try {
+                bitMapIndex++;
+                videoFrame.add(bitMapIndex, myFrame.retrieveFrameFromVideo(URL + "/" + id));
+            } catch (java.lang.Throwable e) {
+                Log.d("Error", e.getMessage());
+            }
+        }
+*/
+        
+
+        // return type of content
+        return type;
     }
 
     // parses contentTypes from document resources
@@ -253,6 +322,7 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         // make sure our authentication matches the default authentication in a format that auth understands
         String authorization = username + ":" + password;
         String encodedAuth = "Basic " + Base64.encode(authorization.getBytes(), 0);
+        myFrame = new Frame(encodedAuth);
         // attach the auth request to the connection
         conn.setRequestProperty("Authorization", encodedAuth);
         int responseCode = conn.getResponseCode();
@@ -282,40 +352,53 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         }
     }
 
+
     public interface AsyncResponse {
         void processFinish(List<ResourceItem> output);
         Credentials getCredentials();
     }
 
-    public DocumentResources(AsyncResponse delegate){
+    public DocumentResources(AsyncResponse delegate) {
         this.delegate = delegate;
     }
-
+    public DocumentResources(){}
     @Override
     // results display here
     protected void onPostExecute(List<ResourceItem> items) {
+        // reset flags
+        // reset flags
         CURRENTLY_DOWNLOADING = false;
+        isResources = false;
+        //TODO: uncomment for set video thumbnails
+      /*
+        for (int j = 0; j < videoFrame.size(); j++) {
+            VIDEO_RESOURCES.get(j).setBitmap(videoFrame.get(j));
+
+        }*/
         delegate.processFinish(items);
+
     }
 
     // sets as default auth to compare with auth attached to URL conn
     private void authenticateUser() {
-        if(DhisController.isUserLoggedIn()) {
+        if (DhisController.isUserLoggedIn()) {
             username = DhisController.getInstance().getSession().getCredentials().getUsername();
             password = DhisController.getInstance().getSession().getCredentials().getPassword();
-        }
-        else{
+        } else {
             Credentials credentials = delegate.getCredentials();
             username = credentials.getUsername();
             password = credentials.getPassword();
         }
-            Authenticator.setDefault(new Authenticator() {
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(username, password.toCharArray());
-                }
-            });
+        Authenticator.setDefault(new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password.toCharArray());
+            }
+        });
 
 
     }
 
+    public int getResourcesLength(){
+        return this.resourcesFound.size();
+    }
 }

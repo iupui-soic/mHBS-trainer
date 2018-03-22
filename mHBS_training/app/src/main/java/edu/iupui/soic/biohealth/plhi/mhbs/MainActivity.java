@@ -4,18 +4,13 @@
 
 package edu.iupui.soic.biohealth.plhi.mhbs;
 
-import android.app.AppOpsManager;
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Process;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -28,25 +23,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.usage.UsageEvents;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
 
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
-import edu.iupui.soic.biohealth.plhi.mhbs.activities.DownloadsActivity;
-import edu.iupui.soic.biohealth.plhi.mhbs.activities.FavoritesActivity;
-import edu.iupui.soic.biohealth.plhi.mhbs.activities.ProgramPortalActivity;
+import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SearchActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SettingsActivity;
-import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.DownloadListFragment;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.VideoDetailsFragment;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener, DownloadListFragment.OnFragmentInteractionListener {
     Button btn_Videos, btn_Resources, btn_Courses;
     Switch sw_offlineMode;
     TextView tv_switch_status, dhis_user_name, dhis_user_email;
@@ -55,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -117,14 +110,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        }
+        else if (getFragmentManager().getBackStackEntryCount() > 0) {
+            getFragmentManager().popBackStack();
+        }
+        else {
             super.onBackPressed();
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
-
+        Log.d("Test", "oncreate");
         MenuInflater inflater = getMenuInflater();
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.main, menu);
@@ -138,8 +135,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
                 setItemsVisibility(menu, searchItem, false);
-                //TODO: remove after testing
-                Log.d("Test", "not visible");
             }
 
 
@@ -149,8 +144,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public boolean onClose() {
                 setItemsVisibility(menu, searchItem, true);
-                //TODO: remove after testing
-                Log.d("Test", "visible");
                 return false;
             }
         });
@@ -170,6 +163,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d("Test", "onopitemselect");
+
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -186,15 +181,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Log.d("Test", "onNavItemSel");
+
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_favorites) {
-            Intent intent = new Intent(this, FavoritesActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_download) {
-            Intent intent = new Intent(this, DownloadsActivity.class);
-            startActivity(intent);
+        if (id == R.id.nav_download) {
+            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new DownloadListFragment()).addToBackStack(null).commit();
         } else if (id == R.id.nav_information) {
             Intent intent = new Intent(this, SearchActivity.class);
             startActivity(intent);
@@ -224,7 +216,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
     }
 
-    public void startVideos(View view) {callProgramPortal(view.getTag().toString());}
+    public void startVideos(View view) {
+        callProgramPortal(view.getTag().toString());}
 
     public void startResources(View view) {
         callProgramPortal(view.getTag().toString());
@@ -247,8 +240,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // when each button is clicked, we call the program portal activity and display program options per resource chosen
     public void callProgramPortal(String resourceType) {
-        Intent intent = new Intent(this, ProgramPortalActivity.class);
+        Intent intent = new Intent(this, ResourcesActivity.class);
         intent.putExtra(getString(R.string.resourceKey), resourceType);
         startActivity(intent);
     }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+    }
+
+    @Override
+    public void onDownloadStatus(boolean status) {
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.downloadListProgressBar);
+        if (!status) {
+            progressBar.setVisibility(View.VISIBLE);
+        } else {
+            progressBar.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(String id, String file) {
+        VideoDetailsFragment videoFragment = new VideoDetailsFragment();
+        Bundle b = new Bundle();
+        b.putString("resourceDir", file);
+        b.putString("itemToDownload", id);
+        videoFragment.setArguments(b);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.container_fragment_frame,new VideoDetailsFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
+    /*
+    @Override
+    public void onPostResume(){
+        Log.d("Test", "resuming");
+        super.onPostResume();
+        this.onPostResume();
+    }
+    */
+
 }
