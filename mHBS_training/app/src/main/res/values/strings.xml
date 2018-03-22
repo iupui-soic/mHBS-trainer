@@ -39,7 +39,7 @@
     <string name="providerGuide">Provider Guide</string>
     <string name="successfulDownload">Successfully Downloaded</string>
     <string name="image_hbb_desc">Helping Babies Breathe Logo</string>
-
+    <string name="infoFragmentTitle">Information</string>
 
 
 </resources>

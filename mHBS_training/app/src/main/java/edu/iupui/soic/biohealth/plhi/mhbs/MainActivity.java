@@ -35,6 +35,7 @@ import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SearchActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SettingsActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.DownloadListFragment;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.InformationFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.VideoDetailsFragment;
 
 
@@ -190,8 +191,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.nav_download) {
             getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new DownloadListFragment()).addToBackStack(null).commit();
         } else if (id == R.id.nav_information) {
-            Intent intent = new Intent(this, SearchActivity.class);
-            startActivity(intent);
+            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new InformationFragment()).addToBackStack(null).commit();
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);

@@ -48,7 +48,7 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
         View rootView = inflater.inflate(R.layout.fragment_download_list, container, false);
         listview = (ListView) rootView.findViewById(R.id.downloadListView);
         ResourceItemDownloaderUtil.ResourceOnDevice resourceOnDevice;
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Downloaded Content");
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.downloadFragmentTitle));
 
         for(int i=0;i<ResourceItemDownloaderUtil.allDownloads.size();i++){
             resourceOnDevice = ResourceItemDownloaderUtil.allDownloads.get(i);
