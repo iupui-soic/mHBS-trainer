@@ -53,7 +53,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
 
         btn_Courses = (Button) findViewById(R.id.btn_courses);
-        btn_Resources = (Button) findViewById(R.id.btn_resources);
+        /* Uncomment for re-implementation of resources
+        / btn_Resources = (Button) findViewById(R.id.btn_resources);
+        */
         btn_Videos = (Button) findViewById(R.id.btn_videos);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

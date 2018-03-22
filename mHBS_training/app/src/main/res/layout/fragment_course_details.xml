@@ -12,7 +12,7 @@
         android:layout_height="150dp" />
 
     <TableRow android:layout_width="match_parent" android:layout_height="50dp" android:gravity="bottom">
-        <TextView android:textSize="30sp" android:layout_marginLeft="10dp" android:text="Course Name"/>
+        <TextView android:textSize="30sp" android:layout_marginLeft="10dp" android:text="@string/providerGuide"/>
     </TableRow>
     <HorizontalScrollView
         android:layout_width="wrap_content"
