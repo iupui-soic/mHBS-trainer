@@ -15,15 +15,16 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import org.hisp.dhis.android.sdk.network.Credentials;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
@@ -77,7 +78,7 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
         if (ACTIVITY.equals(getString(R.string.videos))) {
             setActionBarTitle(getString(R.string.videoAppTitle));
         }
-        addListenerOnButton();
+        addButtonListeners();
 
         // set the action bar to implement going back
         ActionBar myToolbar = this.getSupportActionBar();
@@ -96,10 +97,33 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
         this.itemFragment = itemFragment;
     }
 
+    private void setComingSoonMessage(final ImageButton btn){
+        btn.setOnClickListener(new ImageButton.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                // disable while downloading
+                btn.setClickable(false);
+                    Toast.makeText(getApplicationContext(), getString(R.string.coming_soon), Toast.LENGTH_SHORT).show();
+
+
+            }
+
+        });
+    }
     // call in setupUi();
-    public void addListenerOnButton() {
+    public void addButtonListeners() {
         final DocumentResources.AsyncResponse delegate = this;
-        btn_program = (ImageButton) findViewById(R.id.btn_programs);
+        btn_program = (ImageButton) findViewById(R.id.btn_hbb);
+        ImageButton btn_hms = (ImageButton) findViewById(R.id.btn_HelpingMothersSurvive);
+        ImageButton btn_hbs = (ImageButton) findViewById(R.id.btn_all_programs);
+        ImageButton btn_eceb = (ImageButton) findViewById(R.id.btn_EssentialCare);
+        ImageButton btn_esceb = (ImageButton) findViewById(R.id.btn_Esceb);
+        List<ImageButton> btn_list = Arrays.asList(btn_eceb,btn_hms,btn_hbs,btn_esceb);
+        for(int i=0;i<btn_list.size();i++){
+            setComingSoonMessage(btn_list.get(i));
+        }
+
         btn_program.setOnClickListener(new ImageButton.OnClickListener() {
 
             @Override
@@ -115,7 +139,6 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
             }
 
         });
-
     }
 
     // implemented from ItemFragment, the list has been populated,

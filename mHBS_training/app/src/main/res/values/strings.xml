@@ -40,6 +40,8 @@
     <string name="successfulDownload">Successfully Downloaded</string>
     <string name="image_hbb_desc">Helping Babies Breathe Logo</string>
     <string name="infoFragmentTitle">Information</string>
+    <string name="coming_soon">feature coming soon</string>
+
 
 
 </resources>
