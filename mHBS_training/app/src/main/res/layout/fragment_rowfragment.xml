@@ -13,8 +13,9 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="3dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
             android:textColor="@color/black"
             android:textSize="20sp" />
     </GridLayout>
@@ -24,7 +25,8 @@
         android:orientation="horizontal"
         >
 
-        <ImageView
+
+        <TextView
             android:id="@+id/thumbnail"
             android:layout_width="180dp"
             android:layout_height="150dp"
@@ -33,10 +35,14 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="0dp"
             android:adjustViewBounds="true"
-            android:scaleType="center"
+            android:paddingTop="30dp"
             android:background="@color/black"
-            android:visibility="visible" />
-
+            android:lineSpacingExtra="2sp"
+            android:scaleType="center"
+            android:text="Please download to view content"
+            android:textAlignment="center"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium.Inverse"
+            android:textStyle="bold" />
         <GridLayout
             android:layout_height="match_parent"
             android:orientation="vertical">
@@ -76,7 +82,9 @@
 
     <TableRow
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
+        android:layout_marginTop="-20dp"
         android:gravity="right"
         android:orientation="vertical">
 

@@ -88,6 +88,7 @@
                     android:id="@+id/btn_all_programs"
                     android:layout_width="190dp"
                     android:layout_height="190dp"
+                    android:layout_weight="1"
                     android:background="@color/white"
                     android:scaleType="fitCenter"
                     android:src="@drawable/all_programs" />

@@ -56,14 +56,16 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mTitleView.setText(mValues.get(position).title);
-            if (mValues.get(position).bitmap != null) {
 
+        // properly sets video thumbnails
+           /* if (mValues.get(position).bitmap != null) {
                 holder.mThumbnailView.setImageBitmap(mValues.get(position).bitmap);
             } else {
                 //using the following function, you can display a static image if desired.
                // setDefaultImage(holder);
                 //TODO: For items that were null, if they are downloaded
         }
+        */
         //    holder.mInstitutionView.setText(mValues.get(position).institution);
         //  holder.mIdView.setText(mValues.get(position).id);
 
@@ -104,7 +106,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         public final View mView;
         public final TextView mTitleView;
         public final TextView mInstitutionView;
-        public final ImageView mThumbnailView;
+        public final TextView mThumbnailView;
 
         public ResourceItem mItem;
 
@@ -113,7 +115,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             mView = view;
             mTitleView = (TextView) view.findViewById(R.id.title);
             mInstitutionView = (TextView) view.findViewById(R.id.titleLocation);
-            mThumbnailView = (ImageView) view.findViewById(R.id.thumbnail);
+            mThumbnailView = (TextView) view.findViewById(R.id.thumbnail);
         }
 
         @Override
