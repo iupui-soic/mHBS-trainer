@@ -70,8 +70,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // to set text to drawer we need to get its view to access its content
         View header = navigationView.getHeaderView(0);
+
+        /* Uncomment to re-implement offline mode
         tv_switch_status = (TextView) header.findViewById(R.id.tv_switcher_status);
         sw_offlineMode = (Switch) header.findViewById(R.id.sw_offlineMode);
+         */
 
         // get the user details from login
         UserAccount userAccount = MetaDataController.getUserAccount();
@@ -84,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             dhis_user_name.setText(userAccount.getDisplayName());
             dhis_user_email.setText(userAccount.getEmail());
         }
-        sw_offlineMode.setOnCheckedChangeListener(this);
+       // sw_offlineMode.setOnCheckedChangeListener(this);
 
 /*TODO: The following code is an example of connecting and printing data from the database
         // the same logic needs to be implemented for pdf/videos. See documentation on github
