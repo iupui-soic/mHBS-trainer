@@ -39,6 +39,7 @@ public class mhbsTrainingApplication extends Dhis2Application {
                 .debuggable(true)
                 .build();
 
+
         // if we are logged in, just log in
         UserAccount userAccount = MetaDataController.getUserAccount();
         if(userAccount!=null) {

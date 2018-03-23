@@ -1,9 +1,12 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Xml;
@@ -32,7 +35,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     // url for downloading documents from DHIS2 Web API
     private final String URL = "https://mhbs.info/api/documents";
     // List of IDs associated with a resource parsed from /api/documents
-    public static List resourcesFound = new ArrayList<>();
+    //TODO change to better solution from public static, Currently downloadlistfragment using
+    public static List<String> resourcesFound = new ArrayList<>();
     // holders for auth credentials to access API
     private static String password;
     private static String username;
@@ -43,67 +47,77 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     private static final List<ResourceItem> PDF_RESOURCES = new ArrayList<>();
     private AsyncResponse delegate = null;
     public static boolean CURRENTLY_DOWNLOADING = false;
-    private List<Bitmap> videoFrame;
+    //TODO: Uncomment for thumbnails
+    //private List<Bitmap> videoFrame;
+    //private static Frame myFrame;
     private Boolean isResources;
-    private static Frame myFrame;
+
+    // default constructor
+    public DocumentResources(){}
 
     /**
      * A resource item representing a piece of content.
      */
     public static class ResourceItem {
-        public final String id;
-        public final String title;
-        public final String details;
-        public Bitmap bitmap;
+        private String id;
+        private String title;
+        private String contentType;
+        private Bitmap bitmap;
+        private boolean isDownloaded;
 
-        public ResourceItem(String id, String title, String details) {
+        private ResourceItem(String id, String title, String contentType) {
             this.id = id;
             this.title = title;
-            this.details = details;
+            this.contentType = contentType;
         }
 
+        // for use in videoDetails fragment
         public void setBitmap(Bitmap bitmap) {
             this.bitmap = bitmap;
         }
 
+        public void setDownloaded(boolean isDownloaded){
+            this.isDownloaded = isDownloaded;
+        }
+
+        public String getId(){return id;}
+        public String getTitle(){return title;}
+        public String getContentType(){return contentType;}
+        public boolean getDownloadStatus(){return isDownloaded;}
+
         @Override
         public String toString() {
-            return title;
+            return "Resource item details: " + id + title + contentType;
         }
     }
 
-    // Frames which download video thumbnails belonging to resource items
-    public static class Frame {
-        MediaMetadataRetriever frameRetriever;
-        Map<String, String> headers;
+    @Override
+    // Starts a new Async task to get XML in background
+    protected List<ResourceItem> doInBackground(String... act) {
+        Process.setThreadPriority(THREAD_PRIORITY_URGENT_DISPLAY);
+        // flag for disabling back buttons while content is downloading.
+        CURRENTLY_DOWNLOADING = true;
+        // TODO: Uncomment for thumbnails
+        //videoFrame = new ArrayList<>();
 
-        public Frame(String encodedAuth) {
-            // retriever for thumbnails
-            frameRetriever = new MediaMetadataRetriever();
-            // send HTTP headers
-            headers = new HashMap<>();
-            headers.put("Authorization", encodedAuth);
-        }
-
-
-        private Bitmap retrieveFrameFromVideo(String videoPath) throws Throwable {
-            String videoFrame = videoPath + "/data";
-            Bitmap bitmap = null;
-            try {
-                frameRetriever.setDataSource(videoFrame, headers);
-                bitmap = frameRetriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new Throwable("Exception in retrieveFrameFromVideo(String videoPath)" + e.getMessage());
-            } finally {
-                if (frameRetriever != null) {
-                    frameRetriever.release();
-                }
+        // pass in the type of resource we want depending on which button user clicked
+        String resourceToParse = act[0];
+        // we will use this to see if the caller is pdf resources
+        isResources = resourceToParse.equals("Resources");
+        // if we already have video items, we don't want to download them again (for the moment)
+        if (DocumentResources.VIDEO_RESOURCES.isEmpty() || DocumentResources.PDF_RESOURCES.isEmpty()) {
+            authenticateUser();
+            // Try to pull in the DHISAPI XML and initialize XmlPullParser
+            XmlPullParser xPP = tryDownloadingXMLData(URL + ".xml");
+            // Now, try to get a list of data pulled from the XML
+            tryParsingXmlData(xPP, XMLRESOURCES);
+            if (resourcesFound != null) {
+                separateContent(xPP, resourceToParse);
             }
-            return bitmap;
         }
+        // return a list of either pdf or video resources
+        return (isResources) ? PDF_RESOURCES : VIDEO_RESOURCES;
     }
-
 
     // used to separate video and pdf items which were parsed from XML
     private static void addItem(String itemType, ResourceItem item) {
@@ -114,45 +128,25 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         }
     }
 
-
-    @Override
-    // Starts a new Async task to get XML in background
-    protected List<ResourceItem> doInBackground(String... act) {
-        Process.setThreadPriority(THREAD_PRIORITY_URGENT_DISPLAY);
-        CURRENTLY_DOWNLOADING = true;
-        videoFrame = new ArrayList<>();
-
-        // pass in the type of resource we want depending on which button user clicked
-        String resourceToParse = act[0];
-        // we will use this to see if the caller is pdf resources
-        isResources = resourceToParse.equals("Resources");
-        // if we already have video items, we don't want to download them again (for the moment)
-        if (DocumentResources.VIDEO_RESOURCES.isEmpty() || DocumentResources.PDF_RESOURCES.isEmpty()) {
-            // user authentification
-            authenticateUser();
-            // Try to pull in the DHISAPI XML and initialize XmlPullParser
-            XmlPullParser xPP = tryDownloadingXMLData(URL + ".xml");
-            // Now, try to get a list of data pulled from the XML
-            resourcesFound = tryParsingXmlData(xPP, XMLRESOURCES);
-            if (resourcesFound != null) {
-                // depending on activity, parse different resources
-                List resource = tryParsingXmlData(xPP, resourceToParse);
-                int i = 0;
-                // each i in resource array maps to a set of ids and titles (2(i), 2(i)+1) in resourcesFound
-                while (i < resource.size()) {
-                    // if resource element contains a video
-                    if (resource.get(i).toString().contains("video")) {
-                        addItem("Video", new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
-                        // check if the resource contains a pdf
-                    } else if (resource.get(i).toString().contains("pdf")) {
-                        addItem("Pdf", new ResourceItem(resourcesFound.get(2 * i).toString(), resourcesFound.get(2 * i + 1).toString(), null));
-                    }
-                    i++;
-                }
+    private void separateContent(XmlPullParser xPP, String resourceToParse) {
+        // depending on activity, parse different resources
+        List<String> resource = tryParsingXmlData(xPP, resourceToParse);
+        String contentType;
+        String id;
+        String title;
+        // each i in resource array maps to a set of ids and titles (2(i), 2(i)+1) in resourcesFound
+        for (int i = 0; i < resource.size(); i++) {
+            contentType = resource.get(i);
+            id = resourcesFound.get(2 * i);
+            title = resourcesFound.get(2 * i + 1);
+            // if resource element contains a video
+            if (contentType.contains("video")) {
+                addItem("Video", new ResourceItem(id, title, contentType));
+                // check if the resource contains a pdf
+            } else if (resource.get(i).contains("pdf")) {
+                addItem("PDF", new ResourceItem(id, title, contentType));
             }
         }
-        // return a list of either pdf or video resources
-        return (isResources) ? PDF_RESOURCES : VIDEO_RESOURCES;
     }
 
     /*
@@ -178,12 +172,12 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
 
 
     // Attempt parsing data
-    private List tryParsingXmlData(XmlPullParser receivedData, String objective) {
+    private List<String> tryParsingXmlData(XmlPullParser receivedData, String objective) {
         if (receivedData != null) {
             try {
                 if (objective.equals(XMLRESOURCES)) {
                     // processes basic all document XML
-                    return processReceivedData(receivedData);
+                     processReceivedData(receivedData);
                 } else {
                     // processes individual resources
                     return processResources(receivedData);
@@ -196,12 +190,12 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     }
 
     // Process individual resources (Videos, Pdf, etc...)
-    private List processResources(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private List<String> processResources(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<String> entries = new ArrayList<>();
         for (int i = 0; i < resourcesFound.size(); i++) {
             if (i % 2 == 0) {
                 // for each entry resource already found parse the XML data so we can get their types
-                entries.add(tryParsingResources(parser, resourcesFound.get(i).toString()));
+                entries.add(tryParsingResources(parser, resourcesFound.get(i)));
             }
         }
         return entries;
@@ -231,8 +225,6 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             }
         }
 */
-        
-
         // return type of content
         return type;
     }
@@ -279,8 +271,7 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     }
 
     // processes list of all document resources, not individual document resources
-    private List processReceivedData(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List<String> entries = new ArrayList<>();
+    private void processReceivedData(XmlPullParser parser) throws XmlPullParserException, IOException {
         String id = "";
         String title = "";
         // defines the first outer XML tag
@@ -292,14 +283,13 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             }
             if (parser.getName().equals("document")) {
                 id = readId(parser);
-                entries.add(id);
+                resourcesFound.add(id);
             }
             if (parser.getName().equals("displayName")) {
                 title = parser.nextText();
-                entries.add(title);
+                resourcesFound.add(title);
             }
         }
-        return entries;
     }
 
     // Pull ID's from document API
@@ -321,7 +311,8 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         // make sure our authentication matches the default authentication in a format that auth understands
         String authorization = username + ":" + password;
         String encodedAuth = "Basic " + Base64.encode(authorization.getBytes(), 0);
-        myFrame = new Frame(encodedAuth);
+        // TODO: Uncomment for thumbnails
+        //myFrame = new Frame(encodedAuth);
         // attach the auth request to the connection
         conn.setRequestProperty("Authorization", encodedAuth);
         int responseCode = conn.getResponseCode();
@@ -357,21 +348,24 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
         Credentials getCredentials();
     }
 
+    // our delegate to send results
     public DocumentResources(AsyncResponse delegate) {
         this.delegate = delegate;
     }
-    public DocumentResources(){}
+
+
     @Override
     // results display here
     protected void onPostExecute(List<ResourceItem> items) {
         // reset flags
-        // reset flags
         CURRENTLY_DOWNLOADING = false;
         isResources = false;
-        // set video thumbnails
+
+      /* TODO: uncomment for set video thumbnails
         for (int j = 0; j < videoFrame.size(); j++) {
             VIDEO_RESOURCES.get(j).setBitmap(videoFrame.get(j));
-        }
+
+        }*/
         delegate.processFinish(items);
 
     }
@@ -398,4 +392,42 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
     public int getResourcesLength(){
         return this.resourcesFound.size();
     }
+
+
+    // Frames which download video thumbnails belonging to resource items
+    public static class Frame {
+        // interface to grab video thumbnails
+        MediaMetadataRetriever frameRetriever;
+        // http headers
+        Map<String, String> headers;
+
+        public Frame(String encodedAuth) {
+            // retriever for thumbnails
+            frameRetriever = new MediaMetadataRetriever();
+            // send HTTP headers
+            headers = new HashMap<>();
+            headers.put("Authorization", encodedAuth);
+        }
+
+        // gets frame at beginning of video content
+        private Bitmap retrieveFrameFromVideo(String videoPath) throws Throwable {
+            String videoFrame = videoPath + "/data";
+            Bitmap bitmap = null;
+            try {
+                frameRetriever.setDataSource(videoFrame, headers);
+                bitmap = frameRetriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new Throwable("Exception in retrieveFrameFromVideo(String videoPath)" + e.getMessage());
+            } finally {
+                if (frameRetriever != null) {
+                    frameRetriever.release();
+                }
+            }
+            return bitmap;
+        }
+    }
+
 }
+
+

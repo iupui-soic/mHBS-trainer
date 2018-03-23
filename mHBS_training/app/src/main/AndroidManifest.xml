@@ -3,16 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="edu.iupui.soic.biohealth.plhi.mhbs">
 
-    <uses-sdk tools:overrideLibrary=":core"/>
+    <uses-sdk tools:overrideLibrary=":core" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission
-        android:name="android.permission.PACKAGE_USAGE_STATS"
-        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
     <application
         android:name="edu.iupui.soic.biohealth.plhi.mhbs.mhbsTrainingApplication"
@@ -23,12 +22,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:theme">
-
         <activity android:name=".activities.SharedLoginActivity"
-            android:noHistory="true"
-            android:theme="@style/mHBSLoginScreenTheme">
+            android:theme="@style/mHBSLoginScreenTheme"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
@@ -41,7 +40,6 @@
             android:name="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
-
         </activity>
 
         <activity
@@ -54,8 +52,6 @@
 
         <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.SettingsActivity" />
-        <activity android:name=".activities.InfoActivity" />
-        <activity android:name=".activities.FavoritesActivity" />
         <activity android:name=".activities.CourseInput" />
 
         <!-- Specify the next screen after SplashScreen if user already logged in -->

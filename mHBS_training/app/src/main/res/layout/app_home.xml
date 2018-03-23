@@ -7,7 +7,7 @@
     android:background="#FFFFFF"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
-    tools:showIn="@layout/app_bar_main">
+    tools:showIn="@layout/nav_app_bar">
 
         <ImageView
             android:layout_marginTop="50dp"
@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:src="@drawable/hbb"
             android:layout_centerHorizontal="true"
-            android:contentDescription="TODO" />
+            android:contentDescription="@string/image_hbb_desc" />
         <RelativeLayout
             android:layout_marginTop="50dp"
             android:layout_below="@+id/image_hbb"
@@ -41,11 +41,11 @@
                 android:layout_width="@dimen/main_screen_button_size"
                 android:text="@string/videos"
                 android:layout_below="@id/btn_videos"
-                android:layout_alignLeft="@id/btn_videos"
+                android:layout_alignStart="@id/btn_videos"
                 android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"
                 android:textAlignment="center"/>
 
-            <Button
+            <!--Button
                 android:id="@+id/btn_resources"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
@@ -65,13 +65,13 @@
                 android:layout_below="@id/btn_resources"
                 android:layout_alignStart="@id/btn_resources"
                 android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"
-                android:textAlignment="center"/>
+                android:textAlignment="center"/-->
 
             <Button
                 android:id="@+id/btn_courses"
                 android:layout_width="@dimen/main_screen_button_size"
                 android:layout_height="@dimen/main_screen_button_size"
-                android:layout_toEndOf="@id/btn_resources"
+                android:layout_toEndOf="@id/btn_videos"
                 android:background="@drawable/ic_courses"
                 android:foreground="@drawable/ic_courses"
                 android:foregroundGravity="center"
@@ -82,7 +82,7 @@
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="@dimen/main_screen_button_size"
-                android:text="@string/courses"
+                android:text="@string/providerGuide"
                 android:layout_below="@id/btn_courses"
                 android:layout_alignStart="@id/btn_courses"
                 android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"

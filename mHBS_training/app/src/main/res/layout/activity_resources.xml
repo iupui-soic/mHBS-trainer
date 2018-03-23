@@ -9,7 +9,6 @@
 
     <TextView
         android:id="@+id/textView"
-        android:textAlignment="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="false"
@@ -22,73 +21,81 @@
         android:layout_centerHorizontal="false"
         android:layout_centerInParent="false"
         android:layout_centerVertical="false"
-        android:text="Please click 'All Programs' to view content" />
+        android:text="Please click 'Helping Babies Breathe' to view content"
+        android:textAlignment="center" />
 
-    <ProgressBar
-        android:id="@+id/videoDownloadBar"
-        style="@android:style/Widget.Material.ProgressBar.Large"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="284dp"
-        android:indeterminate="true"
-        android:theme="@style/CircularProgress"
-        android:visibility="invisible" />
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <GridLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:columnCount="1"
-            android:orientation="horizontal"
-            android:paddingTop="40dp"
-            android:rowCount="4"
+            android:orientation="vertical"
+            android:paddingTop="20dp"
+            android:rowCount="3"
             tools:context=".GridXMLActivity">
 
-
-            <ImageButton
-                android:id="@+id/btn_programs"
-                android:layout_width="wrap_content"
-                android:layout_height="200dp"
-                android:layout_gravity="start|top"
-                android:background="@color/white"
-                android:scaleType="fitCenter"
-                android:src="@drawable/viewallprograms" />
-
-            <ImageButton
-                android:id="@+id/btn_HelpingBabiesSurvive"
+            <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
-                android:layout_gravity="start|top"
-                android:background="@color/white"
-                android:scaleType="centerCrop"
-                android:src="@drawable/helpingmotherssurvive" />
-            <TableRow>
+                android:layout_height="match_parent">
+
+                <ImageButton
+                    android:id="@+id/btn_hbb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:scaleType="center"
+                    android:src="@drawable/helpingbabies" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
                 <ImageButton
                     android:id="@+id/btn_HelpingMothersSurvive"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="start|top"
-                    android:layout_marginTop="10dp"
+                    android:layout_width="190dp"
+                    android:layout_height="190dp"
                     android:background="@color/white"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/helpingbabiesbreathe" />
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/helpingmothers" />
 
 
                 <ImageButton
                     android:id="@+id/btn_EssentialCare"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="start|top"
+                    android:layout_width="240dp"
+                    android:layout_height="190dp"
+                    android:layout_weight="1"
                     android:background="@color/white"
-                    android:src="@drawable/essentialcareforsmallbabies" />
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/eceb" />
+
+            </TableRow>
+
+            <TableRow>
+
+                <ImageButton
+                    android:id="@+id/btn_Esceb"
+                    android:layout_width="190dp"
+                    android:layout_height="190dp"
+                    android:background="@color/white"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/esceb" />
+
+                <ImageButton
+                    android:id="@+id/btn_all_programs"
+                    android:layout_width="190dp"
+                    android:layout_height="190dp"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/all_programs" />
             </TableRow>
         </GridLayout>
     </ScrollView>
+
     <LinearLayout
         android:id="@+id/res_fragment_container"
         android:layout_width="match_parent"
@@ -115,7 +122,16 @@
         android:theme="@style/CircularProgress"
         android:visibility="invisible" />
 
+    <ProgressBar
+        android:id="@+id/videoDownloadBar"
+        style="@android:style/Widget.Material.ProgressBar.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="284dp"
+        android:indeterminate="true"
+        android:theme="@style/CircularProgress"
+        android:visibility="invisible" />
 </RelativeLayout>
-
-
-

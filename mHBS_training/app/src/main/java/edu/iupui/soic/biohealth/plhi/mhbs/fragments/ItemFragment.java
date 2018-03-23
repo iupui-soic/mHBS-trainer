@@ -17,6 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import org.hisp.dhis.android.sdk.network.Credentials;
+
+import java.util.List;
+import android.widget.ProgressBar;
+
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 
@@ -77,6 +82,7 @@ public class ItemFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
 
+        // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
@@ -97,6 +103,7 @@ public class ItemFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof OnListFragmentInteractionListener) {
             mListener = (OnListFragmentInteractionListener) context;
+
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
@@ -112,6 +119,7 @@ public class ItemFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+
         mListener = null;
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
@@ -124,6 +132,7 @@ public class ItemFragment extends Fragment {
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(ResourceItem item);
         void onFragmentComplete();
+        void onDownloadButtonClick(ResourceItem item, boolean status);
     }
 
     public void setOutput(List<DocumentResources.ResourceItem> output){

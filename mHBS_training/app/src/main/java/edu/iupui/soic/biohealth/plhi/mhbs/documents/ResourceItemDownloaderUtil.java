@@ -7,14 +7,17 @@ import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ResourceItemDownloaderUtil {
     private File resourceDir;
     private Context pContext;
     private final String dirName = "mhbsDocs";
     private String itemType;
-    public static List<String> allDownloads;
+    //TODO change to better solution from public static, Currently downloadlistfragment using
+    public static List<ResourceOnDevice> allDownloads;
 
     public ResourceItemDownloaderUtil() {
 
@@ -68,9 +71,13 @@ public class ResourceItemDownloaderUtil {
         return subFile;
     }
 
-
+    public void setpContext(Context context){
+        this.pContext = context;
+    }
     // create a folder on app's internal directory storage
     private File createInternalDir() {
+        Log.d("Test", "Trying to create internal " + dirName +" " + pContext.toString());
+
         File dir = pContext.getDir(dirName, Context.MODE_PRIVATE);
         return dir;
     }
@@ -92,7 +99,6 @@ public class ResourceItemDownloaderUtil {
 
     // check through directory
     private boolean findItem(File checkFile, String itemId) {
-        Log.d("Test", "CHECK FILE" + checkFile.toString());
         if (checkFile.list() != null) {
             for (int i = 0; i < checkFile.list().length; i++) {
                 if (checkFile.list()[i].contains(itemId)) {
@@ -131,18 +137,32 @@ public class ResourceItemDownloaderUtil {
     private void findDownloads(File checkFile) {
         if (checkFile.list() != null) {
             for (int i = 0; i < checkFile.list().length; i++) {
-                addDownloadsFound((checkFile.list()[i]));
+                addDownloadsFound(checkFile.list()[i], checkFile.toString());
             }
         }
     }
 
 
-    private static void addDownloadsFound(String file) {
-        Log.d("Test", "here ");
-       allDownloads.add(file);
+    private void addDownloadsFound(String id, String file) {
+        ResourceOnDevice fd = new ResourceOnDevice();
+        fd.id = id;
+        fd.file = file;
+       allDownloads.add(fd);
     }
 
 
+public class ResourceOnDevice{
+        String id;
+        String file;
+
+    public String getFile() {
+        return file;
+    }
+    public String getId(){
+        return id;
+    }
+
+}
 
 }
 

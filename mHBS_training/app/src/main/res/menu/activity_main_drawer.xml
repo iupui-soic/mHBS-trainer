@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single"
-        android:id="@+id/group_mHBS_Tracker_App">
+        android:id="@+id/group_mHBS_Tracker_App"
+        >
         <item
             android:id="@+id/nav_mHBS_tracker_app"
             android:icon="@drawable/ic_apps"
             android:title="@string/mHBS_Tracker" />
-        <item
+        <!--item
             android:id="@+id/nav_favorites"
             android:icon="@drawable/ic_star"
-            android:title="@string/favorites" />
+            android:title="@string/favorites" /-->
 
         <item
             android:id="@+id/nav_download"
@@ -25,8 +25,5 @@
             android:icon="@drawable/ic_info"
             android:title="@string/information"
             />
-
     </group>
-
-
 </menu>

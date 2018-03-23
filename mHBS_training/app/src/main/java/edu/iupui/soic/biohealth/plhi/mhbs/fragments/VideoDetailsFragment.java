@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +36,7 @@ public class VideoDetailsFragment extends Fragment {
     private String videoPath;
     private String itemToDownload;
     private File openVideo;
+    private videoInterface mListener;
     private String contentId;
     private UserAccount userAccount = MetaDataController.getUserAccount();
 
@@ -52,6 +54,7 @@ public class VideoDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         // Inflate the xml for the fragment
         View rootView = inflater.inflate(R.layout.fragment_video_details, parent, false);
+
         onDownloadFinish();
         return rootView;
     }
@@ -117,6 +120,8 @@ public class VideoDetailsFragment extends Fragment {
 
     @Override
     public void onDetach() {
+        mListener.changeTitle(getString(R.string.videoAppTitle));
+        super.onDetach();
         super.onDetach();
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
@@ -124,8 +129,25 @@ public class VideoDetailsFragment extends Fragment {
                 .putContentName("VideoView"+","+userAccount.getUId())
                 .putCustomAttribute("Video end time",userAccount.getUId()+","+sdf.format(date))
                 .putCustomAttribute("video name",userAccount.getUId()+","+contentId));
-
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof VideoDetailsFragment.videoInterface) {
+            mListener = (VideoDetailsFragment.videoInterface) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement videoInterface");
+        }
+    }
+
+    public interface videoInterface{
+    void changeTitle(String title);
+    }
+
+
 }
+
+
 

@@ -36,22 +36,26 @@
         android:textColor="@color/greyColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/email_example" />
+        android:text="@string/email_example"
+        />
 
-    <TextView
-        android:layout_below="@+id/sw_offlineMode"
+</RelativeLayout>
+
+
+    <!--TextView
+        android:layout_below="@+id/dhis_user_name"
         android:id="@+id/tv_switcher_status"
         android:textColor="@color/greyColorDark"
         android:layout_width="wrap_content"
         android:textSize="12sp"
         android:layout_height="wrap_content"
         android:text="@string/toggleOn"
-        android:layout_alignRight="@id/sw_offlineMode"
+        android:layout_alignRight="@id/dhis_user_name"
         android:layout_marginRight="10dp"
         android:layout_marginEnd="10dp"
-        />
+        /-->
 
-    <Switch
+    <!--Switch
         android:layout_marginTop="39dp"
         android:layout_below="@id/dhis_user_email"
         android:id="@+id/sw_offlineMode"
@@ -60,6 +64,5 @@
         android:layout_height="wrap_content"
         android:text="@string/offline_mode"
         android:textColor="@color/greyColorDark"
-        />
+        /-->
 
-</RelativeLayout>
