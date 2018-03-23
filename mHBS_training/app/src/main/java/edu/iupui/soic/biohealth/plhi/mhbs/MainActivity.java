@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -32,10 +31,9 @@ import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
-import edu.iupui.soic.biohealth.plhi.mhbs.activities.SearchActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SettingsActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.DownloadListFragment;
-import edu.iupui.soic.biohealth.plhi.mhbs.fragments.InformationFragment;
+import edu.iupui.soic.biohealth.plhi.mhbs.fragments.InfoFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.VideoDetailsFragment;
 
 
@@ -194,7 +192,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.nav_download) {
             getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new DownloadListFragment()).addToBackStack(null).commit();
         } else if (id == R.id.nav_information) {
-            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,new InformationFragment()).addToBackStack(null).commit();
+            Fragment fragment = new InfoFragment();
+            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,fragment).addToBackStack(null).commit();
+
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
