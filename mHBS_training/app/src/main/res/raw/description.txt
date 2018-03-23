@@ -1,7 +1,3 @@
-Description:<br/>
-TBD<br/>
-
-By developers of mHBS mobile helping babies survive
-<br/>
-<br/>Indiana University-Purdue University Indianapolis(IUPUI)<br/>
+By developers of mHBS mobile helping babies survive at
+<br/>Indiana University-Purdue University Indianapolis(IUPUI) (https://www.iupui.edu/)<br/>
 backed by DHIS2 (https://www.dhis2.org/).<br/><br/>

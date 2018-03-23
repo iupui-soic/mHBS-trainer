@@ -33,6 +33,7 @@ import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.SettingsActivity;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.DownloadListFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.InfoFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.VideoDetailsFragment;
@@ -112,15 +113,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        }
-        else if (getFragmentManager().getBackStackEntryCount() > 0) {
-            getFragmentManager().popBackStack();
-        }
-        else {
-            super.onBackPressed();
+        if(DocumentResources.CURRENTLY_DOWNLOADING){
+
+        }else {
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else if (getFragmentManager().getBackStackEntryCount() > 0) {
+                getFragmentManager().popBackStack();
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -132,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         inflater.inflate(R.menu.main, menu);
         // Retrieve the SearchView and plug it into SearchManager
         // Detect SearchView icon clicks
-
+/*
         final MenuItem searchItem = menu.findItem(R.id.menuSearch);
         SearchView searchView = (android.support.v7.widget.SearchView) searchItem.getActionView();
 
@@ -153,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-
+*/
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -187,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Log.d("Test", "onNavItemSel");
-
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if (id == R.id.nav_download) {
@@ -197,8 +199,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,fragment).addToBackStack(null).commit();
 
         } else if (id == R.id.nav_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            //Intent intent = new Intent(this, SettingsActivity.class);
+            //startActivity(intent);
+            shortToastMessage("Coming soon");
         } else if (id == R.id.nav_mHBS_tracker_app) {
             /*Start the DHIS2 capture tracker app with intent*/
             String trackerCapture = getString(R.string.trackerCapture);
