@@ -4,6 +4,7 @@
 
 package edu.iupui.soic.biohealth.plhi.mhbs;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -37,7 +38,7 @@ import edu.iupui.soic.biohealth.plhi.mhbs.fragments.InfoFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.VideoDetailsFragment;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener, DownloadListFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, CompoundButton.OnCheckedChangeListener, DownloadListFragment.OnFragmentInteractionListener, VideoDetailsFragment.videoInterface {
     Button btn_Videos, btn_Resources, btn_Courses;
     Switch sw_offlineMode;
     TextView tv_switch_status, dhis_user_name, dhis_user_email;
@@ -277,6 +278,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .add(R.id.container_fragment_frame,new VideoDetailsFragment())
                 .addToBackStack(null)
                 .commit();
+    }
+
+    @Override
+    public Context getContext() {
+       return this.getApplicationContext();
+    }
+
+    @Override
+    public void changeTitle(String title) {
     }
 
     /*

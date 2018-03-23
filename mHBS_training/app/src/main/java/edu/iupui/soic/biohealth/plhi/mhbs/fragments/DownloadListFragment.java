@@ -1,6 +1,7 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.fragments;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -12,8 +13,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.hisp.dhis.android.sdk.network.Credentials;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +32,7 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
     Snackbar mySnackbar;
     private ListView listview;
     private ResourceItemDownloaderUtil rdUtil;
+    private List<String> downloadedContent;
 
     public DownloadListFragment() {
         // Required empty public constructor
@@ -46,31 +51,42 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_download_list, container, false);
+        // inflate list view
         listview = (ListView) rootView.findViewById(R.id.downloadListView);
-        ResourceItemDownloaderUtil.ResourceOnDevice resourceOnDevice;
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.downloadFragmentTitle));
+        // set title for download_list
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.downloadFragmentTitle));
 
-        for(int i=0;i<ResourceItemDownloaderUtil.allDownloads.size();i++){
-            resourceOnDevice = ResourceItemDownloaderUtil.allDownloads.get(i);
+        // get context of calling activity
+        Context context = mListener.getContext();
+        // check
+        ResourceItemDownloaderUtil resourceItemDownloaderUtil = new ResourceItemDownloaderUtil();
+        resourceItemDownloaderUtil.resourceFinder(context);
+        final List<String> ids;
+        // get list of ids from
+
+        if(checkInternetConnection(context)){
+            if(canGetDownloadMetaData()){
+                ids = idSplitter();
+                displayDownloadedContent(ids);
+            }else{
+                getMetaData(rootView);
+            }
+
         }
-
-        // if we can pull the element titles
-        if (canGetDownloadMetaData()) {
-            final List<String> ids = idSplitter();
-            // get list of titles matching ids containing all downloaded content.
+        else if(ResourceItemDownloaderUtil.allDownloads.size()>0 && DocumentResources.resourcesFound.size()>0) {
+            Log.d("Test", "size");
+            ids = idSplitter();
             displayDownloadedContent(ids);
-        } else {
-            // otherwise we will get the element titles and then display
-            getMetaData(rootView);
         }
-
+        else {
+                Toast.makeText(context, getString(R.string.internet_not_available), Toast.LENGTH_LONG).show();
+            }
         return rootView;
     }
 
     // pull ids from format id.pdf or id.webm
     private List<String> idSplitter() {
         List<String> ids = new ArrayList<>();
-
         for (int i = 0; i < ResourceItemDownloaderUtil.allDownloads.size(); i++) {
             String[] split = ResourceItemDownloaderUtil.allDownloads.get(i).getId().split("\\.");
             ids.add(split[0]);
@@ -110,7 +126,7 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
     @Override
     public void onDetach() {
         super.onDetach();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.title_activity_main));
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.title_activity_main));
 
         mListener = null;
     }
@@ -127,11 +143,11 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
     }
 
     private void displayDownloadedContent(final List<String> ids) {
-        List<String> downloadedContent = new ArrayList<>();
+        downloadedContent = new ArrayList<>();
         for (int i = 0; i < ids.size(); i++) {
             if (DocumentResources.resourcesFound.contains(ids.get(i))) {
                 downloadedContent.add(DocumentResources.resourcesFound.get(2 * i + 1).toString());
-       //         ResourceItemDownloaderUtil.allDownloads.get(i).setTitle(DocumentResources.resourcesFound.get(2 * i + 1).toString());
+                //         ResourceItemDownloaderUtil.allDownloads.get(i).setTitle(DocumentResources.resourcesFound.get(2 * i + 1).toString());
             }
         }
         ArrayAdapter<String> adapter =
@@ -142,25 +158,24 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
 
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-
                 ResourceItemDownloaderUtil.ResourceOnDevice resourceOnDevice = ResourceItemDownloaderUtil.allDownloads.get(position);
                 Fragment videoFrag = new VideoDetailsFragment();
                 String url = resourceOnDevice.getFile();
                 String id = resourceOnDevice.getId();
+/*
+                if (id.contains(".webm"))
 
-                if(id.contains(".webm"))
-
-                Log.d("Test", url + " THIS IS THE URL ");
+                    Log.d("Test", url + " THIS IS THE URL ");
                 Log.d("Test", id + " THIS IS THE ID ");
                 Log.d("Test", ids.get(position) + "THIS IS THE POS");
-
+*/
                 Bundle b = new Bundle();
                 b.putString("itemToDownload", ids.get(position));
                 //TODO: change to use regex
                 String fileName = url.substring(19);
                 b.putString("resourceDir", fileName);
                 videoFrag.setArguments(b);
-                getChildFragmentManager().beginTransaction().add(R.id.downloadList_fragment_container,videoFrag).addToBackStack(null).commit();
+                getChildFragmentManager().beginTransaction().add(R.id.downloadList_fragment_container, videoFrag).addToBackStack(null).commit();
 
             }
         });
@@ -175,6 +190,17 @@ public class DownloadListFragment extends Fragment implements DocumentResources.
     public interface OnFragmentInteractionListener {
         void onDownloadStatus(boolean status);
         void onFragmentInteraction(String id, String file);
+        Context getContext();
     }
 
+    private boolean checkInternetConnection(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected()) {
+            return true;
+
+        } else {
+            return false;
+        }
+    }
 }

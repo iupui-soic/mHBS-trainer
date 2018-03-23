@@ -42,4 +42,6 @@
     <string name="infoFragmentTitle">Information</string>
     <string name="coming_soon">feature coming soon</string>
     <string name="already_downloaded">Please click content to view</string>
+    <string name="internet_not_available">Internet is not available</string>
+
 </resources>
