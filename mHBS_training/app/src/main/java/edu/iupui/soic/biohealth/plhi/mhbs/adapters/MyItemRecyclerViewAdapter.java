@@ -16,6 +16,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     private static List<ResourceItem> mValues = new ArrayList<>();
     private OnListFragmentInteractionListener mListener;
     private ImageButton btn;
+    private TextView textView;
+
     public MyItemRecyclerViewAdapter(OnListFragmentInteractionListener mListener) {
         this.mListener = mListener;
     }
@@ -48,14 +52,25 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.fragment_rowfragment, parent, false);
-         btn = (ImageButton) view.findViewById(R.id.btn_download_content);
+        textView = (TextView)view.findViewById(R.id.thumbnail);
+        btn = (ImageButton) view.findViewById(R.id.btn_download_content);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mTitleView.setText(mValues.get(position).title);
+        holder.mTitleView.setText(mValues.get(position).getTitle());
+        if(mValues.get(position).getDownloadStatus()){
+            textView.setText(R.string.already_downloaded);
+            // hide download button
+            btn.setVisibility(View.INVISIBLE);
+            // get bitmaps
+           // holder.mThumbnailView.setImageBitmap(mValues.get(position).bitmap);
+        }
+        else{
+            // display default image
+        }
 
         // properly sets video thumbnails
            /* if (mValues.get(position).bitmap != null) {

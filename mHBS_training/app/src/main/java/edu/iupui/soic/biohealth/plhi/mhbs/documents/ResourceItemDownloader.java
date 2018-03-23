@@ -159,7 +159,7 @@ public class ResourceItemDownloader {
             username = DhisController.getInstance().getSession().getCredentials().getUsername();
             password = DhisController.getInstance().getSession().getCredentials().getPassword();
         }
-        else{
+        if(username==null || password==null){
             SharedPreferences sharedPref = pContext.getSharedPreferences("credentials", Context.MODE_PRIVATE);
             username = sharedPref.getString("username", "NULL");
             password = sharedPref.getString("password", "NULL");

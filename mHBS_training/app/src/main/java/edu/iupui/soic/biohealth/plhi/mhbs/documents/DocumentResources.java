@@ -56,10 +56,11 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
      * A resource item representing a piece of content.
      */
     public static class ResourceItem {
-        public final String id;
-        public final String title;
-        private final String contentType;
+        private String id;
+        private String title;
+        private String contentType;
         private Bitmap bitmap;
+        private boolean isDownloaded;
 
         private ResourceItem(String id, String title, String contentType) {
             this.id = id;
@@ -72,9 +73,18 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             this.bitmap = bitmap;
         }
 
+        public void setDownloaded(boolean isDownloaded){
+            this.isDownloaded = isDownloaded;
+        }
+
+        public String getId(){return id;}
+        public String getTitle(){return title;}
+        public String getContentType(){return contentType;}
+        public boolean getDownloadStatus(){return isDownloaded;}
+
         @Override
         public String toString() {
-            return title;
+            return "Resource item details: " + id + title + contentType;
         }
     }
 

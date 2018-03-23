@@ -15,6 +15,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -30,6 +31,7 @@ import java.util.List;
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.DocumentResources;
 import edu.iupui.soic.biohealth.plhi.mhbs.documents.ResourceItemDownloader;
+import edu.iupui.soic.biohealth.plhi.mhbs.documents.ResourceItemDownloaderUtil;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.CourseDetailsFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.ItemFragment;
 import edu.iupui.soic.biohealth.plhi.mhbs.fragments.PdfDetailsFragment;
@@ -146,12 +148,12 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     @Override
     public void onListFragmentInteraction(DocumentResources.ResourceItem item) {
         // set title of pane to video
-        setActionBarTitle(item.title);
+        setActionBarTitle(item.getTitle());
         // if we can download
         if (checkRunTimePermissions()) {
             progressBar.setVisibility(View.VISIBLE);
             // Download resources
-            ResourceItemDownloader resourceItemDownloader = new ResourceItemDownloader(this, item.id, this, ACTIVITY);
+            ResourceItemDownloader resourceItemDownloader = new ResourceItemDownloader(this, item.getId(), this, ACTIVITY);
             resourceItemDownloader.setupFiles();
             resourceItemDownloader.tryToDownload();
 
@@ -244,6 +246,30 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
     // return from downloading list content for Item fragment
     @Override
     public void processFinish(List<DocumentResources.ResourceItem> output) {
+        ResourceItemDownloaderUtil rd = new ResourceItemDownloaderUtil();
+        rd.setpContext(this);
+        String itemType;
+        DocumentResources.ResourceItem item = output.get(0);
+        if(item.getContentType().contains("video")){
+            itemType = "Videos";
+        }else{
+            itemType = "Pdfs";
+        }
+        ResourceItemDownloaderUtil rdUtil = new ResourceItemDownloaderUtil(this, itemType);
+        rdUtil.tryCreateDirectory();
+        boolean isDownloaded;
+
+        for(int i=0;i<output.size();i++){
+            String id = output.get(i).getId();
+            if(rdUtil.checkDirForDownloads(id)){
+                output.get(i).setDownloaded(true);
+            }
+             isDownloaded = rd.checkDirForDownloads(output.get(i).getId());
+            if(isDownloaded){
+                output.get(i).setDownloaded(true);
+            }
+        }
+
         progressBar.setVisibility(View.INVISIBLE);
         // start item fragment with list as bundle
 

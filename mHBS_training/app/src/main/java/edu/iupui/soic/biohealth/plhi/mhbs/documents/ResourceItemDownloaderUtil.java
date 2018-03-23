@@ -71,9 +71,13 @@ public class ResourceItemDownloaderUtil {
         return subFile;
     }
 
-
+    public void setpContext(Context context){
+        this.pContext = context;
+    }
     // create a folder on app's internal directory storage
     private File createInternalDir() {
+        Log.d("Test", "Trying to create internal " + dirName +" " + pContext.toString());
+
         File dir = pContext.getDir(dirName, Context.MODE_PRIVATE);
         return dir;
     }
