@@ -5,8 +5,10 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -131,13 +133,16 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
             @Override
             public void onClick(View view) {
                 // disable while downloading
-                btn_program.setClickable(false);
-
-                // Downloading individual items
-                new DocumentResources(delegate).execute(ACTIVITY);
-                // display progress bar until receiving callback
-                progressBar = (ProgressBar) findViewById(R.id.resourceDownloadBar);
-                progressBar.setVisibility(View.VISIBLE);
+                if (!checkInternetConnection(getApplicationContext())) {
+                    Toast.makeText(getApplicationContext(), "Internet not available", Toast.LENGTH_SHORT).show();
+                } else{
+                    btn_program.setClickable(false);
+                    // Downloading individual items
+                    new DocumentResources(delegate).execute(ACTIVITY);
+                    // display progress bar until receiving callback
+                    progressBar = (ProgressBar) findViewById(R.id.resourceDownloadBar);
+                    progressBar.setVisibility(View.VISIBLE);
+            }
             }
 
         });
@@ -155,6 +160,7 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
             // Download resources
             ResourceItemDownloader resourceItemDownloader = new ResourceItemDownloader(this, item.getId(), this, ACTIVITY);
             resourceItemDownloader.setupFiles();
+
             resourceItemDownloader.tryToDownload();
 
         }
@@ -332,6 +338,17 @@ public class ResourcesActivity extends AppCompatActivity implements ItemFragment
         downloadOnly = false;
 
         // wait for callback setResourceStatus() to remove progressbar after download
+    }
+
+    private boolean checkInternetConnection(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected()) {
+            return true;
+
+        } else {
+            return false;
+        }
     }
 
 }

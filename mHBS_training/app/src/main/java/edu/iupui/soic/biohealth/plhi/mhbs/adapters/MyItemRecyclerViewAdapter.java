@@ -65,10 +65,11 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             textView.setText(R.string.already_downloaded);
             // hide download button
             btn.setVisibility(View.INVISIBLE);
-            // get bitmaps
+            // alternatively, get bitmaps
            // holder.mThumbnailView.setImageBitmap(mValues.get(position).bitmap);
         }
         else{
+            btn.setVisibility(View.VISIBLE);
             // display default image
         }
 

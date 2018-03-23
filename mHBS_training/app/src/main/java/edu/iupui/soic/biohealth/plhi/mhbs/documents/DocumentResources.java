@@ -1,9 +1,12 @@
 package edu.iupui.soic.biohealth.plhi.mhbs.documents;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Xml;
@@ -424,6 +427,7 @@ public class DocumentResources extends AsyncTask<String, String, List<DocumentRe
             return bitmap;
         }
     }
+
 }
 
 

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Base64;
@@ -18,6 +19,7 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 
+import edu.iupui.soic.biohealth.plhi.mhbs.R;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
 
 
@@ -75,41 +77,42 @@ public class ResourceItemDownloader {
 
     // for downloading content
     private void downloadURL() {
-        // we need to auth the user to access web api materials
-        authenticateUser();
-       //  authorization we pass to download manager
-        String muriURL = "https://mhbs.info/api/documents/";
-        String urlString = muriURL + downloadId + "/data";
-        // parse url, set download to path, add authorization and enqueue the request
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(urlString));
-        String path = rdUtil.getResourceDir().getAbsolutePath();
-        // authentication
-        String authorization = username + ":" + password;
-        byte[] data = authorization.getBytes();
-        String base64 = Base64.encodeToString(data, Base64.DEFAULT);
-        request.addRequestHeader("Authorization", "Basic " + base64);
-        // hold file item
-        String fileItem;
-        if(itemType.equals("Videos")){
-            fileItem = downloadId + ".webm";
-        }else {
-            fileItem = downloadId + ".pdf";
-        }
-        if(path.contains("app_mhbsDocs")){
-            request.setDestinationInExternalFilesDir(pContext,path,fileItem);
-        }else{
-            request.setDestinationInExternalPublicDir(path, fileItem);
-        }
+         // we need to auth the user to access web api materials
+            authenticateUser();
+            //  authorization we pass to download manager
+            String muriURL = "https://mhbs.info/api/documents/";
+            String urlString = muriURL + downloadId + "/data";
+            // parse url, set download to path, add authorization and enqueue the request
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(urlString));
+            String path = rdUtil.getResourceDir().getAbsolutePath();
+            // authentication
+            String authorization = username + ":" + password;
+            byte[] data = authorization.getBytes();
+            String base64 = Base64.encodeToString(data, Base64.DEFAULT);
+            request.addRequestHeader("Authorization", "Basic " + base64);
+            // hold file item
+            String fileItem;
+            if (itemType.equals("Videos")) {
+                fileItem = downloadId + ".webm";
+            } else {
+                fileItem = downloadId + ".pdf";
+            }
+            if (path.contains("app_mhbsDocs")) {
+                request.setDestinationInExternalFilesDir(pContext, path, fileItem);
+            } else {
+                request.setDestinationInExternalPublicDir(path, fileItem);
+            }
 
-        DownloadManager manager = (DownloadManager) pContext.getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager manager = (DownloadManager) pContext.getSystemService(Context.DOWNLOAD_SERVICE);
 
-        try {
-            long refId = manager.enqueue(request);
-            // keep track of the job which sends to DownloadBroadcastReceiver on complete
-            list.add(refId);
-        } catch (java.lang.NullPointerException e) {
-            Log.d("Error", e.getMessage());
-        }
+
+            try {
+                long refId = manager.enqueue(request);
+                // keep track of the job which sends to DownloadBroadcastReceiver on complete
+                list.add(refId);
+            } catch (java.lang.NullPointerException e) {
+                Log.d("Error", e.getMessage());
+            }
 
     }
 
@@ -141,7 +144,7 @@ public class ResourceItemDownloader {
                 //TODO: item not found or downloaded
                 Log.d("Test", "Not Found");
             }
-            pContext.unregisterReceiver(this);
+            pContext.unregisterReceiver(receiver);
 
         }
 
@@ -155,19 +158,19 @@ public class ResourceItemDownloader {
 
     // sets as default auth to compare with auth attached to URL conn
     private void authenticateUser() {
-        if(DhisController.isUserLoggedIn()) {
+        if (DhisController.isUserLoggedIn()) {
             username = DhisController.getInstance().getSession().getCredentials().getUsername();
             password = DhisController.getInstance().getSession().getCredentials().getPassword();
         }
-        if(username==null || password==null){
+        if (username == null || password == null) {
             SharedPreferences sharedPref = pContext.getSharedPreferences("credentials", Context.MODE_PRIVATE);
             username = sharedPref.getString("username", "NULL");
             password = sharedPref.getString("password", "NULL");
         }
-            Authenticator.setDefault(new Authenticator() {
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(username, password.toCharArray());
-                }
-            });
+        Authenticator.setDefault(new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password.toCharArray());
+            }
+        });
     }
 }
