@@ -94,8 +94,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("MainView"+" "+userAccount.getName())
-                .putCustomAttribute("MainView start time",userAccount.getName()+" "+sdf.format(date)));
+                .putContentName("MainView"+","+userAccount.getUId())
+                .putCustomAttribute("MainView start time",userAccount.getUId()+","+sdf.format(date)));
 
 /*TODO: The following code is an example of connecting and printing data from the database
         // the same logic needs to be implemented for pdf/videos. See documentation on github
@@ -294,8 +294,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("MainView"+" "+userAccount.getName())
-                .putCustomAttribute("MainView end time",userAccount.getName()+" "+sdf.format(date)));
+                .putContentName("MainView"+","+userAccount.getUId())
+                .putCustomAttribute("MainView end time",userAccount.getUId()+","+sdf.format(date)));
     }
 
 
