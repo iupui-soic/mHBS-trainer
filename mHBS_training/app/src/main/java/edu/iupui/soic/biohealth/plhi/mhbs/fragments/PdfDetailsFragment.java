@@ -82,9 +82,9 @@ public class PdfDetailsFragment extends Fragment {
             DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
             Answers.getInstance().logContentView(new ContentViewEvent()
-                    .putContentName("PDFView"+" "+userAccount.getName())
-                    .putCustomAttribute("pdf start time",userAccount.getName()+" "+sdf.format(date))
-                    .putCustomAttribute("Pdf Name",userAccount.getName()+" "+contentId));
+                    .putContentName("PDFView"+","+userAccount.getUId())
+                    .putCustomAttribute("pdf start time",userAccount.getUId()+","+sdf.format(date))
+                    .putCustomAttribute("Pdf Name",userAccount.getUId()+","+contentId));
             //pdf render
             pdfView.fromFile(openResource).enableDoubletap(true).enableSwipe(true).scrollHandle(new DefaultScrollHandle(getContext())).swipeHorizontal(false).defaultPage(0).load();
         }
@@ -96,9 +96,9 @@ public class PdfDetailsFragment extends Fragment {
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("PDFView"+" "+userAccount.getName())
-                .putCustomAttribute("pdf end time",userAccount.getName()+" "+sdf.format(date))
-                .putCustomAttribute("pdf Name",userAccount.getName()+" "+contentId));
+                .putContentName("PDFView"+","+userAccount.getUId())
+                .putCustomAttribute("pdf end time",userAccount.getUId()+","+sdf.format(date))
+                .putCustomAttribute("pdf Name",userAccount.getUId()+","+contentId));
     }
 
 }

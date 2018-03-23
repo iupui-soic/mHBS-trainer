@@ -38,9 +38,9 @@ public class CourseInput extends AppCompatActivity {
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("Course view"+" "+userAccount.getName())
-                .putCustomAttribute("FirstPageNumber", userAccount.getName()+" "+Integer.toString(pageNumber+ 1))
-                .putCustomAttribute("courseStartTime", userAccount.getName()+" "+sdf.format(date)));
+                .putContentName("Course view"+","+userAccount.getUId())
+                .putCustomAttribute("FirstPageNumber", userAccount.getUId()+","+Integer.toString(pageNumber+ 1))
+                .putCustomAttribute("courseStartTime", userAccount.getUId()+","+sdf.format(date)));
         //render pdf
         pdfview = (PDFView) findViewById(R.id.pdfCourse);
         pdfview.fromAsset("mHBSProviderGuide.pdf")
@@ -86,8 +86,8 @@ public class CourseInput extends AppCompatActivity {
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("Course view"+" "+userAccount.getName())
-                .putCustomAttribute("lastPageNumber", userAccount.getName()+" "+Integer.toString(pageNumber + 1))
-                .putCustomAttribute("courseEndTime", userAccount.getName()+" "+sdf.format(date)));
+                .putContentName("Course view"+","+userAccount.getUId())
+                .putCustomAttribute("lastPageNumber", userAccount.getUId()+","+Integer.toString(pageNumber + 1))
+                .putCustomAttribute("courseEndTime", userAccount.getUId()+","+sdf.format(date)));
     }
 }

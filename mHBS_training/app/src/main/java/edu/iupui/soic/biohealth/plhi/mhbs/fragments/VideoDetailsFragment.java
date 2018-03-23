@@ -67,9 +67,9 @@ public class VideoDetailsFragment extends Fragment {
                 DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
                 Answers.getInstance().logContentView(new ContentViewEvent()
-                        .putContentName("VideoView"+" "+userAccount.getName())
-                        .putCustomAttribute("Video start time",userAccount.getName()+" "+sdf.format(date))
-                        .putCustomAttribute("video name",userAccount.getName()+" "+contentId));
+                        .putContentName("VideoView"+","+userAccount.getUId())
+                        .putCustomAttribute("Video start time",userAccount.getUId()+","+sdf.format(date))
+                        .putCustomAttribute("video name",userAccount.getUId()+","+contentId));
                 //videoView
                 videoView.setMediaController(new MediaController(getActivity()));
                 //TODO: Attach MediaController
@@ -121,9 +121,10 @@ public class VideoDetailsFragment extends Fragment {
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("VideoView"+" "+userAccount.getName())
-                .putCustomAttribute("Video end time",userAccount.getName()+" "+sdf.format(date))
-                .putCustomAttribute("video name",userAccount.getName()+" "+contentId));
+                .putContentName("VideoView"+","+userAccount.getUId())
+                .putCustomAttribute("Video end time",userAccount.getUId()+","+sdf.format(date))
+                .putCustomAttribute("video name",userAccount.getUId()+","+contentId));
+
     }
 
 }

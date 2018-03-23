@@ -105,8 +105,8 @@ public class ItemFragment extends Fragment {
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("itemView"+" "+userAccount.getName())
-                .putCustomAttribute("itemView start time",userAccount.getName()+" "+sdf.format(date)));
+                .putContentName("itemView"+","+userAccount.getUId())
+                .putCustomAttribute("itemView start time",userAccount.getUId()+","+sdf.format(date)));
     }
 
     @Override
@@ -116,8 +116,8 @@ public class ItemFragment extends Fragment {
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         Answers.getInstance().logContentView(new ContentViewEvent()
-                .putContentName("itemView"+" "+userAccount.getName())
-                .putCustomAttribute("items end time",userAccount.getName()+" "+sdf.format(date)));
+                .putContentName("itemView"+","+userAccount.getUId())
+                .putCustomAttribute("items end time",userAccount.getUId()+","+sdf.format(date)));
     }
 
 
