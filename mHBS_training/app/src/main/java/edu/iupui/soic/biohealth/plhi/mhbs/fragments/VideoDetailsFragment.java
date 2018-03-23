@@ -17,7 +17,16 @@ import android.view.ViewGroup;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+
+import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
+
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 
@@ -26,6 +35,8 @@ public class VideoDetailsFragment extends Fragment {
     private String videoPath;
     private String itemToDownload;
     private File openVideo;
+    private String contentId;
+    private UserAccount userAccount = MetaDataController.getUserAccount();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,6 +63,14 @@ public class VideoDetailsFragment extends Fragment {
 
         if (videoView != null && openVideo != null) {
             try {
+                //fabric content view code
+                DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+                Answers.getInstance().logContentView(new ContentViewEvent()
+                        .putContentName("VideoView"+" "+userAccount.getName())
+                        .putCustomAttribute("Video start time",userAccount.getName()+" "+sdf.format(date))
+                        .putCustomAttribute("video name",userAccount.getName()+" "+contentId));
+                //videoView
                 videoView.setMediaController(new MediaController(getActivity()));
                 //TODO: Attach MediaController
                 videoView.setVideoPath(openVideo.getPath());
@@ -81,6 +100,7 @@ public class VideoDetailsFragment extends Fragment {
             File myFile = new File(Environment.getExternalStorageDirectory().getPath() + videoPath + "/" + itemToDownload + ".webm");
             openVideo = myFile;
         }
+        contentId = openVideo.getName();
         // note if we try to call video here, the onCreateView hasn't been created yet
 
     }
@@ -98,6 +118,12 @@ public class VideoDetailsFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("VideoView"+" "+userAccount.getName())
+                .putCustomAttribute("Video end time",userAccount.getName()+" "+sdf.format(date))
+                .putCustomAttribute("video name",userAccount.getName()+" "+contentId));
     }
 
 }

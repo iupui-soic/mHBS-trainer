@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+
 import io.fabric.sdk.android.Fabric;
 
 import org.hisp.dhis.android.sdk.controllers.DhisController;
@@ -31,12 +33,11 @@ public class mhbsTrainingApplication extends Dhis2Application {
         *
         * Consider adding logout functionality
          */
+        Fabric.with(this, new Answers(), new Crashlytics());
         final Fabric fabric = new Fabric.Builder(this)
                 .kits(new Crashlytics())
                 .debuggable(true)
                 .build();
-        Fabric.with(fabric);
-
 
         // if we are logged in, just log in
         UserAccount userAccount = MetaDataController.getUserAccount();

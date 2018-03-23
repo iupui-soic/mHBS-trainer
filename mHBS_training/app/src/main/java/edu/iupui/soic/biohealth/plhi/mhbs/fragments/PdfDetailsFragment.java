@@ -14,10 +14,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 
+import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
+
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
 
@@ -26,6 +34,9 @@ public class PdfDetailsFragment extends Fragment {
     private File openResource;
     private View pView;
     private String pdfPath;
+    //fabric
+    private String contentId;
+    private UserAccount userAccount = MetaDataController.getUserAccount();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,6 +68,8 @@ public class PdfDetailsFragment extends Fragment {
             // resource is in external storage
             openResource = new File(Environment.getExternalStorageDirectory().getPath() + pdfPath + "/" + itemToDownload + ".pdf");
         }
+        contentId = openResource.getName();
+
     }
 
 
@@ -65,7 +78,27 @@ public class PdfDetailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         PDFView pdfView = (PDFView) pView.findViewById(R.id.pdfView);
         if (openResource != null) {
+            //fabric
+            DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+            Answers.getInstance().logContentView(new ContentViewEvent()
+                    .putContentName("PDFView"+" "+userAccount.getName())
+                    .putCustomAttribute("pdf start time",userAccount.getName()+" "+sdf.format(date))
+                    .putCustomAttribute("Pdf Name",userAccount.getName()+" "+contentId));
+            //pdf render
             pdfView.fromFile(openResource).enableDoubletap(true).enableSwipe(true).scrollHandle(new DefaultScrollHandle(getContext())).swipeHorizontal(false).defaultPage(0).load();
         }
     }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("PDFView"+" "+userAccount.getName())
+                .putCustomAttribute("pdf end time",userAccount.getName()+" "+sdf.format(date))
+                .putCustomAttribute("pdf Name",userAccount.getName()+" "+contentId));
+    }
+
 }

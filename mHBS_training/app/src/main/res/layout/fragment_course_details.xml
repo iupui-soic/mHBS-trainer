@@ -5,76 +5,52 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/courseLayout"
+    android:adjustViewBounds="true"
     android:background="@color/white">
 
     <ImageButton
         android:layout_width="match_parent"
-        android:layout_height="150dp" />
-
+        android:layout_height="150dp"
+        android:background="@color/White"
+        android:onClick="startCourses"
+        android:src="@drawable/hbb" />
     <TableRow android:layout_width="match_parent" android:layout_height="50dp" android:gravity="bottom">
-        <TextView android:textSize="30sp" android:layout_marginLeft="10dp" android:text="Course Name"/>
+        <TextView android:textSize="30sp" android:layout_marginLeft="10dp" android:text="mHBS Courses"/>
     </TableRow>
-    <HorizontalScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/addview">
+
         <LinearLayout
-            android:id="@+id/courseFrag1"
+            android:id="@+id/courseFrag"
             android:layout_marginTop="30dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_marginBottom="20dp">
 
             <LinearLayout android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:id="@+id/pdf1"
+                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_weight="@integer/activity_anim_duration"
+                android:orientation="horizontal">
                 <ImageView
-                    android:layout_width="150dp"
-                    android:layout_height="75dp"
+                    android:layout_width="175dp"
+                    android:layout_height="145dp"
                     android:background="#4cc4e6"
+                    android:src="@drawable/hbb1"
                     android:layout_marginRight="30dp"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="Pop 1"
-                    android:textSize="20sp"/>
+                    android:gravity="center"
+                    android:text="Mhbs Guide"
+                    android:textSize="25sp" />
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/courseFrag2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="150dp"
-                    android:layout_height="75dp"
-                    android:background="#4cc4e6"
-                    android:layout_marginRight="30dp"/>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="Pop 2"
-                    android:textSize="20sp"/>
-            </LinearLayout>
-            <LinearLayout android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="150dp"
-                    android:layout_height="75dp"
-                    android:background="#4cc4e6"
-                    android:layout_marginRight="30dp"/>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="Pop 3"
-                    android:textSize="20sp"/>
-            </LinearLayout>
-
-
         </LinearLayout>
-    </HorizontalScrollView>
+    </ScrollView>
 </LinearLayout>

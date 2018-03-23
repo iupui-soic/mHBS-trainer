@@ -41,6 +41,7 @@
             android:name="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
+
         </activity>
 
         <activity
@@ -55,6 +56,7 @@
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.InfoActivity" />
         <activity android:name=".activities.FavoritesActivity" />
+        <activity android:name=".activities.CourseInput" />
 
         <!-- Specify the next screen after SplashScreen if user already logged in -->
         <meta-data

@@ -28,8 +28,15 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+
 import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
 import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.FavoritesActivity;
 import edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity;
@@ -83,6 +90,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             dhis_user_email.setText(userAccount.getEmail());
         }
         sw_offlineMode.setOnCheckedChangeListener(this);
+
+        DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("MainView"+" "+userAccount.getName())
+                .putCustomAttribute("MainView start time",userAccount.getName()+" "+sdf.format(date)));
 
 /*TODO: The following code is an example of connecting and printing data from the database
         // the same logic needs to be implemented for pdf/videos. See documentation on github
@@ -272,6 +285,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             progressBar.setVisibility(View.INVISIBLE);
         }
     }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        UserAccount userAccount = MetaDataController.getUserAccount();
+        DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("MainView"+" "+userAccount.getName())
+                .putCustomAttribute("MainView end time",userAccount.getName()+" "+sdf.format(date)));
+    }
+
 
     /*
     @Override

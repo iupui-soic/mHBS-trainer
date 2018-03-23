@@ -17,8 +17,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import org.hisp.dhis.android.sdk.network.Credentials;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 
+import org.hisp.dhis.android.sdk.controllers.metadata.MetaDataController;
+import org.hisp.dhis.android.sdk.network.Credentials;
+import org.hisp.dhis.android.sdk.persistence.models.UserAccount;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import edu.iupui.soic.biohealth.plhi.mhbs.R;
@@ -33,6 +41,8 @@ public class ItemFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private MyItemRecyclerViewAdapter mAdapter;
     private List<DocumentResources.ResourceItem> output;
+    private UserAccount userAccount = MetaDataController.getUserAccount();
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -91,12 +101,23 @@ public class ItemFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
         }
+        //fabric
+        DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("itemView"+" "+userAccount.getName())
+                .putCustomAttribute("itemView start time",userAccount.getName()+" "+sdf.format(date)));
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("itemView"+" "+userAccount.getName())
+                .putCustomAttribute("items end time",userAccount.getName()+" "+sdf.format(date)));
     }
 
 
