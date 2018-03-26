@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
+    tools:showIn="@layout/nav_app_bar">
+
+        <ImageView
+            android:layout_marginTop="50dp"
+            android:id="@+id/image_hbb"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:src="@drawable/hbb"
+            android:layout_centerHorizontal="true"
+            android:contentDescription="@string/image_hbb_desc" />
+        <RelativeLayout
+            android:layout_marginTop="50dp"
+            android:layout_below="@+id/image_hbb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true">
+
+            <Button
+                android:id="@+id/btn_videos"
+                android:layout_width="@dimen/main_screen_button_size"
+                android:layout_height="@dimen/main_screen_button_size"
+                android:layout_marginEnd="@dimen/main_activity_spaces_between_buttons"
+                android:background="@drawable/ic_video"
+                android:foreground="@drawable/ic_video"
+                android:foregroundGravity="center"
+                android:onClick="startVideos"
+                android:tag="@string/videos" />
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="@dimen/main_screen_button_size"
+                android:text="@string/videos"
+                android:layout_below="@id/btn_videos"
+                android:layout_alignStart="@id/btn_videos"
+                android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"
+                android:textAlignment="center"/>
+
+            <!--Button
+                android:id="@+id/btn_resources"
+                android:layout_width="@dimen/main_screen_button_size"
+                android:layout_height="@dimen/main_screen_button_size"
+                android:layout_marginEnd="@dimen/main_activity_spaces_between_buttons"
+                android:tint="#004D40"
+                android:layout_toEndOf="@+id/btn_videos"
+                android:background="@drawable/ic_file"
+                android:foreground="@drawable/ic_file"
+                android:foregroundGravity="center"
+                android:onClick="startResources"
+                android:tag="@string/resources" />
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="@dimen/main_screen_button_size"
+                android:text="@string/resources"
+                android:layout_below="@id/btn_resources"
+                android:layout_alignStart="@id/btn_resources"
+                android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"
+                android:textAlignment="center"/-->
+
+            <Button
+                android:id="@+id/btn_courses"
+                android:layout_width="@dimen/main_screen_button_size"
+                android:layout_height="@dimen/main_screen_button_size"
+                android:layout_toEndOf="@id/btn_videos"
+                android:background="@drawable/ic_courses"
+                android:foreground="@drawable/ic_courses"
+                android:foregroundGravity="center"
+                android:onClick="startCourses"
+                android:tag="@string/courses"
+                android:tint="#00695C" />
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="@dimen/main_screen_button_size"
+                android:text="@string/providerGuide"
+                android:layout_below="@id/btn_courses"
+                android:layout_alignStart="@id/btn_courses"
+                android:layout_marginTop="@dimen/main_activity_space_between_text_and_button"
+                android:textAlignment="center" />
+
+        </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/main_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+    <ProgressBar
+        android:id="@+id/downloadListProgressBar"
+        style="@android:style/Widget.Material.ProgressBar.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="284dp"
+        android:indeterminate="true"
+        android:theme="@style/CircularProgress"
+        android:visibility="invisible" />
+</RelativeLayout>

@@ -9,11 +9,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission
-        android:name="android.permission.PACKAGE_USAGE_STATS"
-        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
     <application
         android:name="edu.iupui.soic.biohealth.plhi.mhbs.mhbsTrainingApplication"
@@ -24,10 +23,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:theme">
-        <activity
-            android:name=".activities.SharedLoginActivity"
-            android:noHistory="true"
-            android:theme="@style/mHBSLoginScreenTheme">
+      
+        <activity android:name=".activities.SharedLoginActivity"
+            android:theme="@style/mHBSLoginScreenTheme"
+            android:noHistory="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -46,17 +46,18 @@
 
         <activity android:name=".activities.ProgramPortalActivity" />
         <activity android:name=".activities.ResourcesActivity" />
+
         <activity
-            android:name=".activities.VideosActivity"
-            android:label="@string/title_activity_videos" />
-        <activity
-            android:name=".activities.CoursesActivity"
-            android:label="@string/title_activity_courses" />
+            android:name=".activities.ResourcesActivity">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity" />
+
+        </activity>
+
         <activity android:name=".activities.SearchActivity" />
         <activity android:name=".activities.SettingsActivity" />
-        <activity android:name=".activities.DownloadsActivity" />
-        <activity android:name=".activities.InfoActivity" />
-        <activity android:name=".activities.FavoritesActivity" />
+        <activity android:name=".activities.CourseInput" />
 
         <!-- Specify the next screen after SplashScreen if user already logged in -->
         <meta-data

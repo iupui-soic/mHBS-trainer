@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -56,7 +57,7 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         super.onCreate(savedInstanceState);
         setContentView(org.hisp.dhis.android.sdk.R.layout.activity_login);
 
-        // will reach here if we came from the sidebar of tracker
+        // these are required for both normal logging as well as logging in from tracker
         if (DhisController.isUserLoggedIn()) {
             launchMainActivity();
             finish();
@@ -73,20 +74,18 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
             loginFromTracker();
         }
 
-        /* login from tracker, the flag is false if LoginFromTracker fails
-        /  or if there is no existing user from tracker-capture, then proceed with
-           a traditional login */
+        // using sentinel bool flag, if false, we can't log in from tracker -> login as normal
         if (!trackerFlag) {
+            // otherwise, login as normal
             setupUI();
         }
-
     }
 
     public void loginFromTracker() {
-
         if (extras != null) {
             ArrayList<String> creds;
             creds = extras.getStringArrayList(requestKey);
+          
             if (creds != null) {
                 if (usernameEditText != null && passwordEditText != null && serverEditText != null) {
                     usernameEditText.setText(creds.get(0));
@@ -191,7 +190,8 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         }
 
         mPrefs.putServerUrl(serverURL);
-
+        // set shared preferences for use in http auth for web api
+        sendToSharedPref(username,password);
         login(serverURL, username, password);
     }
 
@@ -199,14 +199,14 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         if (!trackerFlag) {
             showProgress();
         }
+      
         HttpUrl serverUri = HttpUrl.parse(serverUrl);
         if (serverUri == null) {
             showLoginFailedDialog(getString(org.hisp.dhis.android.sdk.R.string.invalid_server_url));
             return;
         }
-        DhisService.logInUser(
-                serverUri, new Credentials(username, password)
-        );
+      
+        DhisService.logInUser(serverUri, new Credentials(username, password));
     }
 
     @Subscribe
@@ -215,6 +215,7 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
             launchMainActivity();
             finish();
         }
+      
         if (uiEvent.getEventType().equals(UiEvent.UiEventType.SYNCING_END)) {
             launchMainActivity();
         }
@@ -305,5 +306,14 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         finish();
         System.exit(0);
         super.onBackPressed();
+    }
+
+    // send to shared preferences for use in other places in our app
+    private void sendToSharedPref(String username, String password){
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences("credentials",0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("username", username);
+        editor.putString("password", password);
+        editor.commit();
     }
 }
