@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
-
 import io.fabric.sdk.android.Fabric;
 
 import org.hisp.dhis.android.sdk.controllers.DhisController;
@@ -22,7 +21,6 @@ public class mhbsTrainingApplication extends Dhis2Application {
 
     @Override
     public void onCreate() {
-        super.onCreate();
 
         /*TODO: Here we can send a broadcast to tracker capture. If the user is logged in,
         * Create an instance of LoginActivity and call handleUser();
@@ -32,8 +30,9 @@ public class mhbsTrainingApplication extends Dhis2Application {
         * wants to user our app
         *
         * Consider adding logout functionality
-         */
+        */
         Fabric.with(this, new Answers(), new Crashlytics());
+        super.onCreate();
         final Fabric fabric = new Fabric.Builder(this)
                 .kits(new Crashlytics())
                 .debuggable(true)
@@ -42,18 +41,17 @@ public class mhbsTrainingApplication extends Dhis2Application {
 
         // if we are logged in, just log in
         UserAccount userAccount = MetaDataController.getUserAccount();
-        if(userAccount!=null) {
+        if (userAccount != null) {
             Class<?> mainActivity = getMainActivity();
             Intent i = new Intent(getApplicationContext(), mainActivity);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
-        }else if(isTrackerInstalled(getString(R.string.trackerCapture))){
+        } else if (isTrackerInstalled(getString(R.string.trackerCapture))) {
             // broadcast to tracker to receive login information
             Intent intent = new Intent();
             intent.setAction("edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity");
             sendBroadcast(intent);
         }
-
     }
 
     @Override
@@ -61,13 +59,13 @@ public class mhbsTrainingApplication extends Dhis2Application {
         return new MainActivity().getClass();
     }
 
-    public boolean isTrackerInstalled(String checkForPackage){
+    public boolean isTrackerInstalled(String checkForPackage) {
         PackageManager pm = this.getPackageManager();
         boolean installed;
-        try{
-            pm.getPackageInfo(checkForPackage,PackageManager.GET_ACTIVITIES);
+        try {
+            pm.getPackageInfo(checkForPackage, PackageManager.GET_ACTIVITIES);
             installed = true;
-        }catch(PackageManager.NameNotFoundException e){
+        } catch (PackageManager.NameNotFoundException e) {
             installed = false;
         }
         return installed;

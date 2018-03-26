@@ -57,18 +57,18 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         super.onCreate(savedInstanceState);
         setContentView(org.hisp.dhis.android.sdk.R.layout.activity_login);
 
-        // will reach here if we came from the sidebar of tracker
-        if(DhisController.isUserLoggedIn()){
+        // these are required for both normal logging as well as logging in from tracker
+        if (DhisController.isUserLoggedIn()) {
             launchMainActivity();
             finish();
         }
-        // these are required for both normal logging as well as logging in from tracker
+        // required UI elements
         setUpCommonUi();
 
         // If there are extras, they are existing user credentials from tracker-capture
         extras = getIntent().getExtras();
 
-        // if we have credentials -> bypass normal login
+        // if we have credentials, we can bypass the normal login
         if (extras != null) {
             trackerFlag = true;
             loginFromTracker();
@@ -79,19 +79,19 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
             // otherwise, login as normal
             setupUI();
         }
-
     }
+
     public void loginFromTracker() {
         if (extras != null) {
             ArrayList<String> creds;
             creds = extras.getStringArrayList(requestKey);
-            //TODO: test
+          
             if (creds != null) {
                 if (usernameEditText != null && passwordEditText != null && serverEditText != null) {
                     usernameEditText.setText(creds.get(0));
                     passwordEditText.setText(creds.get(1));
                     serverEditText.setText(creds.get(2));
-                }else{
+                } else {
                     // something went wrong so we will just login as normally
                     trackerFlag = false;
                 }
@@ -196,18 +196,17 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
     }
 
     public void login(String serverUrl, String username, String password) {
-
         if (!trackerFlag) {
             showProgress();
         }
+      
         HttpUrl serverUri = HttpUrl.parse(serverUrl);
         if (serverUri == null) {
             showLoginFailedDialog(getString(org.hisp.dhis.android.sdk.R.string.invalid_server_url));
             return;
         }
-        DhisService.logInUser(
-                serverUri, new Credentials(username, password)
-        );
+      
+        DhisService.logInUser(serverUri, new Credentials(username, password));
     }
 
     @Subscribe
@@ -216,6 +215,7 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
             launchMainActivity();
             finish();
         }
+      
         if (uiEvent.getEventType().equals(UiEvent.UiEventType.SYNCING_END)) {
             launchMainActivity();
         }
@@ -316,5 +316,4 @@ public class SharedLoginActivity extends Activity implements View.OnClickListene
         editor.putString("password", password);
         editor.commit();
     }
-
 }

@@ -4,6 +4,7 @@
     package="edu.iupui.soic.biohealth.plhi.mhbs">
 
     <uses-sdk tools:overrideLibrary=":core" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -22,9 +23,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:theme">
+      
         <activity android:name=".activities.SharedLoginActivity"
             android:theme="@style/mHBSLoginScreenTheme"
             android:noHistory="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,8 +42,10 @@
         <activity
             android:name="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <activity android:name=".activities.ProgramPortalActivity" />
+        <activity android:name=".activities.ResourcesActivity" />
 
         <activity
             android:name=".activities.ResourcesActivity">
@@ -62,4 +67,5 @@
             android:name="io.fabric.ApiKey"
             android:value="b40e830e776f80dffd15e8df6ba58733a36b1e48" />
     </application>
+
 </manifest>

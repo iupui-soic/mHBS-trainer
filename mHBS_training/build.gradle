@@ -46,7 +46,6 @@ ext {
             minSdkVersion    : 15,
             compileSdkVersion: 23,
             targetSdkVersion : 23,
-
     ]
 
     libraries = [
@@ -56,6 +55,5 @@ ext {
 
             // testing libs
             jUnitVersion      : "4.12"
-
     ]
 }
