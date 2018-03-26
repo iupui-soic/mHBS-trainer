@@ -11,8 +11,7 @@
     <ImageButton
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:background="@color/White"
-        android:onClick="startCourses"
+        android:background="@color/white"
         android:src="@drawable/hbb" />
     <TableRow android:layout_width="match_parent" android:layout_height="50dp" android:gravity="bottom">
         <TextView android:textSize="30sp" android:layout_marginLeft="10dp" android:text="mHBS Courses"/>
