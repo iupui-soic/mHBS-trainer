@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="edu.iupui.soic.biohealth.plhi.mhbs.MainActivity"
+    tools:context="edu.iupui.soic.bhi.plhi.mhbs.training.MainActivity"
     tools:showIn="@layout/nav_app_bar">
 
         <ImageView

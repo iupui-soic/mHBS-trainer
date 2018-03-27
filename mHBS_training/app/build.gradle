@@ -22,7 +22,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion '23.0.2'
     defaultConfig {
-        applicationId "edu.iupui.soic.biohealth.plhi.mhbs"
+        applicationId "edu.iupui.soic.bhi.plhi.mhbs.training"
         minSdkVersion 21
         targetSdkVersion 25
         versionCode 1
@@ -78,10 +78,10 @@ dependencies {
 
 
     compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
-        transitive = true;
+        transitive = true
     }
     compile('io.fabric.sdk.android:fabric:1.3.10@aar') {
-        transitive = true;
+        transitive = true
     }
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
@@ -92,6 +92,6 @@ dependencies {
     compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.5'
     testCompile 'junit:junit:4.12'
     compile('com.crashlytics.sdk.android:answers:1.4.1@aar') {
-        transitive = true;
+        transitive = true
     }
 }

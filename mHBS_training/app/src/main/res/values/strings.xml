@@ -21,7 +21,7 @@
     <string name="studio">Android Studio</string>
     <string name="title_activity_videos">videosActivity</string>
     <string name="title_activity_courses">coursesActivity</string>
-    <string name="trackerCapture">org.hisp.dhis.android.trackercapture</string>
+    <string name="trackerCapture">edu.iupui.soic.bhi.plhi.mhbs.trackercapture</string>
   
     <!-- TODO: Remove or change this placeholder text -->
     <string name="trackerCaptureNA">tracker capture not available</string>
@@ -30,9 +30,9 @@
     <string name="search">Search</string>
     <string name="resourceKey">resourceKey</string>
     <string name="resourceURL">https://mhbs.info/api/documents</string>
-    <string name="resourceActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.ResourcesActivity</string>
-    <string name="videoActivity">class edu.iupui.soic.biohealth.plhi.mhbs.activities.VideosActivity</string>
-    <string name="sharedLoginActivity">edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity</string>
+    <string name="resourceActivity">class edu.iupui.soic.bhi.plhi.mhbs.training.activities.ResourcesActivity</string>
+    <string name="videoActivity">class edu.iupui.soic.bhi.plhi.mhbs.training.activities.VideosActivity</string>
+    <string name="sharedLoginActivity">edu.iupui.soic.bhi.plhi.mhbs.training.activities.SharedLoginActivity</string>
     <string name="hbs">HBS</string>
     <string name="syncDownloads">Synchronizing downloads</string>
     <string name="downloadFragmentTitle">Downloaded Content</string>
@@ -44,5 +44,4 @@
     <string name="coming_soon">feature coming soon</string>
     <string name="already_downloaded">Please click content to view</string>
     <string name="internet_not_available">Internet is not available</string>
-    <string name="sharedLoginActivity">edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity</string>
 </resources>

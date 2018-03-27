@@ -62,7 +62,6 @@
                     android:scaleType="fitCenter"
                     android:src="@drawable/helpingmothers" />
 
-
                 <ImageButton
                     android:id="@+id/btn_EssentialCare"
                     android:layout_width="240dp"
@@ -71,11 +70,9 @@
                     android:background="@color/white"
                     android:scaleType="fitCenter"
                     android:src="@drawable/eceb" />
-
             </TableRow>
 
             <TableRow>
-
                 <ImageButton
                     android:id="@+id/btn_Esceb"
                     android:layout_width="190dp"
@@ -101,7 +98,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal" />
-
 
     <LinearLayout
         android:id="@+id/content_fragment_container"

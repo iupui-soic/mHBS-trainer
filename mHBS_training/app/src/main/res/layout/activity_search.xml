@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.iupui.soic.biohealth.plhi.mhbs.activities.SearchActivity">
+    tools:context="edu.iupui.soic.bhi.plhi.mhbs.training.activities.SearchActivity">
 
 
     <android.support.design.widget.AppBarLayout
