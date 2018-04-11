@@ -14,7 +14,7 @@
             android:id="@+id/image_hbb"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:src="@drawable/hbb"
+            android:src="@drawable/dhis2_logo"
             android:layout_centerHorizontal="true"
             android:contentDescription="@string/image_hbb_desc" />
         <RelativeLayout

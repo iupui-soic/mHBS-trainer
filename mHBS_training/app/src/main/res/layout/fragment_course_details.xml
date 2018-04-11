@@ -10,11 +10,19 @@
 
     <ImageButton
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="200dp"
         android:background="@color/white"
-        android:src="@drawable/hbb" />
-    <TableRow android:layout_width="match_parent" android:layout_height="50dp" android:gravity="bottom">
-        <TextView android:textSize="30sp" android:layout_marginLeft="10dp" android:text="mHBS Courses"/>
+        android:src="@drawable/dhis2_logo" />
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="bottom">
+
+        <TextView
+            android:layout_marginLeft="10dp"
+            android:text="mHBS Courses"
+            android:textSize="30sp" />
     </TableRow>
 
     <ScrollView
