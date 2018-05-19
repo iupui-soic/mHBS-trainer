@@ -57,5 +57,15 @@ typings/
 # dotenv environment variables file
 .env
 
+# framework7
 www/framework7
 www/fonts
+
+# platforms
+platforms/
+
+# plugins
+plugins/
+
+# intellij
+.idea/*
