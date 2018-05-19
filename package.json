@@ -37,9 +37,17 @@
   "cordova": {
     "platforms": [
       "android"
-    ]
+    ],
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "com-darryncampbell-cordova-plugin-intent": {},
+      "com.napolitano.cordova.plugin.intent": {}
+    }
   },
   "dependencies": {
-    "cordova-android": "^7.0.0"
+    "com-darryncampbell-cordova-plugin-intent": "^1.0.2",
+    "cordova-android": "^6.3.0",
+    "cordova-plugin-intent": "git+https://github.com/napolitano/cordova-plugin-intent.git",
+    "cordova-plugin-whitelist": "1"
   }
 }
