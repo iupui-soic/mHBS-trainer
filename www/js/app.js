@@ -68,15 +68,19 @@ $$('#my-login-screen .login-button').on('click', function () {
   app.dialog.alert('Username: ' + username + '<br>Password: ' + password);
 });
 
+// show the spinner
+app.preloader.show('blue');
 
 // set intent listener, send broadcast and wait for device ready
 function onLoad() {
   window.plugins.intent.setNewIntentHandler(onIntent);
   sendBroadcastToTracker();
+
 }
 
 // handle any incoming intent
 function onIntent(intent){
+  app.preloader.hide();
   console.log('intent' + JSON.stringify(intent));
 }
 
@@ -86,8 +90,9 @@ function sendBroadcastToTracker()
   window.plugins.intentShim.sendBroadcast({
       action: 'com.example.mHBS.MainActivity'
     },
-    function() {console.log("show spinner");
-    },
+    function() {alert('sent broadcast')},
     function () {alert('Please log in and install tracker-capture')}
   );
 }
+
+
