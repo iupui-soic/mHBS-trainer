@@ -79,9 +79,50 @@ function onLoad() {
 }
 
 // handle any incoming intent
-function onIntent(intent){
+function onIntent(intent) {
   app.preloader.hide();
-  console.log('intent' + JSON.stringify(intent));
+  //todo: error handling, check if null
+  if(intent!=null) {
+   var credentialsArr = parseCredentials(intent);
+   var credentials = {
+     username: credentialsArr[0],
+     password: credentialsArr[1],
+     serverURL: credentialsArr[3]
+   };
+   storeCredentials(credentials);
+  }
+}
+
+function parseCredentials(intent){
+  return intent.extras['key:loginRequest'];
+}
+
+
+function storeCredentials(credentials){
+
+  var ss = new cordova.plugins.SecureStorage(
+    function () { console.log('Success')},
+    function () {
+      navigator.notification.alert(
+        'Please enable the screen lock on your device. This app cannot operate securely without it.',
+        function () {
+          ss.secureDevice(
+            function () {
+              _init();
+            },
+            function () {
+              _init();
+            }
+          );
+        },
+        'Screen lock is disabled'
+      );
+    },
+    'mHBS_Hybridapp');
+
+  ss.set(function(){console.log('set username')},function(){},'username', credentials.username);
+  ss.set(function(){console.log('set password')},function(){},'password', credentials.password);
+  ss.set(function(){console.log('set serverURL')},function(){},'serverURL', credentials.serverURL);
 }
 
 // send broadcast to tracker capture
