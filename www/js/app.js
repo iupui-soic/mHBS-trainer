@@ -122,6 +122,15 @@ var ss = function () {
     'mHBS_Hybridapp');
 };
 
+// set user name for our app
+function setAppUsername() {
+  app.storage.get(function (value) {
+    app.data.user.userName = value;
+  }, function (error) {
+    console.log(error);
+  }, 'username');
+}
+
 // handle any incoming intent
 function onIntent(intent) {
   //todo: error handling, check if null
@@ -143,9 +152,11 @@ function onIntent(intent) {
 function storeCredentials(credentials) {
   app.storage = ss();
   app.storage.set(function () {
-    console.log('set credentials')
+    console.log('set username');
+    // set username for our app
+    setAppUsername();
   }, function () {
-  }, 'credentials', credentials.username);
+  }, 'username', credentials.username);
   app.storage.set(function () {
     console.log('set password')
   }, function () {
