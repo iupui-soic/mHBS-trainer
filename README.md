@@ -16,7 +16,7 @@ npm install
 ```
 Repository will be downloaded into `TBD/` folder
 
-### 2. Add OS specific platforms
+### 3. Add OS specific platforms
 
 For Android:
 Go to the downloaded repository folder and run:
@@ -27,7 +27,7 @@ For IOS:
 ```
 cordova add platform android
 ```
-### 3. Build the app
+### 4. Build the app
 (plugins will be automatically built)
 ```
 cordova build

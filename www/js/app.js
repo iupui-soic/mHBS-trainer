@@ -2,7 +2,7 @@
 var $$ = Dom7;
 
 // Framework7 App main instance
-var app  = new Framework7({
+var app = new Framework7({
   root: '#app', // App root element
   id: 'io.framework7.testapp', // App bundle ID
   name: 'Framework7', // App name
@@ -11,9 +11,10 @@ var app  = new Framework7({
   data: function () {
     return {
       user: {
-        firstName: 'John',
-        lastName: 'Doe',
+        userName: 'DemoUser',
       },
+      // secure local storage to hold credentials
+      storage: {},
       // Demo products for Catalog section
       products: [
         {
@@ -38,11 +39,12 @@ var app  = new Framework7({
   methods: {
     helloWorld: function () {
       app.dialog.alert('Hello World!');
-    },
+    }
   },
   // App routes
   routes: routes,
 });
+
 
 // Init/Create views
 var homeView = app.views.create('#view-home', {
@@ -71,69 +73,120 @@ $$('#my-login-screen .login-button').on('click', function () {
 // show the spinner
 app.preloader.show('blue');
 
+
 // set intent listener, send broadcast and wait for device ready
 function onLoad() {
   window.plugins.intent.setNewIntentHandler(onIntent);
   sendBroadcastToTracker();
-
 }
+
+// send broadcast to tracker capture
+function sendBroadcastToTracker() {
+  window.plugins.intentShim.sendBroadcast({
+      action: 'com.example.mHBS.MainActivity'
+    },
+    function () {
+      console.log('sent broadcast')
+    },
+    function () {
+      alert('Please log in and install tracker-capture')
+    }
+  );
+}
+
+// secure storage plugin requires android users to have pin lock on device
+var securityFunction = function () {
+  navigator.notification.alert(
+    'Please enable the screen lock on your device. This app cannot operate securely without it.',
+    function () {
+      ss.secureDevice(
+        function () {
+          _init();
+        },
+        function () {
+          _init();
+        }
+      );
+    },
+    'Screen lock is disabled'
+  );
+};
+
+// create secure storage
+var ss = function () {
+  return new cordova.plugins.SecureStorage(
+    function () {
+      console.log("Storage Created")
+    },
+    securityFunction,
+    'mHBS_Hybridapp');
+};
 
 // handle any incoming intent
 function onIntent(intent) {
-  app.preloader.hide();
   //todo: error handling, check if null
-  if(intent!=null) {
-   var credentialsArr = parseCredentials(intent);
-   var credentials = {
-     username: credentialsArr[0],
-     password: credentialsArr[1],
-     serverURL: credentialsArr[3]
-   };
-   storeCredentials(credentials);
+  if (intent != null) {
+    var credentialsArr = parseCredentials(intent);
+    var credentials = {
+      username: credentialsArr[0],
+      password: credentialsArr[1],
+      serverURL: credentialsArr[2]
+    };
+    // store into secure storage
+    storeCredentials(credentials);
+    // login
+    logIn(credentials);
   }
 }
 
-function parseCredentials(intent){
+// set credentials
+function storeCredentials(credentials) {
+  app.storage = ss();
+  app.storage.set(function () {
+    console.log('set credentials')
+  }, function () {
+  }, 'credentials', credentials.username);
+  app.storage.set(function () {
+    console.log('set password')
+  }, function () {
+  }, 'password', credentials.password);
+  app.storage.set(function () {
+    console.log('set serverURL')
+  }, function () {
+  }, 'serverURL', credentials.serverURL);
+}
+
+// get the credentials from the JSON
+function parseCredentials(intent) {
   return intent.extras['key:loginRequest'];
 }
 
 
-function storeCredentials(credentials){
+// login
+function logIn(credentials) {
+  // todo: use secure storage .get() instead of passing credentials
+  var server = credentials.serverURL + "api/26/me/";
 
-  var ss = new cordova.plugins.SecureStorage(
-    function () { console.log('Success')},
-    function () {
-      navigator.notification.alert(
-        'Please enable the screen lock on your device. This app cannot operate securely without it.',
-        function () {
-          ss.secureDevice(
-            function () {
-              _init();
-            },
-            function () {
-              _init();
-            }
-          );
-        },
-        'Screen lock is disabled'
-      );
+  // set basic auth request header
+  app.request.setup({
+    headers: {
+      'Authorization': 'Basic ' + btoa(credentials.username + ":" + credentials.password)
+    }
+  });
+
+  // send request
+  app.request.get(server, {
+      username: credentials.username,
+      password: credentials.password
+    }, function (data) {
+      app.preloader.hide();
+      console.log(data);
     },
-    'mHBS_Hybridapp');
-
-  ss.set(function(){console.log('set username')},function(){},'username', credentials.username);
-  ss.set(function(){console.log('set password')},function(){},'password', credentials.password);
-  ss.set(function(){console.log('set serverURL')},function(){},'serverURL', credentials.serverURL);
+    function (error) {
+      console.log(error);
+    });
+  // clear
+  delete credentials.password;
+  delete credentials.username;
+  delete credentials.serverURL;
 }
-
-// send broadcast to tracker capture
-function sendBroadcastToTracker()
-{
-  window.plugins.intentShim.sendBroadcast({
-      action: 'com.example.mHBS.MainActivity'
-    },
-    function() {alert('sent broadcast')},
-    function () {alert('Please log in and install tracker-capture')}
-  );
-}
-
-
