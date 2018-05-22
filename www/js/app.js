@@ -73,11 +73,14 @@ $$('#my-login-screen .login-button').on('click', function () {
 // show the spinner
 app.preloader.show('blue');
 
-
-// set intent listener, send broadcast and wait for device ready
+// set intent listener, send broadcast
 function onLoad() {
-  window.plugins.intent.setNewIntentHandler(onIntent);
-  sendBroadcastToTracker();
+  // if we don't have credentials, send a broadcast, store them, and log the user in
+  if (app.storage == null) {
+    window.plugins.intent.setNewIntentHandler(onIntent);
+    app.storage = ss();
+    sendBroadcastToTracker();
+  }
 }
 
 // send broadcast to tracker capture
@@ -86,7 +89,7 @@ function sendBroadcastToTracker() {
       action: 'com.example.mHBS.MainActivity'
     },
     function () {
-      console.log('sent broadcast')
+      console.log('sent broadcast');
     },
     function () {
       alert('Please log in and install tracker-capture')
@@ -99,7 +102,7 @@ var securityFunction = function () {
   navigator.notification.alert(
     'Please enable the screen lock on your device. This app cannot operate securely without it.',
     function () {
-      ss.secureDevice(
+      app.storage.secureDevice(
         function () {
           _init();
         },
@@ -141,6 +144,8 @@ function onIntent(intent) {
       password: credentialsArr[1],
       serverURL: credentialsArr[2]
     };
+    // clear out the intent handler
+    window.plugins.intent.setNewIntentHandler(null);
     // store into secure storage
     storeCredentials(credentials);
     // login
@@ -150,7 +155,6 @@ function onIntent(intent) {
 
 // set credentials
 function storeCredentials(credentials) {
-  app.storage = ss();
   app.storage.set(function () {
     console.log('set username');
     // set username for our app
