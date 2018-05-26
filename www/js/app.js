@@ -11,10 +11,14 @@ var app = new Framework7({
   data: function () {
     return {
       user: {
-        userName: 'DemoUser',
+        username: 'DemoUser',
       },
       // secure local storage to hold credentials
       storage: {},
+      credentials: {},
+      documents: {
+        contentURL: 'https://mhbs.info/api/documents.xml'
+      },
       // Demo products for Catalog section
       products: [
         {
@@ -44,7 +48,7 @@ var app = new Framework7({
   // App routes
   routes: routes,
 });
-
+var secureParamsStored = 0;
 
 // Init/Create views
 var homeView = app.views.create('#view-home', {
@@ -57,6 +61,31 @@ var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
 
+
+// Events
+app.on('storedCredential', function (key, value) {
+
+  if (key === "username") {
+    app.data.credentials.username = value;
+    secureParamsStored++;
+  } else if (key === "password") {
+    app.data.credentials.password = value;
+    secureParamsStored++;
+  }
+  else if (key === "serverURL") {
+    app.data.credentials.serverURL = value;
+    secureParamsStored++;
+  }
+  if (secureParamsStored === 3) {
+    app.emit('downloadOk');
+    secureParamsStored = 0;
+  }
+});
+
+
+app.on('downloadOk', function () {
+  accessOnlineContent();
+});
 
 // Login Screen Demo
 $$('#my-login-screen .login-button').on('click', function () {
@@ -72,6 +101,25 @@ $$('#my-login-screen .login-button').on('click', function () {
 
 // show the spinner
 app.preloader.show('blue');
+
+function accessOnlineContent() {
+  var server = app.data.documents.contentURL;
+  // send request
+  app.request.get(server, {
+      username: app.data.credentials.username,
+      password: app.data.credentials.password
+    }, function (data) {
+      console.log(data);
+      // ready to download content
+      // clear
+      delete app.data.credentials.password;
+      delete app.data.credentials.username;
+      delete app.data.credentials.serverURL;
+    },
+    function (error) {
+      alert(error + "The content is not retrievable");
+    })
+}
 
 // set intent listener, send broadcast
 function onLoad() {
@@ -92,7 +140,7 @@ function sendBroadcastToTracker() {
       console.log('sent broadcast');
     },
     function () {
-      alert('Please log in and install tracker-capture')
+      alert('Please install and launch this app through mHBS tracker-capture')
     }
   );
 }
@@ -162,14 +210,36 @@ function storeCredentials(credentials) {
   }, function () {
   }, 'username', credentials.username);
   app.storage.set(function () {
-    console.log('set password')
+    console.log('set password');
   }, function () {
   }, 'password', credentials.password);
   app.storage.set(function () {
-    console.log('set serverURL')
+    console.log('set serverURL');
   }, function () {
   }, 'serverURL', credentials.serverURL);
 }
+
+function getCredentials() {
+  app.storage.get(function (value) {
+    console.log('get username');
+    app.emit('storedCredential', "username", value);
+  }, function (error) {
+    console.log("username" + error);
+  }, 'username');
+  app.storage.get(function (value) {
+    console.log('get password');
+    app.emit('storedCredential', "password", value);
+  }, function (error) {
+    console.log("password" + error);
+  }, 'password');
+  app.storage.get(function (value) {
+    console.log('get serverURL');
+    app.emit('storedCredential', "serverURL", value);
+  }, function () {
+    console.log("serverURL" + error);
+  }, 'serverURL');
+}
+
 
 // get the credentials from the JSON
 function parseCredentials(intent) {
@@ -179,7 +249,6 @@ function parseCredentials(intent) {
 
 // login
 function logIn(credentials) {
-  // todo: use secure storage .get() instead of passing credentials
   var server = credentials.serverURL + "api/26/me/";
 
   // set basic auth request header
@@ -196,12 +265,14 @@ function logIn(credentials) {
     }, function (data) {
       app.preloader.hide();
       console.log(data);
+      getCredentials();
+      // ready to download content
+      // clear
+      delete credentials.password;
+      delete credentials.username;
+      delete credentials.serverURL;
     },
     function (error) {
-      console.log(error);
+      alert("The login information is not correct, please log in from Tracker-capture again.");
     });
-  // clear
-  delete credentials.password;
-  delete credentials.username;
-  delete credentials.serverURL;
 }
