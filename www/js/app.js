@@ -63,28 +63,41 @@ var settingsView = app.views.create('#view-settings', {
 
 
 // Events
-app.on('storedCredential', function (key, value) {
-
+app.on('storedCredential', function (key) {
   if (key === "username") {
-    app.data.credentials.username = value;
     secureParamsStored++;
   } else if (key === "password") {
-    app.data.credentials.password = value;
     secureParamsStored++;
   }
   else if (key === "serverURL") {
-    app.data.credentials.serverURL = value;
     secureParamsStored++;
   }
   if (secureParamsStored === 3) {
+    secureParamsStored = 0;
     app.emit('downloadOk');
+  }
+});
+
+app.on('gotCredential', function (key, value) {
+  if (key === "username") {
+    secureParamsStored++;
+    app.data.credentials.username = value;
+  } else if (key === "password") {
+    secureParamsStored++;
+    app.data.credentials.password = value;
+  }
+  else if (key === "serverURL") {
+    secureParamsStored++;
+    app.data.credentials.serverURL = value;
+  }
+  if (secureParamsStored === 3) {
+    accessOnlineContent();
     secureParamsStored = 0;
   }
 });
 
-
 app.on('downloadOk', function () {
-  accessOnlineContent();
+  getCredentials();
 });
 
 // Login Screen Demo
@@ -112,9 +125,8 @@ function accessOnlineContent() {
       console.log(data);
       // ready to download content
       // clear
-      delete app.data.credentials.password;
-      delete app.data.credentials.username;
-      delete app.data.credentials.serverURL;
+      console.log("changes accepted");
+      clearCredentials();
     },
     function (error) {
       alert(error + "The content is not retrievable");
@@ -182,63 +194,107 @@ function setAppUsername() {
   }, 'username');
 }
 
+
+// login
+function logIn() {
+  var server = app.data.credentials.serverURL + "api/26/me/";
+
+  // set basic auth request header
+  app.request.setup({
+    headers: {
+      'Authorization': 'Basic ' + btoa(app.data.credentials.username + ":" + app.data.credentials.password)
+    }
+  });
+
+  // send request
+  app.request.get(server, {
+      username: app.data.credentials.username,
+      password: app.data.credentials.password
+    }, function (data) {
+      app.preloader.hide();
+      console.log(data);
+      // ready to download content
+      // clear
+      clearCredentials();
+    },
+    function (error) {
+      alert("The login information is not correct, please log in from Tracker-capture again.");
+    });
+}
+
+// clear credentials
+function clearCredentials(){
+  delete app.data.credentials.username;
+  delete app.data.credentials.password;
+  delete app.data.credentials.serverURL;
+}
+
+
 // handle any incoming intent
 function onIntent(intent) {
+  console.log("test got intent");
   //todo: error handling, check if null
   if (intent != null) {
     var credentialsArr = parseCredentials(intent);
-    var credentials = {
-      username: credentialsArr[0],
-      password: credentialsArr[1],
-      serverURL: credentialsArr[2]
-    };
+   if(credentialsArr.length===3) {
+     console.log("test" + credentialsArr.length);
+
+     app.data.credentials.username = credentialsArr[0];
+     app.data.credentials.password = credentialsArr[1];
+     app.data.credentials.serverURL = credentialsArr[2];
+   }
     // clear out the intent handler
     window.plugins.intent.setNewIntentHandler(null);
     // store into secure storage
-    storeCredentials(credentials);
+    storeCredentials();
     // login
-    logIn(credentials);
+    logIn();
   }
 }
 
 // set credentials
-function storeCredentials(credentials) {
+function storeCredentials() {
   app.storage.set(function () {
     console.log('set username');
     // set username for our app
     setAppUsername();
+    app.emit('storedCredential', "username");
   }, function () {
-  }, 'username', credentials.username);
+  }, 'username', app.data.credentials.username);
   app.storage.set(function () {
     console.log('set password');
+    app.emit('storedCredential', "password");
   }, function () {
-  }, 'password', credentials.password);
+  }, 'password', app.data.credentials.password);
   app.storage.set(function () {
     console.log('set serverURL');
+    app.emit('storedCredential', "serverURL");
   }, function () {
-  }, 'serverURL', credentials.serverURL);
+  }, 'serverURL', app.data.credentials.serverURL);
 }
+
 
 function getCredentials() {
   app.storage.get(function (value) {
     console.log('get username');
-    app.emit('storedCredential', "username", value);
+    app.emit('gotCredential', "username", value);
   }, function (error) {
     console.log("username" + error);
   }, 'username');
   app.storage.get(function (value) {
     console.log('get password');
-    app.emit('storedCredential', "password", value);
+    app.emit('gotCredential', "password", value);
   }, function (error) {
     console.log("password" + error);
   }, 'password');
   app.storage.get(function (value) {
     console.log('get serverURL');
-    app.emit('storedCredential', "serverURL", value);
-  }, function () {
+    app.emit('gotCredential', "serverURL", value);
+  }, function (error) {
     console.log("serverURL" + error);
   }, 'serverURL');
 }
+
 
 
 // get the credentials from the JSON
@@ -246,33 +302,3 @@ function parseCredentials(intent) {
   return intent.extras['key:loginRequest'];
 }
 
-
-// login
-function logIn(credentials) {
-  var server = credentials.serverURL + "api/26/me/";
-
-  // set basic auth request header
-  app.request.setup({
-    headers: {
-      'Authorization': 'Basic ' + btoa(credentials.username + ":" + credentials.password)
-    }
-  });
-
-  // send request
-  app.request.get(server, {
-      username: credentials.username,
-      password: credentials.password
-    }, function (data) {
-      app.preloader.hide();
-      console.log(data);
-      getCredentials();
-      // ready to download content
-      // clear
-      delete credentials.password;
-      delete credentials.username;
-      delete credentials.serverURL;
-    },
-    function (error) {
-      alert("The login information is not correct, please log in from Tracker-capture again.");
-    });
-}
