@@ -15,9 +15,16 @@ var app = new Framework7({
       },
       // secure local storage to hold credentials
       storage: {},
-      credentials: {},
+      // temp credentials while we are accessing secure local storage
+      tempCredentials: {
+        username: "",
+        password: "",
+        serverURL: "",
+        stored: false
+      },
       documents: {
-        contentURL: 'https://mhbs.info/api/documents.xml'
+        contentURL: 'https://mhbs.info/api/documents.xml',
+        rawData: ""
       },
       // Demo products for Catalog section
       products: [
@@ -64,39 +71,52 @@ var settingsView = app.views.create('#view-settings', {
 
 // Events
 app.on('storedCredential', function (key) {
+  console.log("We triggered storedCredential Event");
   if (key === "username") {
+    console.log("We are incrementing secureParams in stored credential based on username");
     secureParamsStored++;
   } else if (key === "password") {
+    console.log("We are incrementing secureParams in stored credential based on password");
     secureParamsStored++;
   }
   else if (key === "serverURL") {
+    console.log("We are incrementing secureParams in stored credential based on serverURL");
     secureParamsStored++;
   }
   if (secureParamsStored === 3) {
+    console.log("we had 3 secureParams in stored credential, trigger downloadOk");
+    // can use to directly get tempCredentials if needed
+    app.data.tempCredentials.stored = true;
     secureParamsStored = 0;
     app.emit('downloadOk');
   }
 });
 
 app.on('gotCredential', function (key, value) {
+  console.log("We triggered gotCredential Event");
   if (key === "username") {
+    console.log("incrementing secure params in got credential by username");
     secureParamsStored++;
-    app.data.credentials.username = value;
+    app.data.tempCredentials.username = value;
   } else if (key === "password") {
+    console.log("incrementing secure params in got credential by password");
     secureParamsStored++;
-    app.data.credentials.password = value;
+    app.data.tempCredentials.password = value;
   }
   else if (key === "serverURL") {
+    console.log("incrementing secure params in got credential by serverURL");
     secureParamsStored++;
-    app.data.credentials.serverURL = value;
+    app.data.tempCredentials.serverURL = value;
   }
   if (secureParamsStored === 3) {
+    console.log("got 3 secured params, access content");
     accessOnlineContent();
     secureParamsStored = 0;
   }
 });
 
 app.on('downloadOk', function () {
+  console.log("in downloadOK trigger getCredentials");
   getCredentials();
 });
 
@@ -116,16 +136,19 @@ $$('#my-login-screen .login-button').on('click', function () {
 app.preloader.show('blue');
 
 function accessOnlineContent() {
+  console.log("access online content");
+
   var server = app.data.documents.contentURL;
   // send request
   app.request.get(server, {
-      username: app.data.credentials.username,
-      password: app.data.credentials.password
+      username: app.data.tempCredentials.username,
+      password: app.data.tempCredentials.password
     }, function (data) {
-      console.log(data);
+    console.log("setting rawData");
+      app.data.documents.rawData = data;
       // ready to download content
+      downloadContent();
       // clear
-      console.log("changes accepted");
       clearCredentials();
     },
     function (error) {
@@ -133,12 +156,16 @@ function accessOnlineContent() {
     })
 }
 
+function downloadContent(){
+  console.log(app.data.documents.rawData);
+}
+
 // set intent listener, send broadcast
 function onLoad() {
-  // if we don't have credentials, send a broadcast, store them, and log the user in
+  // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (app.storage == null) {
-    window.plugins.intent.setNewIntentHandler(onIntent);
     app.storage = ss();
+    window.plugins.intent.setNewIntentHandler(onIntent);
     sendBroadcastToTracker();
   }
 }
@@ -197,19 +224,19 @@ function setAppUsername() {
 
 // login
 function logIn() {
-  var server = app.data.credentials.serverURL + "api/26/me/";
+  var server = app.data.tempCredentials.serverURL + "api/26/me/";
 
   // set basic auth request header
   app.request.setup({
     headers: {
-      'Authorization': 'Basic ' + btoa(app.data.credentials.username + ":" + app.data.credentials.password)
+      'Authorization': 'Basic ' + btoa(app.data.tempCredentials.username + ":" + app.data.tempCredentials.password)
     }
   });
 
   // send request
   app.request.get(server, {
-      username: app.data.credentials.username,
-      password: app.data.credentials.password
+      username: app.data.tempCredentials.username,
+      password: app.data.tempCredentials.password
     }, function (data) {
       app.preloader.hide();
       console.log(data);
@@ -222,59 +249,69 @@ function logIn() {
     });
 }
 
-// clear credentials
-function clearCredentials(){
-  delete app.data.credentials.username;
-  delete app.data.credentials.password;
-  delete app.data.credentials.serverURL;
+// clear tempCredentials
+function clearCredentials() {
+  delete app.data.tempCredentials.username;
+  delete app.data.tempCredentials.password;
+  delete app.data.tempCredentials.serverURL;
 }
 
 
 // handle any incoming intent
 function onIntent(intent) {
-  console.log("test got intent");
+  console.log("got intent");
   //todo: error handling, check if null
   if (intent != null) {
     var credentialsArr = parseCredentials(intent);
-   if(credentialsArr.length===3) {
-     console.log("test" + credentialsArr.length);
+    if (credentialsArr.length === 3) {
+      console.log("length of tempCredentials " + credentialsArr.length);
 
-     app.data.credentials.username = credentialsArr[0];
-     app.data.credentials.password = credentialsArr[1];
-     app.data.credentials.serverURL = credentialsArr[2];
-   }
-    // clear out the intent handler
-    window.plugins.intent.setNewIntentHandler(null);
-    // store into secure storage
-    storeCredentials();
-    // login
-    logIn();
+      app.data.tempCredentials.username = credentialsArr[0];
+      app.data.tempCredentials.password = credentialsArr[1];
+      app.data.tempCredentials.serverURL = credentialsArr[2];
+      console.log(app.data.tempCredentials.username + " " + app.data.tempCredentials.password + " " + app.data.tempCredentials.serverURL);
+      // clear out the intent handler
+      window.plugins.intent.setNewIntentHandler(null);
+      // store into secure storage
+      storeCredentials();
+      // login
+      logIn();
+    }else{
+      alert("Please login tracker-capture");
+    }
+
   }
 }
 
-// set credentials
+// set tempCredentials
 function storeCredentials() {
+  console.log("in store Credentials");
   app.storage.set(function () {
     console.log('set username');
     // set username for our app
     setAppUsername();
     app.emit('storedCredential', "username");
-  }, function () {
-  }, 'username', app.data.credentials.username);
+  }, function (error) {
+    console.log("username store creds error");
+  }, 'username', app.data.tempCredentials.username);
   app.storage.set(function () {
     console.log('set password');
     app.emit('storedCredential', "password");
-  }, function () {
-  }, 'password', app.data.credentials.password);
+  }, function (error) {
+    console.log("pass store creds error");
+  }, 'password', app.data.tempCredentials.password);
   app.storage.set(function () {
     console.log('set serverURL');
     app.emit('storedCredential', "serverURL");
-  }, function () {
-  }, 'serverURL', app.data.credentials.serverURL);
+  }, function (error) {
+    console.log("serverurl store creds error");
+    console.log(error);
+  }, 'serverURL', app.data.tempCredentials.serverURL);
 }
 
 
 function getCredentials() {
+  console.log("in getCredentials");
   app.storage.get(function (value) {
     console.log('get username');
     app.emit('gotCredential', "username", value);
@@ -296,8 +333,7 @@ function getCredentials() {
 }
 
 
-
-// get the credentials from the JSON
+// get the tempCredentials from the JSON
 function parseCredentials(intent) {
   return intent.extras['key:loginRequest'];
 }
