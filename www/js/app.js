@@ -15,16 +15,8 @@ var app = new Framework7({
       },
       // secure local storage to hold credentials
       storage: {},
-      // temp credentials while we are accessing secure local storage
-      tempCredentials: {
-        username: "",
-        password: "",
-        serverURL: "",
-        stored: false
-      },
       documents: {
-        contentURL: 'https://mhbs.info/api/documents.xml',
-        rawData: ""
+        rawData: {}
       },
       // Demo products for Catalog section
       products: [
@@ -55,7 +47,16 @@ var app = new Framework7({
   // App routes
   routes: routes,
 });
+
+// declarations
 var secureParamsStored = 0;
+var loginCounter = 0;
+var tempCredentials = {
+  username : '',
+  password : '',
+  serverURL : '',
+  stored: false
+};
 
 // Init/Create views
 var homeView = app.views.create('#view-home', {
@@ -67,7 +68,6 @@ var catalogView = app.views.create('#view-catalog', {
 var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
-
 
 // Events
 app.on('storedCredential', function (key) {
@@ -86,7 +86,7 @@ app.on('storedCredential', function (key) {
   if (secureParamsStored === 3) {
     console.log("we had 3 secureParams in stored credential, trigger downloadOk");
     // can use to directly get tempCredentials if needed
-    app.data.tempCredentials.stored = true;
+    tempCredentials.stored = true;
     secureParamsStored = 0;
     app.emit('downloadOk');
   }
@@ -97,16 +97,16 @@ app.on('gotCredential', function (key, value) {
   if (key === "username") {
     console.log("incrementing secure params in got credential by username");
     secureParamsStored++;
-    app.data.tempCredentials.username = value;
+    tempCredentials.username = value;
   } else if (key === "password") {
     console.log("incrementing secure params in got credential by password");
     secureParamsStored++;
-    app.data.tempCredentials.password = value;
+    tempCredentials.password = value;
   }
   else if (key === "serverURL") {
     console.log("incrementing secure params in got credential by serverURL");
     secureParamsStored++;
-    app.data.tempCredentials.serverURL = value;
+    tempCredentials.serverURL = value;
   }
   if (secureParamsStored === 3) {
     console.log("got 3 secured params, access content");
@@ -118,6 +118,15 @@ app.on('gotCredential', function (key, value) {
 app.on('downloadOk', function () {
   console.log("in downloadOK trigger getCredentials");
   getCredentials();
+});
+
+app.on('onLogin', function(value){
+  loginCounter += value;
+  console.log("Login Counter " + loginCounter);
+  if(loginCounter===2){
+    clearCredentials();
+    loginCounter = 0;
+  }
 });
 
 // Login Screen Demo
@@ -138,34 +147,44 @@ app.preloader.show('blue');
 function accessOnlineContent() {
   console.log("access online content");
 
-  var server = app.data.documents.contentURL;
+  var server = 'https://mhbs.info/api/documents.xml';
   // send request
   app.request.get(server, {
-      username: app.data.tempCredentials.username,
-      password: app.data.tempCredentials.password
+      username: tempCredentials.username,
+      password: tempCredentials.password
     }, function (data) {
-    console.log("setting rawData");
+      console.log("setting rawData");
       app.data.documents.rawData = data;
       // ready to download content
+      app.emit('onLogin',1);
       downloadContent();
-      // clear
-      clearCredentials();
     },
     function (error) {
       alert(error + "The content is not retrievable");
     })
 }
 
-function downloadContent(){
+// use to re-download media content
+function syncOnlineContent() {
+  if (tempCredentials.stored) {
+    app.emit('downloadOk');
+  }
+}
+
+function downloadContent() {
+  console.log("in download content");
   console.log(app.data.documents.rawData);
+  // update DB
+
 }
 
 // set intent listener, send broadcast
 function onLoad() {
+  window.plugins.intent.setNewIntentHandler(onIntent);
+
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (app.storage == null) {
-    app.storage = ss();
-    window.plugins.intent.setNewIntentHandler(onIntent);
+    this.app.storage = ss();
     sendBroadcastToTracker();
   }
 }
@@ -212,6 +231,42 @@ var ss = function () {
     'mHBS_Hybridapp');
 };
 
+
+// set basic auth request header
+function setHeaders() {
+  app.request.setup({
+    headers: {
+      'Authorization': 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password)
+    }
+  });
+}
+
+// login
+function logIn() {
+  var server = tempCredentials.serverURL + "api/26/me/";
+
+  // send request
+  app.request.get(server, {
+      username: tempCredentials.username,
+      password: tempCredentials.password
+    }, function (data) {
+      app.preloader.hide();
+      console.log(data);
+      app.emit('onLogin',1);
+    },
+    function (error) {
+      alert("The login information is not correct, please log in from Tracker-capture again.");
+    });
+}
+
+// clear tempCredentials
+function clearCredentials() {
+  console.log("CLEARING CREDENTIALS");
+  delete tempCredentials.username;
+  delete tempCredentials.password;
+  delete tempCredentials.serverURL;
+}
+
 // set user name for our app
 function setAppUsername() {
   app.storage.get(function (value) {
@@ -221,65 +276,32 @@ function setAppUsername() {
   }, 'username');
 }
 
-
-// login
-function logIn() {
-  var server = app.data.tempCredentials.serverURL + "api/26/me/";
-
-  // set basic auth request header
-  app.request.setup({
-    headers: {
-      'Authorization': 'Basic ' + btoa(app.data.tempCredentials.username + ":" + app.data.tempCredentials.password)
-    }
-  });
-
-  // send request
-  app.request.get(server, {
-      username: app.data.tempCredentials.username,
-      password: app.data.tempCredentials.password
-    }, function (data) {
-      app.preloader.hide();
-      console.log(data);
-      // ready to download content
-      // clear
-      clearCredentials();
-    },
-    function (error) {
-      alert("The login information is not correct, please log in from Tracker-capture again.");
-    });
-}
-
-// clear tempCredentials
-function clearCredentials() {
-  delete app.data.tempCredentials.username;
-  delete app.data.tempCredentials.password;
-  delete app.data.tempCredentials.serverURL;
-}
-
-
 // handle any incoming intent
 function onIntent(intent) {
   console.log("got intent");
+  // clear out the intent handler
+  window.plugins.intent.setNewIntentHandler(null);
+
   //todo: error handling, check if null
   if (intent != null) {
     var credentialsArr = parseCredentials(intent);
     if (credentialsArr.length === 3) {
       console.log("length of tempCredentials " + credentialsArr.length);
-
-      app.data.tempCredentials.username = credentialsArr[0];
-      app.data.tempCredentials.password = credentialsArr[1];
-      app.data.tempCredentials.serverURL = credentialsArr[2];
-      console.log(app.data.tempCredentials.username + " " + app.data.tempCredentials.password + " " + app.data.tempCredentials.serverURL);
-      // clear out the intent handler
-      window.plugins.intent.setNewIntentHandler(null);
-      // store into secure storage
-      storeCredentials();
-      // login
-      logIn();
-    }else{
+      tempCredentials.username = credentialsArr[0];
+      tempCredentials.password = credentialsArr[1];
+      tempCredentials.serverURL = credentialsArr[2];
+      // set app headers
+      setHeaders();
+      if (tempCredentials.username != null && tempCredentials.password != null && tempCredentials.serverURL != null) {
+        //todo: errors out if attempting to use app.data.tempCredentials
+        // storeCredentials
+        storeCredentials();
+        // login
+        logIn();
+      }
+    } else {
       alert("Please login tracker-capture");
     }
-
   }
 }
 
@@ -293,20 +315,20 @@ function storeCredentials() {
     app.emit('storedCredential', "username");
   }, function (error) {
     console.log("username store creds error");
-  }, 'username', app.data.tempCredentials.username);
+  }, 'username', tempCredentials.username);
   app.storage.set(function () {
     console.log('set password');
     app.emit('storedCredential', "password");
   }, function (error) {
     console.log("pass store creds error");
-  }, 'password', app.data.tempCredentials.password);
+  }, 'password', tempCredentials.password);
   app.storage.set(function () {
     console.log('set serverURL');
     app.emit('storedCredential', "serverURL");
   }, function (error) {
     console.log("serverurl store creds error");
     console.log(error);
-  }, 'serverURL', app.data.tempCredentials.serverURL);
+  }, 'serverURL', tempCredentials.serverURL);
 }
 
 
@@ -318,12 +340,14 @@ function getCredentials() {
   }, function (error) {
     console.log("username" + error);
   }, 'username');
+
   app.storage.get(function (value) {
     console.log('get password');
     app.emit('gotCredential', "password", value);
   }, function (error) {
     console.log("password" + error);
   }, 'password');
+
   app.storage.get(function (value) {
     console.log('get serverURL');
     app.emit('gotCredential', "serverURL", value);
