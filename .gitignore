@@ -69,3 +69,4 @@ plugins/
 
 # intellij
 .idea/*
+hooks/.idea/

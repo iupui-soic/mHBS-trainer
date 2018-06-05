@@ -15,9 +15,9 @@ var app = new Framework7({
       },
       // secure local storage to hold credentials
       storage: {},
-      documents: {
-        rawData: {}
-      },
+      // video and PDF content
+      pdfList: [],
+      videoList: [],
       // Demo products for Catalog section
       products: [
         {
@@ -48,14 +48,16 @@ var app = new Framework7({
   routes: routes,
 });
 
-// declarations
+// local declarations
 var secureParamsStored = 0;
-var loginCounter = 0;
+var logCount = 0;
+var appServer = 'https://mhbs.info/api/documents';
+var documentList = [];
+var downloadAble = false;
 var tempCredentials = {
-  username : '',
-  password : '',
-  serverURL : '',
-  stored: false
+  username: '',
+  password: '',
+  serverURL: '',
 };
 
 // Init/Create views
@@ -69,95 +71,172 @@ var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
 
+/* synchronize write and read to secure storage,
+   makes sure if username, password, serverURL set,
+   then we can get the credentials/download content
+*/
+function wroteToSecure() {
+  secureParamsStored += 1;
+  if (secureParamsStored < 3) {
+    return;
+  }
+  console.log("stored 3 secured params, access content");
+  secureParamsStored = 0;
+  downloadAble = true;
+  app.emit("downloadOk");
+}
+
+function readFromSecure() {
+  secureParamsStored += 1;
+  if (secureParamsStored < 3) {
+    return;
+  }
+  console.log("got 3 secured params");
+  accessOnlineContent();
+  secureParamsStored = 0;
+}
+
 // Events
+
+// track writing credentials from secure storage
 app.on('storedCredential', function (key) {
   console.log("We triggered storedCredential Event");
   if (key === "username") {
     console.log("We are incrementing secureParams in stored credential based on username");
-    secureParamsStored++;
+    wroteToSecure();
   } else if (key === "password") {
     console.log("We are incrementing secureParams in stored credential based on password");
-    secureParamsStored++;
+    wroteToSecure();
   }
   else if (key === "serverURL") {
     console.log("We are incrementing secureParams in stored credential based on serverURL");
-    secureParamsStored++;
-  }
-  if (secureParamsStored === 3) {
-    console.log("we had 3 secureParams in stored credential, trigger downloadOk");
-    // can use to directly get tempCredentials if needed
-    tempCredentials.stored = true;
-    secureParamsStored = 0;
-    app.emit('downloadOk');
+    wroteToSecure();
   }
 });
 
+// track reading credentials from secure storage
 app.on('gotCredential', function (key, value) {
   console.log("We triggered gotCredential Event");
   if (key === "username") {
     console.log("incrementing secure params in got credential by username");
-    secureParamsStored++;
+    readFromSecure();
     tempCredentials.username = value;
   } else if (key === "password") {
     console.log("incrementing secure params in got credential by password");
-    secureParamsStored++;
+    readFromSecure();
     tempCredentials.password = value;
   }
   else if (key === "serverURL") {
     console.log("incrementing secure params in got credential by serverURL");
-    secureParamsStored++;
+    readFromSecure();
     tempCredentials.serverURL = value;
   }
-  if (secureParamsStored === 3) {
-    console.log("got 3 secured params, access content");
-    accessOnlineContent();
-    secureParamsStored = 0;
-  }
 });
 
+// can also trigger to download new video/pdf content
 app.on('downloadOk', function () {
-  console.log("in downloadOK trigger getCredentials");
-  getCredentials();
-});
-
-app.on('onLogin', function(value){
-  loginCounter += value;
-  console.log("Login Counter " + loginCounter);
-  if(loginCounter===2){
-    clearCredentials();
-    loginCounter = 0;
+  if (downloadAble) {
+    console.log("download Ok");
+    getCredentials();
   }
 });
 
-// Login Screen Demo
-$$('#my-login-screen .login-button').on('click', function () {
-  var username = $$('#my-login-screen [name="username"]').val();
-  var password = $$('#my-login-screen [name="password"]').val();
-
-  // Close login screen
-  app.loginScreen.close('#my-login-screen');
-
-  // Alert username and password
-  app.dialog.alert('Username: ' + username + '<br>Password: ' + password);
+app.on('login', function () {
+  logCount += 1;
+  if (logCount === 2) {
+    clearCredentials();
+  }
 });
 
-// show the spinner
+/* triggered when document id, title and content type
+   are finished being gathered from server, then
+   parse to separate arrays by content type.
+*/
+app.on('contentType', function () {
+  console.log("got content types");
+  // hide pre-loader once we downloaded content
+  app.preloader.hide();
+  for (var i in documentList) {
+    console.log(documentList[i]);
+    if (documentList[i].contentType === "video/webm") {
+      app.data.videoList.push(documentList[i]);
+    } else if (documentList[i].contentType === "application/pdf") {
+      app.data.pdfList.push(documentList[i]);
+    }
+  }
+  console.log(app.data.videoList);
+  console.log(app.data.pdfList);
+  // testing
+ // downloadContent(app.data.videoList[0].id);
+});
+
+
+// In page events:
+$$(document).on('page:init', '.page[data-name="mediaPlayer"]', function (e) {
+
+  // Do something here when page with data-name="about" attribute loaded and initialized
+});
+
+$$(document).on("click", ".videoClick", function(){
+
+  var name  = $$(this).attr("data-name");
+  var id = $$(this).attr("data-id");
+  console.log(name + "  " + id);
+  app.router.navigate('/mediaPlayer/');
+});
+
+
+// show the spinner while we are logging the user in and downloading content.
 app.preloader.show('blue');
 
-function accessOnlineContent() {
-  console.log("access online content");
+function downloadContent(id){
 
-  var server = 'https://mhbs.info/api/documents.xml';
+  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
+    console.log('file system open: ' + fs.name);
+    fs.root.getFile('bot.png', { create: true, exclusive: false }, function (fileEntry) {
+      console.log('fileEntry is file? ' + fileEntry.isFile.toString());
+      var oReq = new XMLHttpRequest();
+      var server = appServer + "/" + id + ".xml";
+      // Make sure you add the domain name to the Content-Security-Policy <meta> element.
+      oReq.open("GET", server, true);
+      // Define how you want the XHR data to come back
+      oReq.responseType = "blob";
+      oReq.onload = function (oEvent) {
+        var blob = oReq.response; // Note: not oReq.responseText
+        if (blob) {
+          // Create a URL based on the blob, and set an <img> tag's src to it.
+          var url = window.URL.createObjectURL(blob);
+          document.getElementById('bot-img').src = url;
+          // Or read the data with a FileReader
+          var reader = new FileReader();
+          reader.addEventListener("loadend", function() {
+            // reader.result contains the contents of blob as text
+          });
+          reader.readAsText(blob);
+        } else console.error('we didnt get an XHR response!');
+      };
+      oReq.send(null);
+    }, function (err) { console.error('error getting file! ' + err); });
+  }, function (err) { console.error('error getting persistent fs! ' + err); });
+}
+// log in to the server to get xml data
+function accessOnlineContent() {
+
+  var rawDocuments = {
+    rawXML: {}
+  };
+
+  var server = appServer + ".xml";
   // send request
   app.request.get(server, {
       username: tempCredentials.username,
       password: tempCredentials.password
     }, function (data) {
+      app.emit("login");
       console.log("setting rawData");
-      app.data.documents.rawData = data;
+      rawDocuments.rawXML = data;
       // ready to download content
-      app.emit('onLogin',1);
-      downloadContent();
+      accessOnlineDocuments(rawDocuments.rawXML);
     },
     function (error) {
       alert(error + "The content is not retrievable");
@@ -166,20 +245,70 @@ function accessOnlineContent() {
 
 // use to re-download media content
 function syncOnlineContent() {
-  if (tempCredentials.stored) {
-    app.emit('downloadOk');
+  app.preloader.show('blue');
+  if (downloadAble) {
+    app.emit('gotCredential');
+  }else{
+    alert('cannot synchronize data');
   }
 }
 
-function downloadContent() {
-  console.log("in download content");
-  console.log(app.data.documents.rawData);
-  // update DB
+// get XML content from dhis2 web API
+function accessOnlineDocuments(rawXML) {
+  if (window.DOMParser) {
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(rawXML.toString(), "text/xml");
+    var documents = xmlDoc.getElementsByTagName("documents")[0].childNodes;
+    var tempID;
+    var semaphoreCount = 0;
+    var semaphore = function () {
+      semaphoreCount += 1;
+      if (semaphoreCount < documents.length) {
+        return;
+      }
+      app.emit('contentType');
+    };
+    // get a list of ID's and titles
+    for (var i in documents) {
+      var doc = {
+        title: '',
+        id: '',
+        contentType: ''
+      };
+      tempID = documents[i].id;
+      if (tempID != null) {
+        doc.id = tempID;
+        doc.title = documents[i].textContent;
+        getContentTypes(parser, doc, tempID, semaphore);
+        documentList.push(doc);
+      }
+    }
+  }
+}
 
+function getContentTypes(parser, doc, id, callback) {
+  var server = appServer + "/" + id + ".xml";
+  // send request
+  app.request.get(server, {}, function (data) {
+      var xmlDoc = parser.parseFromString(data, "text/xml");
+      var nodeList = xmlDoc.childNodes[0];
+      var node = nodeList.childNodes;
+
+      for (var key of node.values()) {
+        if (key.nodeName === "contentType") {
+          doc.contentType = key.childNodes[0].data;
+        }
+      }
+      callback();
+    },
+    function (error) {
+      alert(error + "The content is not retrievable");
+    });
 }
 
 // set intent listener, send broadcast
 function onLoad() {
+  console.log("firing APP");
   window.plugins.intent.setNewIntentHandler(onIntent);
 
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
@@ -250,21 +379,21 @@ function logIn() {
       username: tempCredentials.username,
       password: tempCredentials.password
     }, function (data) {
-      app.preloader.hide();
-      console.log(data);
-      app.emit('onLogin',1);
+      app.emit("login");
+      if (!data.includes(tempCredentials.username)) {
+        alert('Login was not successful, please long mHBS tracker-capture');
+      }
     },
     function (error) {
-      alert("The login information is not correct, please log in from Tracker-capture again.");
+      alert('Login was not successful, please long mHBS tracker-capture');
     });
 }
 
 // clear tempCredentials
 function clearCredentials() {
-  console.log("CLEARING CREDENTIALS");
-  delete tempCredentials.username;
-  delete tempCredentials.password;
-  delete tempCredentials.serverURL;
+  tempCredentials.username = '';
+  tempCredentials.password = '';
+  tempCredentials.serverURL = '';
 }
 
 // set user name for our app
@@ -307,49 +436,42 @@ function onIntent(intent) {
 
 // set tempCredentials
 function storeCredentials() {
-  console.log("in store Credentials");
   app.storage.set(function () {
-    console.log('set username');
     // set username for our app
     setAppUsername();
     app.emit('storedCredential', "username");
   }, function (error) {
-    console.log("username store creds error");
+    console.log(error);
   }, 'username', tempCredentials.username);
+
   app.storage.set(function () {
-    console.log('set password');
     app.emit('storedCredential', "password");
   }, function (error) {
-    console.log("pass store creds error");
+    console.log(error);
   }, 'password', tempCredentials.password);
+
   app.storage.set(function () {
-    console.log('set serverURL');
     app.emit('storedCredential', "serverURL");
   }, function (error) {
-    console.log("serverurl store creds error");
     console.log(error);
   }, 'serverURL', tempCredentials.serverURL);
 }
 
 
 function getCredentials() {
-  console.log("in getCredentials");
   app.storage.get(function (value) {
-    console.log('get username');
     app.emit('gotCredential', "username", value);
   }, function (error) {
     console.log("username" + error);
   }, 'username');
 
   app.storage.get(function (value) {
-    console.log('get password');
     app.emit('gotCredential', "password", value);
   }, function (error) {
     console.log("password" + error);
   }, 'password');
 
   app.storage.get(function (value) {
-    console.log('get serverURL');
     app.emit('gotCredential', "serverURL", value);
   }, function (error) {
     console.log("serverURL" + error);

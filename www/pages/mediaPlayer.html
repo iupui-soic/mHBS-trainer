@@ -1,0 +1,30 @@
+<template>
+<div class="page" data-name="mediaPlayer">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="title">{{video.title}}</div>
+    <div class="page-content">
+      <div class="list links-list">
+        <ul>
+          <li><a>{{video.id}}</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  return {
+    data: function () {
+      var videoID = this.$route.params.id;
+      var currentVideo;
+      this.$root.videoList.forEach(function (video) {
+        if (video.id === videoID) {
+          currentVideo = video;
+        }
+      });
+      return {
+        video: currentVideo,
+      };
+    }
+  };
+</script>

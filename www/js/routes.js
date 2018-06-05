@@ -27,6 +27,14 @@ routes = [
     path: '/mhbsmain/',
     url: './pages/mhbsmain.html',
   },
+  {
+    path: '/videoList/',
+    componentUrl: './pages/videoList.html'
+  },
+  {
+    path: '/mediaPlayer/:id/',
+    componentUrl: './pages/mediaPlayer.html'
+  },
   // Page Loaders & Router
   {
     path: '/page-loader-template7/:user/:userId/:posts/:postId/',
