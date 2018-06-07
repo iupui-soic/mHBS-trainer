@@ -9,6 +9,9 @@
   "installed_plugins": {
     "cordova-plugin-whitelist": {
       "PACKAGE_NAME": "com.example.mHBS"
+    },
+    "com.moust.cordova.videoplayer": {
+      "PACKAGE_NAME": "com.example.mHBS"
     }
   },
   "dependent_plugins": {}

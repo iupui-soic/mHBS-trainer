@@ -37,9 +37,13 @@
   "cordova": {
     "platforms": [
       "android"
-    ]
+    ],
+    "plugins": {
+      "com.moust.cordova.videoplayer": {}
+    }
   },
   "dependencies": {
-    "cordova-android": "^7.0.0"
+    "cordova-android": "^7.0.0",
+    "cordova-plugin-video-player": "^1.0.1"
   }
 }

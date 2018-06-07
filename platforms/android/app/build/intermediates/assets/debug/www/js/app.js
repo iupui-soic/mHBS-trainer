@@ -54,6 +54,12 @@ var catalogView = app.views.create('#view-catalog', {
 var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
+var videoView = app.views.create('#view-video', {
+  url: '/mhbsvideos/'
+});
+var guideView = app.views.create('#view-guide', {
+  url: '/mhbsmain/'
+});
 
 
 // Login Screen Demo
@@ -67,3 +73,4 @@ $$('#my-login-screen .login-button').on('click', function () {
   // Alert username and password
   app.dialog.alert('Username: ' + username + '<br>Password: ' + password);
 });
+
