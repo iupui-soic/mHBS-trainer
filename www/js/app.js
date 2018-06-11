@@ -186,9 +186,6 @@ $$(document).on("click", ".videoClick", function(){
 });
 
 
-// show the spinner while we are logging the user in and downloading content.
-app.preloader.show('blue');
-
 function downloadContent(id){
 
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
@@ -313,6 +310,8 @@ function onLoad() {
 
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (app.storage == null) {
+// show the spinner while we are logging the user in and downloading content.
+    app.preloader.show('blue');
     this.app.storage = ss();
     sendBroadcastToTracker();
   }
