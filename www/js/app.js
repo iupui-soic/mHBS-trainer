@@ -92,12 +92,31 @@ function readFromSecure() {
     return;
   }
   console.log("got 3 secured params");
-  accessOnlineContent();
   secureParamsStored = 0;
+  app.emit("credentialsRead");
 }
 
-// Events
 
+// Events
+app.on('credentialsRead', function(){
+  if(downloadAble){
+    accessOnlineContent();
+  }else{
+    // reset flag since we are done reading
+    downloadAble = true;
+    getXMLRequestHeader();
+  }
+});
+
+app.on('setHeader', function(){
+downloadContent();
+});
+
+
+function getXMLRequestHeader(){
+  setHeaders();
+  app.emit('setHeader');
+}
 // track writing credentials from secure storage
 app.on('storedCredential', function (key) {
   console.log("We triggered storedCredential Event");
@@ -167,13 +186,21 @@ app.on('contentType', function () {
   console.log(app.data.videoList);
   console.log(app.data.pdfList);
   // testing
- // downloadContent(app.data.videoList[0].id);
+  setXMLRequestHeaders();
 });
 
+function setXMLRequestHeaders(){
+  if(downloadAble) {
+    // set this access token to false while we are accessing user information to log them into server
+    downloadAble = false;
+    getCredentials();
+  }else{
+    console.log("something went wrong");
+  }
+}
 
 // In page events:
 $$(document).on('page:init', '.page[data-name="mediaPlayer"]', function (e) {
-
   // Do something here when page with data-name="about" attribute loaded and initialized
 });
 
@@ -181,41 +208,68 @@ $$(document).on("click", ".videoClick", function(){
 
   var name  = $$(this).attr("data-name");
   var id = $$(this).attr("data-id");
-  console.log(name + "  " + id);
+  console.log(name + " INIT THIS " + id);
   app.router.navigate('/mediaPlayer/');
 });
 
 
-function downloadContent(id){
+function downloadContent(){
+  var id = app.data.videoList[0].id;
 
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-    console.log('file system open: ' + fs.name);
-    fs.root.getFile('bot.png', { create: true, exclusive: false }, function (fileEntry) {
-      console.log('fileEntry is file? ' + fileEntry.isFile.toString());
-      var oReq = new XMLHttpRequest();
-      var server = appServer + "/" + id + ".xml";
-      // Make sure you add the domain name to the Content-Security-Policy <meta> element.
-      oReq.open("GET", server, true);
-      // Define how you want the XHR data to come back
-      oReq.responseType = "blob";
-      oReq.onload = function (oEvent) {
-        var blob = oReq.response; // Note: not oReq.responseText
-        if (blob) {
-          // Create a URL based on the blob, and set an <img> tag's src to it.
-          var url = window.URL.createObjectURL(blob);
-          document.getElementById('bot-img').src = url;
-          // Or read the data with a FileReader
-          var reader = new FileReader();
-          reader.addEventListener("loadend", function() {
-            // reader.result contains the contents of blob as text
-          });
-          reader.readAsText(blob);
-        } else console.error('we didnt get an XHR response!');
-      };
-      oReq.send(null);
-    }, function (err) { console.error('error getting file! ' + err); });
-  }, function (err) { console.error('error getting persistent fs! ' + err); });
+
+      console.log('file system open: ' + fs.name);
+
+      fs.root.getFile('bot.png', { create: true, exclusive: false }, function (fileEntry) {
+        console.log('fileEntry is file? ' + fileEntry.isFile.toString());
+        var oReq = new XMLHttpRequest();
+
+
+        var server = appServer + "/" + id + "/data";
+        console.log(server);
+        // Make sure you add the domain name to the Content-Security-Policy <meta> element.
+        oReq.open("GET", server, true);
+        oReq.setRequestHeader('Authorization','Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password));
+
+        // Define how you want the XHR data to come back
+        oReq.responseType = "blob";
+        oReq.onload = function (oEvent) {
+          var blob = oReq.response; // Note: not oReq.responseText
+          if (blob) {
+
+            var reader = new FileReader();
+            reader.onloadend = function (evt) {
+              console.log("onload end");
+              console.log("Successful file read: " + evt.target.result);
+            };
+            reader.readAsArrayBuffer(blob);
+          }
+          else {
+            console.error('we didnt get an XHR response!');
+          }
+        };
+        oReq.send(null);
+      }, function (err) { console.error('error getting file! ' + err); });
+    }, function (err) { console.error('error getting persistent fs! ' + err); });
+  //});
+};
+
+function readFile(fileEntry) {
+
+  fileEntry.file(function (file) {
+    var reader = new FileReader();
+
+    reader.onloadend = function() {
+      console.log("Successful file read: " + this.result);
+      displayFileData(fileEntry.fullPath + ": " + this.result);
+    };
+
+    reader.readAsText(file);
+
+  }, console.log("error"));
+
 }
+
 // log in to the server to get xml data
 function accessOnlineContent() {
 
@@ -244,7 +298,7 @@ function accessOnlineContent() {
 function syncOnlineContent() {
   app.preloader.show('blue');
   if (downloadAble) {
-    app.emit('gotCredential');
+    getCredentials();
   }else{
     alert('cannot synchronize data');
   }
@@ -302,6 +356,8 @@ function getContentTypes(parser, doc, id, callback) {
       alert(error + "The content is not retrievable");
     });
 }
+
+
 
 // set intent listener, send broadcast
 function onLoad() {
