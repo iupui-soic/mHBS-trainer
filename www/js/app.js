@@ -46,6 +46,16 @@ var app = new Framework7({
   },
   // App routes
   routes: routes,
+  on: {
+    pageAfterIn: function (e, page) {
+      console.log("PAGE AFTER IN ")   ;
+      // do something after page gets into the view
+    },
+    pageInit: function (e, page) {
+      console.log("PAGE INIT ");
+      // do something when page initialized
+    },
+  }
 });
 
 // local declarations
@@ -54,6 +64,7 @@ var logCount = 0;
 var appServer = 'https://mhbs.info/api/documents';
 var documentList = [];
 var downloadAble = false;
+var ssInactive = true;
 var tempCredentials = {
   username: '',
   password: '',
@@ -70,6 +81,11 @@ var catalogView = app.views.create('#view-catalog', {
 var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
+
+var videoListView = app.views.create('#view-videoList', {
+  url: '/videoList/'
+});
+
 
 /* synchronize write and read to secure storage,
    makes sure if username, password, serverURL set,
@@ -201,19 +217,29 @@ function setXMLRequestHeaders(){
 
 // In page events:
 $$(document).on('page:init', '.page[data-name="mediaPlayer"]', function (e) {
+  console.log("Test " + this + " Page init");
+  //var name= $$(e).attr("data-name");
+  var url = app.views.main.router.url;
+  var id = url.split("/")[2];
+console.log(id);
+
   // Do something here when page with data-name="about" attribute loaded and initialized
 });
 
-$$(document).on("click", ".videoClick", function(){
 
+
+$$(document).on("click", ".videoClick", function(){
+ console.log(" TEST CLICK");
+  /*
   var name  = $$(this).attr("data-name");
   var id = $$(this).attr("data-id");
   console.log(name + " INIT THIS " + id);
   app.router.navigate('/mediaPlayer/');
+  */
 });
 
 
-function downloadContent(){
+function downloadContfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffent(){
   var id = app.data.videoList[0].id;
 
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
@@ -361,11 +387,12 @@ function getContentTypes(parser, doc, id, callback) {
 
 // set intent listener, send broadcast
 function onLoad() {
-  console.log("firing APP");
-  window.plugins.intent.setNewIntentHandler(onIntent);
+  console.log("TEST ONLOAD ");
 
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
-  if (app.storage == null) {
+  if (ssInactive) {
+    console.log("firing APP");
+    window.plugins.intent.setNewIntentHandler(onIntent);
 // show the spinner while we are logging the user in and downloading content.
     app.preloader.show('blue');
     this.app.storage = ss();
@@ -409,7 +436,8 @@ var securityFunction = function () {
 var ss = function () {
   return new cordova.plugins.SecureStorage(
     function () {
-      console.log("Storage Created")
+      console.log("Storage Created");
+      app.data.secureStorage = true;
     },
     securityFunction,
     'mHBS_Hybridapp');
@@ -437,6 +465,8 @@ function logIn() {
       app.emit("login");
       if (!data.includes(tempCredentials.username)) {
         alert('Login was not successful, please long mHBS tracker-capture');
+      }else{
+        ssInactive = false;
       }
     },
     function (error) {
@@ -468,6 +498,7 @@ function onIntent(intent) {
 
   //todo: error handling, check if null
   if (intent != null) {
+    console.log("intent not null 11");
     var credentialsArr = parseCredentials(intent);
     if (credentialsArr.length === 3) {
       console.log("length of tempCredentials " + credentialsArr.length);
