@@ -65,6 +65,7 @@ var appServer = 'https://mhbs.info/api/documents';
 var documentList = [];
 var downloadAble = false;
 var ssInactive = true;
+var currentID;
 var tempCredentials = {
   username: '',
   password: '',
@@ -133,6 +134,7 @@ function getXMLRequestHeader(){
   setHeaders();
   app.emit('setHeader');
 }
+
 // track writing credentials from secure storage
 app.on('storedCredential', function (key) {
   console.log("We triggered storedCredential Event");
@@ -201,11 +203,9 @@ app.on('contentType', function () {
   }
   console.log(app.data.videoList);
   console.log(app.data.pdfList);
-  // testing
-  setXMLRequestHeaders();
 });
 
-function setXMLRequestHeaders(){
+function setXMLRequestHeaders(id){
   if(downloadAble) {
     // set this access token to false while we are accessing user information to log them into server
     downloadAble = false;
@@ -220,9 +220,9 @@ $$(document).on('page:init', '.page[data-name="mediaPlayer"]', function (e) {
   console.log("Test " + this + " Page init");
   //var name= $$(e).attr("data-name");
   var url = app.views.main.router.url;
-  var id = url.split("/")[2];
-console.log(id);
-
+  currentID = url.split("/")[2];
+  // testing
+  setXMLRequestHeaders();
   // Do something here when page with data-name="about" attribute loaded and initialized
 });
 
@@ -239,8 +239,8 @@ $$(document).on("click", ".videoClick", function(){
 });
 
 
-function downloadContfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffent(){
-  var id = app.data.videoList[0].id;
+function downloadContent(){
+  var id = currentID;
 
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
 
@@ -267,6 +267,7 @@ function downloadContfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
             reader.onloadend = function (evt) {
               console.log("onload end");
               console.log("Successful file read: " + evt.target.result);
+              fileToWrite(blob,id);
             };
             reader.readAsArrayBuffer(blob);
           }
@@ -280,6 +281,50 @@ function downloadContfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
   //});
 };
 
+function fileToWrite(obj,id){
+window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
+
+  console.log('file system open: ' + fs.name);
+  fs.root.getFile('/' + id + ".txt", { create: true, exclusive: false }, function (fileEntry) {
+
+    console.log("fileEntry is file?" + fileEntry.isFile.toString());
+  //   fileEntry.name == 
+ //    fileEntry.fullPath ==
+    writeFile(fileEntry, obj);
+
+  }, function(fs){
+    console.log("Success" + fs.root);
+  });
+
+}, function(fileError){
+  console.log("error writing to file" + fileError);
+});
+}
+
+
+function writeFile(fileEntry, dataObj) {
+  // Create a FileWriter object for our FileEntry (log.txt).
+  fileEntry.createWriter(function (fileWriter) {
+
+    fileWriter.onwriteend = function() {
+      console.log("Successful file write..." + cordova.file.externalRootDirectory);
+      readFile(fileEntry);
+    };
+
+    fileWriter.onerror = function (e) {
+      console.log("Failed file write: " + e.toString());
+    };
+
+    // If data object is not passed in,
+    // create a new Blob instead.
+    if (!dataObj) {
+      dataObj = new Blob(['some file data'], { type: 'text/plain' });
+    }
+
+    fileWriter.write(dataObj);
+  });
+}
+
 function readFile(fileEntry) {
 
   fileEntry.file(function (file) {
@@ -287,13 +332,16 @@ function readFile(fileEntry) {
 
     reader.onloadend = function() {
       console.log("Successful file read: " + this.result);
-      displayFileData(fileEntry.fullPath + ": " + this.result);
+      // do something with the read data
+      console.log(fileEntry.fullPath + " test ");
+      //displayFileData(fileEntry.fullPath + ": " + this.result);
     };
 
     reader.readAsText(file);
 
-  }, console.log("error"));
-
+  }, function(error){
+    console.log("Error" + error)
+  });
 }
 
 // log in to the server to get xml data

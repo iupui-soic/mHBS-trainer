@@ -17,6 +17,7 @@
     <allow-intent href="geo:*" />
     <platform name="android">
         <preference name="loadUrlTimeoutValue" value="700000" />
+        <preference name="AndroidPersistentFileLocation" value="Internal" />
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
