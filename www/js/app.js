@@ -205,6 +205,16 @@ app.on('contentType', function () {
   console.log(app.data.pdfList);
 });
 
+
+app.on("fileStatus", function(status){
+  if(status===null){
+    downloadContent();
+  }else{
+    //display on video player
+    console.log(status);
+  }
+});
+
 function setXMLRequestHeaders(id){
   if(downloadAble) {
     // set this access token to false while we are accessing user information to log them into server
@@ -221,12 +231,31 @@ $$(document).on('page:init', '.page[data-name="mediaPlayer"]', function (e) {
   //var name= $$(e).attr("data-name");
   var url = app.views.main.router.url;
   currentID = url.split("/")[2];
-  // testing
-  setXMLRequestHeaders();
+  var path = '';
+  checkFile();
+    //setXMLRequestHeaders();
   // Do something here when page with data-name="about" attribute loaded and initialized
 });
 
+function checkFile(){
+  path = '/' + currentID + ".txt";
+  var returnVal;
+  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+    fileSystem.root.getFile(path, { create: false }, fileExists, fileDoesNotExist);
+  }, getFSFail); //of requestFileSystem
 
+}
+function fileExists(fileEntry){
+  app.emit("fileStatus", fileEntry.fullPath);
+}
+
+function fileDoesNotExist(){
+  app.emit("fileStatus",null);
+}
+
+function getFSFail(evt) {
+  console.log(evt.target.error.code);
+}
 
 $$(document).on("click", ".videoClick", function(){
  console.log(" TEST CLICK");
@@ -288,7 +317,7 @@ window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
   fs.root.getFile('/' + id + ".txt", { create: true, exclusive: false }, function (fileEntry) {
 
     console.log("fileEntry is file?" + fileEntry.isFile.toString());
-  //   fileEntry.name == 
+  //   fileEntry.name ==
  //    fileEntry.fullPath ==
     writeFile(fileEntry, obj);
 
