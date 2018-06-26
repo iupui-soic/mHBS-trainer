@@ -10,7 +10,15 @@
   "com.moust.cordova.videoplayer": {
     "source": {
       "type": "registry",
-      "id": "cordova-plugin-video-player"
+      "id": "cordova-plugin-video-player@^1.0.1"
+    },
+    "is_top_level": true,
+    "variables": {}
+  },
+  "jaeger.Html5Video": {
+    "source": {
+      "type": "registry",
+      "id": "https://github.com/jaeger25/Html5Video.git"
     },
     "is_top_level": true,
     "variables": {}

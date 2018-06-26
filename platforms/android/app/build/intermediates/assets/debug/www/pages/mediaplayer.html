@@ -1,0 +1,60 @@
+<div class="page" data-name="mediaplayer">
+  <video class="videoAdd" id="myVideo">
+  <source src="img/vid/test.mp4" type="video/mp4" poster="img/logo.png">
+  Your browser does not support HTML5 video.
+</video>
+<div class="list simple-list">
+  <ul>
+    <li>
+      <div class="item-cell width-auto flex-shrink-0">
+        <i class="icon f7-icons ios-only">volume_mute_fill</i>
+        <i class="icon material-icons md-only">volume_mute</i>
+      </div>
+      <div class="item-cell flex-shrink-3">
+        <!-- range slider -->
+        <div
+          id="vol-filter"
+          class="range-slider range-slider-init color-green"
+          data-min="0"
+		  data-max="1"
+		  data-step="0.1"
+		  data-label="true"
+		  data-value="0.5"
+        ></div>
+      </div>
+      <div class="item-cell width-auto flex-shrink-0">
+        <i class="icon f7-icons ios-only">volume_fill</i>
+        <i class="icon material-icons md-only">volume_up</i>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div class="block" id="bar1">
+<div class="row">
+    <div class="col-15">
+		<button class="col button button-small button-round button-fill color-green" id="myBtn">Play</button>
+	</div>
+    <div class="col-50">
+		<div class="progressbar color-green" data-progress="0" id="progress-bar"></div>
+	</div>
+	<div class="col-14">
+	<span id="currenttime">00:00</span>/<span id="durationtime">00:00</span>
+	</div>
+    <div class="col-21" id="bar2">
+	<p class="segmented segmented-round">
+	<a id="seekButton1">
+    <i class="icon f7-icons ios-only">chevron_left</i>
+    <i class="icon f7-icons ios-only icon-ios-fill">chevron_left</i>
+    <i class="icon material-icons md-only">chevron_left</i>
+	</a>
+	<a id="seekButton2">
+    <i class="icon f7-icons ios-only">chevron_right</i>
+    <i class="icon f7-icons ios-only icon-ios-fill">chevron_right</i>
+    <i class="icon material-icons md-only">chevron_right</i>
+	</a>
+	</p>
+	</div>
+</div>
+</div>
+</div>

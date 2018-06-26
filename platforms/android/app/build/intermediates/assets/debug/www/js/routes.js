@@ -119,7 +119,7 @@ routes = [
     path: '/section5b',
     url: './pages/section5b.html',
   },
-     
+
            {
     path: '/section6/',
     url: './pages/section6.html',
@@ -165,107 +165,12 @@ routes = [
     url: './pages/mhbsmain.html',
   },
   {
-    path: '/mhbsvideos/', /*
-	   component: {
-		   template:`<div class="wrapper">
-<video class="videoAdd" id="myVideo" ontimeupdate="positionBar()" autoplay>
-  <source src="img/vid/test.mp4" type="video/mp4" poster="img/logo.png">
-  Your browser does not support HTML5 video.
-</video>
-<input type="range" id="mySlider" onchange="volume()" min="0" max="1" step="0.1" value="1">
-</div>
-<button id="myBtn" onclick="myFunction()">Pause</button>
-
-<input id='progress-bar' onchange="updateProgressBar()" min='0' max='100' value='0' step="1" type="range">
-<div id="con">
-<span id="currenttime">00:00</span>/<span id="durationtime">00:00</span>
-</div>`,
-style:`* {
-    box-sizing: border-box;
-}
-
-body {
-
-	background: rgba(1, 1, 1, 1);
-}
-
-
-#mySlider {
-    position: fixed;
-	top:5%;
-
-}
-input[type='range']{
--webkit-appearance:none ! important;
-background:#666;
-border:#666 1px solid;
-height:4px;
-}
-input[type='range']::-webkit-slider-thumb{
--webkit-appearance:none ! important;
-background:#FFF;
-height:15px;
-width:15px;
-border-radius:100%;
-cursor:pointer;
-
-}
-#myBtn {
-position: fixed;
-    width:15%;
-    font-size: 8px;
-    padding: 10px;
-	bottom:3%;
-}
-#progress-bar{
-position: fixed;
-    width:60%;
-    font-size: 15px;
-    padding:20%px;
-	left:20%;
-	bottom:4%;
-}
-#con{
-position: fixed;
-left:85%;
-bottom:3%;
-    background: rgba(0, 0, 0, 0);
-    color: #f1f1f1;
-	font-size: 15px;
-}
-
-.videoAdd {
-position:absolute;
-    right: 0;
-    bottom: 0;
-    min-width: 100%;
-    min-height: 100%;
-    width: 100%;
-    height: auto;
-    z-index: -100;
-    background-size: cover;
-    overflow: hidden;
-}
-`,
-    on: {
-      pageInit: function () {
-   
-	
-      },
-      pageAfterOut: function () {
-        // page has left the view
-      },
-    },
-	methods:{
-    volume:function() {
-		 var btn2 = document.getElementById("mySlider");
-		 var video = document.getElementById("myVideo");
- video.volume = btn2.value;
-},
-},
- }*/
- 
- url: './pages/mhbsvideos.html',},
+    path: '/mediaplayer/',
+    url: './pages/mediaplayer.html',
+  },
+  {
+    path: '/mhbsvideos/', 
+	url: './pages/mhbsvideos.html',},
    {
     path: '/testvideo/',
     url: './pages/testvideo.html',

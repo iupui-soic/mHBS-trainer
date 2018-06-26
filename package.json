@@ -39,11 +39,15 @@
       "android"
     ],
     "plugins": {
-      "com.moust.cordova.videoplayer": {}
+      "com.moust.cordova.videoplayer": {},
+      "cordova-plugin-whitelist": {}
     }
   },
   "dependencies": {
+    "Html5Video": "git+https://github.com/jaeger25/Html5Video.git",
+    "com.moust.cordova.videoplayer": "~1.0.1",
     "cordova-android": "^7.0.0",
-    "cordova-plugin-video-player": "^1.0.1"
+    "cordova-plugin-video-player": "^1.0.1",
+    "cordova-plugin-whitelist": "1"
   }
 }
