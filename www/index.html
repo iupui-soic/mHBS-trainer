@@ -22,7 +22,7 @@
   <!-- Cordova -->
   <script src="cordova.js"></script>
 
-  <title>My App</title>
+  <title>mHBS Training</title>
 
   <link rel="stylesheet" href="framework7/css/framework7.min.css">
   <link rel="stylesheet" href="css/icons.css">
@@ -85,6 +85,18 @@
             <i class="icon f7-icons ios-only icon-ios-fill">settings_fill</i>
             <i class="icon material-icons md-only">settings</i>
             <span class="tabbar-label">Settings</span>
+		   </a>
+		   <a href="#view-video" class="tab-link">
+			<i class="icon f7-icons ios-only">play</i>
+            <i class="icon f7-icons ios-only icon-ios-fill">play_fill</i>
+            <i class="icon material-icons md-only">play</i>
+            <span class="tabbar-label">mHBS videos</span>
+          </a>
+		    <a href="#view-guide" class="tab-link">
+			<i class="icon f7-icons ios-only">book</i>
+            <i class="icon f7-icons ios-only icon-ios-fill">book_fill</i>
+            <i class="icon material-icons md-only">book</i>
+            <span class="tabbar-label">mHBS guide</span>
           </a>
         </div>
       </div>
@@ -122,11 +134,7 @@
             <div class="list">
               <ul>
                 <li>
-                  <a href="/mhbsmain/" class="item-content item-link">
-                    <div class="item-inner">
-                      <div class="item-title">mHBS guide</div>
-                    </div>
-                  </a>
+
                 </li>
                 <li>
                   <a href="/videoList/" class="item-content item-link">
@@ -186,7 +194,7 @@
       <!-- Catalog View -->
       <div id="view-catalog" class="view tab">
         <!-- Catalog page will be loaded here dynamically from /catalog/ route -->
-      </div>er 
+      </div>er
       <!-- video List View-->
       <div id="view-videoList" class="view tab">
         <!-- Catalog page will be loaded here dynamically from /videoList/ route -->
@@ -195,6 +203,12 @@
       <div id="view-settings" class="view tab">
         <!-- Settings page will be loaded here dynamically from /settings/ route -->
       </div>
+	  <div id="view-video" class="view tab">
+	  <!-- Settings page will be loaded here dynamically from /settings/ route -->
+	  </div>
+	  <div id="view-guide" class="view tab">
+	  <!-- Settings page will be loaded here dynamically from /settings/ route -->
+	  </div>
     </div>
 
     <!-- Popup -->
@@ -266,5 +280,6 @@
 
   <!-- Your custom app scripts -->
   <script src="js/app.js"></script>
+
 </body>
 </html>
