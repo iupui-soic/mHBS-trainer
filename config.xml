@@ -16,6 +16,7 @@
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
     <platform name="android">
+        <access origin="cdvfile://*" />
         <preference name="loadUrlTimeoutValue" value="700000" />
         <preference name="AndroidPersistentFileLocation" value="Internal" />
     </platform>

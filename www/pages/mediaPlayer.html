@@ -8,17 +8,14 @@
           <span class="ios-only">Back</span>
         </a>
       </div>
-      <div class="title">{{video.title}}</div>
+      <div class="{{video.title}}"></div>
+      <video class="mHBS_video"></video>
     </div>
   </div>
     <div class="page-content">
-      <div class="id">
-        <ul>
-          <li><a class="videoClick" id="{{video.id}}">{{video.id}}>{{video.id}}</a></li>
-        </ul>
-      </div>
     </div>
 </template>
+
 <script>
   return {
     data: function () {

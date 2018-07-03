@@ -48,11 +48,9 @@ var app = new Framework7({
   routes: routes,
   on: {
     pageAfterIn: function (e, page) {
-      console.log("PAGE AFTER IN ")   ;
       // do something after page gets into the view
     },
     pageInit: function (e, page) {
-      console.log("PAGE INIT ");
       // do something when page initialized
     },
   }
@@ -60,6 +58,8 @@ var app = new Framework7({
 
 // local declarations
 var secureParamsStored = 0;
+var myPhotoBrowserStandalone;
+var myPhotoBrowserPopupDark;
 var logCount = 0;
 var appServer = 'https://mhbs.info/api/documents';
 var documentList = [];
@@ -88,7 +88,6 @@ var videoView = app.views.create('#view-video', {
 var guideView = app.views.create('#view-guide', {
   url: '/mhbsmain/'
 });
-
 
 var videoListView = app.views.create('#view-videoList', {
   url: '/videoList/'
@@ -122,22 +121,22 @@ function readFromSecure() {
 
 
 // Events
-app.on('credentialsRead', function(){
-  if(downloadAble){
+app.on('credentialsRead', function () {
+  if (downloadAble) {
     accessOnlineContent();
-  }else{
+  } else {
     // reset flag since we are done reading
     downloadAble = true;
     getXMLRequestHeader();
   }
 });
 
-app.on('setHeader', function(){
-downloadContent();
+app.on('setHeader', function () {
+  downloadContent();
 });
 
 
-function getXMLRequestHeader(){
+function getXMLRequestHeader() {
   setHeaders();
   app.emit('setHeader');
 }
@@ -213,138 +212,182 @@ app.on('contentType', function () {
 });
 
 
-app.on("fileStatus", function(status){
-  if(status===null){
+app.on("fileStatus", function (status) {
+  if (status === null) {
+    console.log("File did not exist, downloading file");
     downloadContent();
-  }else{
+  } else {
     //display on video player
-    console.log(status);
+
+    /*  console.log(page.context + " IMPORTANT TEST PAGE ");
+
+      var videoPath = "file:///data/user/0/com.example.mHBS/files/files" + status;
+      console.log("Our Video Path is " + videoPath);
+
+    // "file:///data/user/0/com.example.mHBS/files/files/AWCswwP6kNl.webm"
+      // console.log(JSON.stringify(videoFile));
+  /*
+  thoughts: issue with 404 not related to xml header request
+  first try to get media plkayer just do play blob data
+   */
+    //console.log(myPhotoBrowserPopupDark + "TEst");
+    /*
+        mainView.router.load({
+          content: myPhotoBrowserPopupDark.open(),
+          animatePages: false
+        });*/
   }
+
 });
 
-function setXMLRequestHeaders(id){
-  if(downloadAble) {
+
+function setXMLRequestHeaders(id) {
+  if (downloadAble) {
     // set this access token to false while we are accessing user information to log them into server
     downloadAble = false;
     getCredentials();
-  }else{
+  } else {
     console.log("something went wrong");
   }
 }
 
 // In page events:
 $$(document).on('page:init', '.page[data-name="mediaPlayer"]', function (e) {
-  console.log("Test " + this + " Page init");
-  //var name= $$(e).attr("data-name");
+  console.log("Test " + this.toString() + " Page init");
   var url = app.views.main.router.url;
   currentID = url.split("/")[2];
-  var path = '';
   checkFile();
-    //setXMLRequestHeaders();
+  setXMLRequestHeaders();
   // Do something here when page with data-name="about" attribute loaded and initialized
 });
 
-function checkFile(){
-  path = '/' + currentID + ".txt";
-  var returnVal;
-  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-    fileSystem.root.getFile(path, { create: false }, fileExists, fileDoesNotExist);
+function checkFile() {
+  console.log("Checking if File Exists");
+  var path = '/' + currentID + ".webm";
+  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+    console.log("Path to check " + JSON.stringify(fileSystem.root));
+    fileSystem.root.getFile(path, {create: false}, fileExists, fileDoesNotExist);
   }, getFSFail); //of requestFileSystem
 
 }
-function fileExists(fileEntry){
-  app.emit("fileStatus", fileEntry.fullPath);
+
+function fileExists(fileEntry) {
+  var page = $$('.page[data-name="mediaPlayer"]')[0].f7Page;
+  console.log("THE FILE ENTRY EXISTS------------" + fileEntry.fullPath);
+  console.log(page.$el + " IMPORTANT TEST PAGE ");
+
+  /*
+  var videoFile = [
+    {
+     html: '<video controls><source src=cordova.file.applicationsStorageDirectory +"AWCswwP6kNl.webm" type="video/webm"></video>',
+      // html: '<video src=/data/data/com.example.mHBS/files/files/AWCswwP6kNl.webm></video>',
+      //  html: '<video src="data:video/webm;base64,/files/files/AWCswwP6kNl.webm"></video>',
+      caption: 'Caption 1'
+    }
+  ];
+  */
+  //type='video/webm;codecs="vp8, vorbis"
+  var photos = [
+    {
+      html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files/AWCswwP6kNl.webm" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
+      caption: 'test',
+    }
+  ];
+//file:///data/data/com.example.mHBS/files/files/AWCswwP6kNl.webm
+  myPhotoBrowserPopupDark = app.photoBrowser.create({
+    photos,
+    theme: 'dark',
+    type: 'standalone',
+    navbar: true,
+    toolbar: false,
+  });
+  console.log(myPhotoBrowserPopupDark);
+  myPhotoBrowserPopupDark.open();
+
+
+  //app.emit("fileStatus", fileEntry.fullPath);
 }
 
-function fileDoesNotExist(){
-  app.emit("fileStatus",null);
+function fileDoesNotExist() {
+  app.emit("fileStatus", null);
 }
 
 function getFSFail(evt) {
-  console.log(evt.target.error.code);
+  console.log("ERROR COULD NOT GET FILE" + evt.target.error.code);
 }
 
-$$(document).on("click", ".videoClick", function(){
- console.log(" TEST CLICK");
-  /*
-  var name  = $$(this).attr("data-name");
-  var id = $$(this).attr("data-id");
-  console.log(name + " INIT THIS " + id);
-  app.router.navigate('/mediaPlayer/');
-  */
-});
-
-
-function downloadContent(){
+function downloadContent() {
   var id = currentID;
 
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
 
-      console.log('file system open: ' + fs.name);
+    console.log('file system open: ' + fs.name);
 
-      fs.root.getFile('bot.png', { create: true, exclusive: false }, function (fileEntry) {
-        console.log('fileEntry is file? ' + fileEntry.isFile.toString());
-        var oReq = new XMLHttpRequest();
+    fs.root.getFile('bot.png', {create: true, exclusive: false}, function (fileEntry) {
+      console.log('fileEntry is file? ' + fileEntry.isFile.toString());
+      var oReq = new XMLHttpRequest();
 
 
-        var server = appServer + "/" + id + "/data";
-        console.log(server);
-        // Make sure you add the domain name to the Content-Security-Policy <meta> element.
-        oReq.open("GET", server, true);
-        oReq.setRequestHeader('Authorization','Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password));
+      var server = appServer + "/" + id + "/data";
+      // Make sure you add the domain name to the Content-Security-Policy <meta> element.
+      oReq.open("GET", server, true);
+      oReq.setRequestHeader('Authorization', 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password));
 
-        // Define how you want the XHR data to come back
-        oReq.responseType = "blob";
-        oReq.onload = function (oEvent) {
-          var blob = oReq.response; // Note: not oReq.responseText
-          if (blob) {
+      // Define how you want the XHR data to come back
+      oReq.responseType = "blob";
+      oReq.onload = function (oEvent) {
+        var blob = oReq.response; // Note: not oReq.responseText
+        if (blob) {
 
-            var reader = new FileReader();
-            reader.onloadend = function (evt) {
-              console.log("onload end");
-              console.log("Successful file read: " + evt.target.result);
-              fileToWrite(blob,id);
-            };
-            reader.readAsArrayBuffer(blob);
-          }
-          else {
-            console.error('we didnt get an XHR response!');
-          }
-        };
-        oReq.send(null);
-      }, function (err) { console.error('error getting file! ' + err); });
-    }, function (err) { console.error('error getting persistent fs! ' + err); });
+          var reader = new FileReader();
+          reader.onloadend = function (evt) {
+            // writing the file
+            fileToWrite(blob, id);
+          };
+          reader.readAsDataURL(blob);
+        }
+        else {
+          console.error('we didnt get an XHR response!');
+        }
+      };
+      oReq.send(null);
+    }, function (err) {
+      console.error('error getting file! ' + err);
+    });
+  }, function (err) {
+    console.error('error getting persistent fs! ' + err);
+  });
   //});
 };
 
-function fileToWrite(obj,id){
-window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
+// write the file
+function fileToWrite(obj, id) {
+  console.log("Attempting to write file");
+  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
+    console.log('file system open: ' + fs.name);
+    fs.root.getFile('/' + id + ".webm", {create: true, exclusive: false}, function (fileEntry) {
 
-  console.log('file system open: ' + fs.name);
-  fs.root.getFile('/' + id + ".txt", { create: true, exclusive: false }, function (fileEntry) {
+      //console.log("fileEntry is file?" + fileEntry.isFile.toString() + fileEntry.fullPath);
+      //   fileEntry.name ==
+      //    fileEntry.fullPath ==
+      writeFile(fileEntry, obj);
 
-    console.log("fileEntry is file?" + fileEntry.isFile.toString());
-  //   fileEntry.name ==
- //    fileEntry.fullPath ==
-    writeFile(fileEntry, obj);
+    }, function (fs) {
+      console.log("Successfully wrote file " + fs.root);
+    });
 
-  }, function(fs){
-    console.log("Success" + fs.root);
+  }, function (fileError) {
+    console.log("error writing to file" + fileError);
   });
-
-}, function(fileError){
-  console.log("error writing to file" + fileError);
-});
 }
 
 
 function writeFile(fileEntry, dataObj) {
   // Create a FileWriter object for our FileEntry (log.txt).
   fileEntry.createWriter(function (fileWriter) {
-
-    fileWriter.onwriteend = function() {
-      console.log("Successful file write..." + cordova.file.externalRootDirectory);
-      readFile(fileEntry);
+    fileWriter.onwriteend = function () {
+      console.log("Successful file write ... " + "file:///data/data/com.example.mHBS/files/files/" + fileEntry.toString());
+      //   readFile(fileEntry);
     };
 
     fileWriter.onerror = function (e) {
@@ -354,29 +397,10 @@ function writeFile(fileEntry, dataObj) {
     // If data object is not passed in,
     // create a new Blob instead.
     if (!dataObj) {
-      dataObj = new Blob(['some file data'], { type: 'text/plain' });
+      dataObj = new Blob(['some file data'], {type: 'video/ogg'});
     }
 
     fileWriter.write(dataObj);
-  });
-}
-
-function readFile(fileEntry) {
-
-  fileEntry.file(function (file) {
-    var reader = new FileReader();
-
-    reader.onloadend = function() {
-      console.log("Successful file read: " + this.result);
-      // do something with the read data
-      console.log(fileEntry.fullPath + " test ");
-      //displayFileData(fileEntry.fullPath + ": " + this.result);
-    };
-
-    reader.readAsText(file);
-
-  }, function(error){
-    console.log("Error" + error)
   });
 }
 
@@ -409,7 +433,7 @@ function syncOnlineContent() {
   app.preloader.show('blue');
   if (downloadAble) {
     getCredentials();
-  }else{
+  } else {
     alert('cannot synchronize data');
   }
 }
@@ -466,7 +490,6 @@ function getContentTypes(parser, doc, id, callback) {
       alert(error + "The content is not retrievable");
     });
 }
-
 
 
 // set intent listener, send broadcast
@@ -547,13 +570,13 @@ function logIn() {
     }, function (data) {
       app.emit("login");
       if (!data.includes(tempCredentials.username)) {
-        alert('Login was not successful, please long mHBS tracker-capture');
-      }else{
+        alert('Login was not successful, please login mHBS tracker-capture');
+      } else {
         ssInactive = false;
       }
     },
     function (error) {
-      alert('Login was not successful, please long mHBS tracker-capture');
+      alert('Login was not successful, please login mHBS tracker-capture');
     });
 }
 
@@ -654,163 +677,150 @@ function parseCredentials(intent) {
 }
 
 
-var myPhotoBrowserStandalone;
-var myPhotoBrowserPopupDark;
-
 $$(document).on('page:init', '.page[data-name="testvideo"]', function (e) {
-  	console.log("testvideo page loaded");
-myPhotoBrowserStandalone = app.photoBrowser.create({
-  photos: [
-  "file:///android_asset/www/img/image1.jpg",
-  "file:///android_asset/www/img/image2.jpg",
-  ],
-  theme: 'dark'
-});
-console.log("photo loaded");
-myPhotoBrowserPopupDark = app.photoBrowser.create({
-    photos : [
-        {
-            html: '<iframe src="file:///android_asset/www/img/vid/test.mp4" frameborder="0" allowfullscreen></iframe>',
-            caption: 'mHBS sample video (Official HD Video)'
-        },
+  console.log("testvideo page loaded");
+
+  myPhotoBrowserStandalone = app.photoBrowser.create({
+    photos: [
+      "file:///android_asset/www/img/image1.jpg",
+      "file:///android_asset/www/img/image2.jpg",
     ],
-    theme: 'dark',
-    type: 'standalone',
-	navbar: true,
-	toolbar: false,
-});
-console.log("video loaded");
-});
+    theme: 'dark'
+  });
+  console.log("photo loaded");
 
-$$(document).on('click',".pb-standalone-video", function () {
-	console.log("in video photoBrowser function");
-    myPhotoBrowserPopupDark.open();
+  console.log("video loaded");
 });
 
-$$(document).on('click',".pb-videoplayer1", function () {
-	console.log("in videoplayer1");
-	videoView.router.navigate('/mediaplayer/');
-	console.log("page navigated");
-
-
+$$(document).on('click', ".pb-standalone-video", function () {
+  console.log("in video photoBrowser function");
+  myPhotoBrowserPopupDark.open();
 });
+
+$$(document).on('click', ".pb-videoplayer1", function () {
+  console.log("in videoplayer1");
+  videoView.router.navigate('/mediaplayer/');
+  console.log("page navigated");
+});
+
+
 $$(document).on('page:init', '.page[data-name="mediaplayer"]', function (e) {
 
-	console.log("media player init");
-$$(".videoAdd").css(
-{
-	'position':'absolute',
-    'right': '0',
-    'bottom': '0',
-    'min-width': '100%',
-    'min-height': '100%',
-    'width': '100%',
-    'height': 'auto',
-    'z-index': '-100',
-    'background-size': 'cover',
-    'overflow': 'hidden'
-}
-);
+  console.log("media player init");
 
-$$("#myBtn").css(
-{
-    'font-size': '17px'
-}
-);
+  $$(".videoAdd").css(
+    {
+      'position': 'absolute',
+      'right': '0',
+      'bottom': '0',
+      'min-width': '100%',
+      'min-height': '100%',
+      'width': '100%',
+      'height': 'auto',
+      'z-index': '-100',
+      'background-size': 'cover',
+      'overflow': 'hidden'
+    }
+  );
 
-$$("#progress-bar").css(
-{
-	//'left':'16.5%',
-	'top':'84%',
-    'font-size': '6px',
-	'padding':'6px'
-}
-);
-$$("#seek").css(
-{
-	//'left':'74.3%',
-    'font-size': '16px',
-	'width':'90%'
-}
-);
-$$("#seekButton1").css(
-{
-    'font-size': '35px'
-}
-);
-$$("#seekButton2").css(
-{
-    'font-size': '35px'
-}
-);
+  $$("#myBtn").css(
+    {
+      'font-size': '17px'
+    }
+  );
 
-$$("#bar1").css(
-{
-	'position':'fixed',
-    'top':'70%',
-	'width':'100%'
-}
-);
+  $$("#progress-bar").css(
+    {
+      //'left':'16.5%',
+      'top': '84%',
+      'font-size': '6px',
+      'padding': '6px'
+    }
+  );
+  $$("#seek").css(
+    {
+      //'left':'74.3%',
+      'font-size': '16px',
+      'width': '90%'
+    }
+  );
+  $$("#seekButton1").css(
+    {
+      'font-size': '35px'
+    }
+  );
+  $$("#seekButton2").css(
+    {
+      'font-size': '35px'
+    }
+  );
 
-
-
-var video = document.getElementById("myVideo");
-var btn = document.getElementById("myBtn");
-
-$$('#myBtn').on('click', function () {
-	console.log("In function");
-     	if (video.paused) {
-			video.play();
-			btn.innerHTML = "Pause";
-			btn.className="col button button-small button-round button-fill color-red";
-		} else {
-			video.pause();
-			btn.innerHTML = "Play";
-			btn.className="col button button-small button-round button-fill color-green";
-		}
-    });
-
-$$('#vol-filter').on('range:change', function (e, range) {
-	video.volume=range.value;
-});
+  $$("#bar1").css(
+    {
+      'position': 'fixed',
+      'top': '70%',
+      'width': '100%'
+    }
+  );
 
 
-$$('#seekButton2').on('click', function (e) {
-	console.log("+");
-	video.currentTime=video.currentTime+2.5;
-});
-$$('#seekButton1').on('click', function (e) {
-	console.log("-");
-	video.currentTime=video.currentTime-2.5;
-});
+  var video = document.getElementById("myVideo");
+  var btn = document.getElementById("myBtn");
 
-$$('#myVideo').on('timeupdate', function (e) {
-	var pos=video.currentTime * (100/video.duration);
-	app.progressbar.set('#progress-bar',pos);
-});
+  $$('#myBtn').on('click', function () {
+    console.log("In function");
+    if (video.paused) {
+      video.play();
+      btn.innerHTML = "Pause";
+      btn.className = "col button button-small button-round button-fill color-red";
+    } else {
+      video.pause();
+      btn.innerHTML = "Play";
+      btn.className = "col button button-small button-round button-fill color-green";
+    }
+  });
 
-$$('#myVideo').on('timeupdate', function (e) {
-	var curmin = Math.floor(video.currentTime/60);
-	var cursec = Math.floor(video.currentTime - curmin * 60);
-	var durmin = Math.floor(video.duration/60);
-	var dursec = Math.floor(video.duration - durmin * 60);
-	var cutime = document.getElementById("currenttime");
-	var dutime = document.getElementById("durationtime");
-	if(dursec <10){
-		dursec = "0"+dursec;
-	}
-	if(durmin <10){
-		durmin = "0"+durmin;
-	}
+  $$('#vol-filter').on('range:change', function (e, range) {
+    video.volume = range.value;
+  });
 
-	if(cursec < 10){
-		cursec = "0"+cursec;
-	}
-	if(curmin < 10){
-		curmin = "0"+curmin;
-	}
-	cutime.innerHTML = curmin + ":"+cursec;
-	dutime.innerHTML = durmin + ":"+dursec;
-});
+
+  $$('#seekButton2').on('click', function (e) {
+    console.log("+");
+    video.currentTime = video.currentTime + 2.5;
+  });
+  $$('#seekButton1').on('click', function (e) {
+    console.log("-");
+    video.currentTime = video.currentTime - 2.5;
+  });
+
+  $$('#myVideo').on('timeupdate', function (e) {
+    var pos = video.currentTime * (100 / video.duration);
+    app.progressbar.set('#progress-bar', pos);
+  });
+
+  $$('#myVideo').on('timeupdate', function (e) {
+    var curmin = Math.floor(video.currentTime / 60);
+    var cursec = Math.floor(video.currentTime - curmin * 60);
+    var durmin = Math.floor(video.duration / 60);
+    var dursec = Math.floor(video.duration - durmin * 60);
+    var cutime = document.getElementById("currenttime");
+    var dutime = document.getElementById("durationtime");
+    if (dursec < 10) {
+      dursec = "0" + dursec;
+    }
+    if (durmin < 10) {
+      durmin = "0" + durmin;
+    }
+
+    if (cursec < 10) {
+      cursec = "0" + cursec;
+    }
+    if (curmin < 10) {
+      curmin = "0" + curmin;
+    }
+    cutime.innerHTML = curmin + ":" + cursec;
+    dutime.innerHTML = durmin + ":" + dursec;
+  });
 });
 
