@@ -251,16 +251,6 @@ function setXMLRequestHeaders(id) {
   }
 }
 
-// In page events:
-$$(document).on('page:init', '.page[data-name="mediaPlayer"]', function (e) {
-  console.log("Test " + this.toString() + " Page init");
-  var url = app.views.main.router.url;
-  currentID = url.split("/")[2];
-  checkFile();
-  setXMLRequestHeaders();
-  // Do something here when page with data-name="about" attribute loaded and initialized
-});
-
 function checkFile() {
   console.log("Checking if File Exists");
   var path = '/' + currentID + ".webm";
@@ -271,29 +261,26 @@ function checkFile() {
 
 }
 
+$$(document).on('click', ".pb-standalone-video", function () {
+  console.log("in video photoBrowser function");
+  currentID = this.id;
+  checkFile();
+  setXMLRequestHeaders();
+});
+
 function fileExists(fileEntry) {
+  /*
   var page = $$('.page[data-name="mediaPlayer"]')[0].f7Page;
   console.log("THE FILE ENTRY EXISTS------------" + fileEntry.fullPath);
-  console.log(page.$el + " IMPORTANT TEST PAGE ");
-
-  /*
-  var videoFile = [
-    {
-     html: '<video controls><source src=cordova.file.applicationsStorageDirectory +"AWCswwP6kNl.webm" type="video/webm"></video>',
-      // html: '<video src=/data/data/com.example.mHBS/files/files/AWCswwP6kNl.webm></video>',
-      //  html: '<video src="data:video/webm;base64,/files/files/AWCswwP6kNl.webm"></video>',
-      caption: 'Caption 1'
-    }
-  ];
-  */
-  //type='video/webm;codecs="vp8, vorbis"
+  console.log(page.$el.find("myVideo").toString() + " IMPORTANT TEST PAGE ");
+*/
   var photos = [
     {
-      html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files/AWCswwP6kNl.webm" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
+      html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files'+fileEntry.fullPath+'" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
       caption: 'test',
     }
   ];
-//file:///data/data/com.example.mHBS/files/files/AWCswwP6kNl.webm
+
   myPhotoBrowserPopupDark = app.photoBrowser.create({
     photos,
     theme: 'dark',
@@ -301,9 +288,7 @@ function fileExists(fileEntry) {
     navbar: true,
     toolbar: false,
   });
-  console.log(myPhotoBrowserPopupDark);
   myPhotoBrowserPopupDark.open();
-
 
   //app.emit("fileStatus", fileEntry.fullPath);
 }
@@ -690,11 +675,6 @@ $$(document).on('page:init', '.page[data-name="testvideo"]', function (e) {
   console.log("photo loaded");
 
   console.log("video loaded");
-});
-
-$$(document).on('click', ".pb-standalone-video", function () {
-  console.log("in video photoBrowser function");
-  myPhotoBrowserPopupDark.open();
 });
 
 $$(document).on('click', ".pb-videoplayer1", function () {

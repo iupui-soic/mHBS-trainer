@@ -169,10 +169,6 @@ routes = [
     componentUrl: './pages/videoList.html'
   },
   {
-    path: '/mediaPlayer/:id/',
-    componentUrl: './pages/mediaPlayer.html'
-  },
-  {
     path: '/mediaplayer/',
     url: './pages/mediaplayer.html',
   },

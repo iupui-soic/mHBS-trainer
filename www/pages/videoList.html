@@ -15,7 +15,7 @@
       <div class="list links-list">
         <ul>
           {{#each videos}}
-          <li><a href="/mediaPlayer/{{id}}/">{{title}}</a></li>
+          <li><a href="#" id={{id}} class="button pb-standalone-video">{{title}}</a></li>
           {{/each}}
         </ul>
       </div>
@@ -25,10 +25,10 @@
 <script>
   return {
     data: function () {
-      console.log("IN VIDEO LIST" + this.$root.videoList[0]);
       return {
         videos: this.$root.videoList,
       };
     }
   };
 </script>
+
