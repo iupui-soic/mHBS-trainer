@@ -61,6 +61,7 @@ var secureParamsStored = 0;
 var myPhotoBrowserStandalone;
 var myPhotoBrowserPopupDark;
 var logCount = 0;
+var videoCaption = "";
 var appServer = 'https://mhbs.info/api/documents';
 var documentList = [];
 var downloadAble = false;
@@ -92,6 +93,8 @@ var guideView = app.views.create('#view-guide', {
 var videoListView = app.views.create('#view-videoList', {
   url: '/videoList/'
 });
+
+
 
 
 /* synchronize write and read to secure storage,
@@ -262,36 +265,33 @@ function checkFile() {
 }
 
 $$(document).on('click', ".pb-standalone-video", function () {
-  console.log("in video photoBrowser function");
   currentID = this.id;
+  videoCaption = this.innerText;
   checkFile();
   setXMLRequestHeaders();
 });
 
 function fileExists(fileEntry) {
-  /*
-  var page = $$('.page[data-name="mediaPlayer"]')[0].f7Page;
-  console.log("THE FILE ENTRY EXISTS------------" + fileEntry.fullPath);
-  console.log(page.$el.find("myVideo").toString() + " IMPORTANT TEST PAGE ");
-*/
   var photos = [
     {
       html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files'+fileEntry.fullPath+'" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
-      caption: 'test',
+      captions: '',
     }
   ];
 
   myPhotoBrowserPopupDark = app.photoBrowser.create({
     photos,
     theme: 'dark',
-    type: 'standalone',
+    type: 'popup',
     navbar: true,
+    navbarOfText: "/",
     toolbar: false,
   });
   myPhotoBrowserPopupDark.open();
 
   //app.emit("fileStatus", fileEntry.fullPath);
 }
+
 
 function fileDoesNotExist() {
   app.emit("fileStatus", null);

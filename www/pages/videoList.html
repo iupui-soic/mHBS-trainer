@@ -12,12 +12,32 @@
       </div>
     </div>
     <div class="page-content">
-      <div class="list links-list">
-        <ul>
-          {{#each videos}}
-          <li><a href="#" id={{id}} class="button pb-standalone-video">{{title}}</a></li>
-          {{/each}}
-        </ul>
+      <div class="list">
+        <div class="content-block-title">Videos</div>
+        <!-- Media list block has additional "media-list" class -->
+        <div class="list-block media-list">
+          <ul style="list-style: none;">
+            {{#each videos}}
+            <li>
+              <a href="#" id="item-link item-content">
+                <div class="item-content">
+                  <div class="item-media">
+                    <img src="img/icon2.svg" width="80">
+                  </div>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div a href="#" id={{id}} class="button pb-standalone-video item-title">{{title}}</div>
+                      <!--div class="item-after">$2</div-->
+                    </div>
+                    <div class="item-subtitle">Subtitle</div>
+                    <div class="item-text">Additional description text</div>
+                  </div>
+                </div>
+              </a>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -31,4 +51,3 @@
     }
   };
 </script>
-
