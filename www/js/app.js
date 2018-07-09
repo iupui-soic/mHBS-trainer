@@ -18,24 +18,6 @@ var app = new Framework7({
       // video and PDF content
       pdfList: [],
       videoList: [],
-      // Demo products for Catalog section
-      products: [
-        {
-          id: '1',
-          title: 'Apple iPhone 8',
-          description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi tempora similique reiciendis, error nesciunt vero, blanditiis pariatur dolor, minima sed sapiente rerum, dolorem corrupti hic modi praesentium unde saepe perspiciatis.'
-        },
-        {
-          id: '2',
-          title: 'Apple iPhone 8 Plus',
-          description: 'Velit odit autem modi saepe ratione totam minus, aperiam, labore quia provident temporibus quasi est ut aliquid blanditiis beatae suscipit odio vel! Nostrum porro sunt sint eveniet maiores, dolorem itaque!'
-        },
-        {
-          id: '3',
-          title: 'Apple iPhone X',
-          description: 'Expedita sequi perferendis quod illum pariatur aliquam, alias laboriosam! Vero blanditiis placeat, mollitia necessitatibus reprehenderit. Labore dolores amet quos, accusamus earum asperiores officiis assumenda optio architecto quia neque, quae eum.'
-        },
-      ]
     };
   },
   // App root methods
@@ -77,9 +59,6 @@ var tempCredentials = {
 var homeView = app.views.create('#view-home', {
   url: '/'
 });
-var catalogView = app.views.create('#view-catalog', {
-  url: '/catalog/'
-});
 var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
@@ -89,12 +68,9 @@ var videoView = app.views.create('#view-video', {
 var guideView = app.views.create('#view-guide', {
   url: '/mhbsmain/'
 });
-
 var videoListView = app.views.create('#view-videoList', {
   url: '/videoList/'
 });
-
-
 
 
 /* synchronize write and read to secure storage,
@@ -106,12 +82,14 @@ function wroteToSecure() {
   if (secureParamsStored < 3) {
     return;
   }
-  console.log("stored 3 secured params, access content");
+  console.log("stored 3 secured params, set downloadable = True");
   secureParamsStored = 0;
   downloadAble = true;
+  // if we wrote three credentials, proceed to download
   app.emit("downloadOk");
 }
 
+// read values from secure storage
 function readFromSecure() {
   secureParamsStored += 1;
   if (secureParamsStored < 3) {
@@ -119,6 +97,7 @@ function readFromSecure() {
   }
   console.log("got 3 secured params");
   secureParamsStored = 0;
+  // three credentials read
   app.emit("credentialsRead");
 }
 
@@ -126,11 +105,13 @@ function readFromSecure() {
 // Events
 app.on('credentialsRead', function () {
   if (downloadAble) {
+    console.log("Downloadable...");
     accessOnlineContent();
   } else {
+    console.log("Other credentials Read");
     // reset flag since we are done reading
     downloadAble = true;
-    getXMLRequestHeader();
+    setHeaders();
   }
 });
 
@@ -138,10 +119,26 @@ app.on('setHeader', function () {
   downloadContent();
 });
 
+// set basic auth request header
+function setHeaders() {
+  console.log("Setting Headers");
+  app.request.setup({
+    headers: {
+      'Authorization': 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password)
+    }
+  });
+//  app.emit('setHeader');
+}
 
-function getXMLRequestHeader() {
-  setHeaders();
-  app.emit('setHeader');
+
+function setXMLRequestHeaders() {
+  if (downloadAble) {
+    // set this access token to false while we are accessing user information to log them into server
+    downloadAble = false;
+    getCredentials();
+  } else {
+    console.log("something went wrong");
+  }
 }
 
 // track writing credentials from secure storage
@@ -203,7 +200,6 @@ app.on('contentType', function () {
   // hide pre-loader once we downloaded content
   app.preloader.hide();
   for (var i in documentList) {
-    console.log(documentList[i]);
     if (documentList[i].contentType === "video/webm") {
       app.data.videoList.push(documentList[i]);
     } else if (documentList[i].contentType === "application/pdf") {
@@ -215,44 +211,27 @@ app.on('contentType', function () {
 });
 
 
-app.on("fileStatus", function (status) {
-  if (status === null) {
-    console.log("File did not exist, downloading file");
-    downloadContent();
-  } else {
-    //display on video player
+app.on("fileStatus", function (filePath) {
+  console.log("FULL FILE PATH TO ACCESS:" + "/data/data/com.example.mHBS/files/files" + filePath);
 
-    /*  console.log(page.context + " IMPORTANT TEST PAGE ");
+    var photos = [
+      {
+        html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files' + filePath + '" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
+        captions: '',
+      }
+    ];
 
-      var videoPath = "file:///data/user/0/com.example.mHBS/files/files" + status;
-      console.log("Our Video Path is " + videoPath);
-
-    // "file:///data/user/0/com.example.mHBS/files/files/AWCswwP6kNl.webm"
-      // console.log(JSON.stringify(videoFile));
-  /*
-  thoughts: issue with 404 not related to xml header request
-  first try to get media plkayer just do play blob data
-   */
-    //console.log(myPhotoBrowserPopupDark + "TEst");
-    /*
-        mainView.router.load({
-          content: myPhotoBrowserPopupDark.open(),
-          animatePages: false
-        });*/
-  }
-
+    myPhotoBrowserPopupDark = app.photoBrowser.create({
+      photos,
+      theme: 'dark',
+      type: 'popup',
+      navbar: true,
+      navbarOfText: "/",
+      toolbar: false,
+    });
+    app.preloader.hide();
+    myPhotoBrowserPopupDark.open();
 });
-
-
-function setXMLRequestHeaders(id) {
-  if (downloadAble) {
-    // set this access token to false while we are accessing user information to log them into server
-    downloadAble = false;
-    getCredentials();
-  } else {
-    console.log("something went wrong");
-  }
-}
 
 function checkFile() {
   console.log("Checking if File Exists");
@@ -272,29 +251,16 @@ $$(document).on('click', ".pb-standalone-video", function () {
 });
 
 function fileExists(fileEntry) {
-  var photos = [
-    {
-      html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files'+fileEntry.fullPath+'" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
-      captions: '',
-    }
-  ];
-
-  myPhotoBrowserPopupDark = app.photoBrowser.create({
-    photos,
-    theme: 'dark',
-    type: 'popup',
-    navbar: true,
-    navbarOfText: "/",
-    toolbar: false,
-  });
-  myPhotoBrowserPopupDark.open();
-
-  //app.emit("fileStatus", fileEntry.fullPath);
+  console.log("File Exists");
+  app.emit("fileStatus", fileEntry.fullPath);
 }
 
-
+//TODO: need to prevent anything other than binary data writing to file
 function fileDoesNotExist() {
-  app.emit("fileStatus", null);
+  console.log("File does not Exist");
+  app.preloader.show('blue');
+
+  downloadContent();
 }
 
 function getFSFail(evt) {
@@ -303,7 +269,7 @@ function getFSFail(evt) {
 
 function downloadContent() {
   var id = currentID;
-
+  console.log("LOGIN INFO" + tempCredentials.username + " " + id + " " + tempCredentials.password);
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
 
     console.log('file system open: ' + fs.name);
@@ -311,7 +277,6 @@ function downloadContent() {
     fs.root.getFile('bot.png', {create: true, exclusive: false}, function (fileEntry) {
       console.log('fileEntry is file? ' + fileEntry.isFile.toString());
       var oReq = new XMLHttpRequest();
-
 
       var server = appServer + "/" + id + "/data";
       // Make sure you add the domain name to the Content-Security-Policy <meta> element.
@@ -322,6 +287,7 @@ function downloadContent() {
       oReq.responseType = "blob";
       oReq.onload = function (oEvent) {
         var blob = oReq.response; // Note: not oReq.responseText
+
         if (blob) {
 
           var reader = new FileReader();
@@ -351,14 +317,11 @@ function fileToWrite(obj, id) {
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
     console.log('file system open: ' + fs.name);
     fs.root.getFile('/' + id + ".webm", {create: true, exclusive: false}, function (fileEntry) {
-
-      //console.log("fileEntry is file?" + fileEntry.isFile.toString() + fileEntry.fullPath);
-      //   fileEntry.name ==
-      //    fileEntry.fullPath ==
       writeFile(fileEntry, obj);
-
     }, function (fs) {
-      console.log("Successfully wrote file " + fs.root);
+      // successfully wrote file, display
+    //  console.log("Successfully wrote file " + fs.toString());
+  //    app.emit("fileStatus",fs);
     });
 
   }, function (fileError) {
@@ -371,8 +334,7 @@ function writeFile(fileEntry, dataObj) {
   // Create a FileWriter object for our FileEntry (log.txt).
   fileEntry.createWriter(function (fileWriter) {
     fileWriter.onwriteend = function () {
-      console.log("Successful file write ... " + "file:///data/data/com.example.mHBS/files/files/" + fileEntry.toString());
-      //   readFile(fileEntry);
+      app.emit("fileStatus",fileEntry.fullPath);
     };
 
     fileWriter.onerror = function (e) {
@@ -397,15 +359,17 @@ function accessOnlineContent() {
   };
 
   var server = appServer + ".xml";
+  console.log("Access Online Content");
+
   // send request
   app.request.get(server, {
       username: tempCredentials.username,
       password: tempCredentials.password
     }, function (data) {
       app.emit("login");
-      console.log("setting rawData");
       rawDocuments.rawXML = data;
       // ready to download content
+      console.log("Getting list of elements");
       accessOnlineDocuments(rawDocuments.rawXML);
     },
     function (error) {
@@ -443,11 +407,13 @@ function accessOnlineDocuments(rawXML) {
       var doc = {
         title: '',
         id: '',
-        contentType: ''
+        contentType: '',
+        duration: ''
       };
       tempID = documents[i].id;
       if (tempID != null) {
         doc.id = tempID;
+        // parseMetaData(doc);
         doc.title = documents[i].textContent;
         getContentTypes(parser, doc, tempID, semaphore);
         documentList.push(doc);
@@ -455,6 +421,40 @@ function accessOnlineDocuments(rawXML) {
     }
   }
 }
+
+
+function parseMetaData(doc) {
+  var video = document.createElement("video");
+  var server = appServer + "/" + doc.id + "/data";
+  var req = new XMLHttpRequest();
+  req.open('GET', server, true);
+  req.responseType = 'blob';
+  req.onload = function () {
+
+    if (this.status == 200) {
+      var videoBlob = this.response;
+      console.log(this.response);
+      video.src = window.URL.createObjectURL(videoBlob);
+
+      video.addEventListener("loadedmetadata", function(){
+      var minutes = Math.floor(video.duration/60);
+      var seconds = (video.duration%60).toFixed(0);
+      if(seconds.toString().length===1){
+       seconds = seconds.toString().concat("0");
+      }
+      doc.duration = minutes + ":"+ seconds;
+      });
+
+    }
+  };
+req.onerror = function(e){
+  console.log(e);
+};
+
+req.send();
+
+}
+
 
 function getContentTypes(parser, doc, id, callback) {
   var server = appServer + "/" + id + ".xml";
@@ -480,7 +480,6 @@ function getContentTypes(parser, doc, id, callback) {
 // set intent listener, send broadcast
 function onLoad() {
   console.log("TEST ONLOAD ");
-
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (ssInactive) {
     console.log("firing APP");
@@ -534,16 +533,6 @@ var ss = function () {
     'mHBS_Hybridapp');
 };
 
-
-// set basic auth request header
-function setHeaders() {
-  app.request.setup({
-    headers: {
-      'Authorization': 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password)
-    }
-  });
-}
-
 // login
 function logIn() {
   var server = tempCredentials.serverURL + "api/26/me/";
@@ -567,6 +556,7 @@ function logIn() {
 
 // clear tempCredentials
 function clearCredentials() {
+  console.log("Clearing Credentials");
   tempCredentials.username = '';
   tempCredentials.password = '';
   tempCredentials.serverURL = '';
@@ -589,7 +579,7 @@ function onIntent(intent) {
 
   //todo: error handling, check if null
   if (intent != null) {
-    console.log("intent not null 11");
+    console.log("intent not null");
     var credentialsArr = parseCredentials(intent);
     if (credentialsArr.length === 3) {
       console.log("length of tempCredentials " + credentialsArr.length);
