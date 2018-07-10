@@ -18,6 +18,7 @@ var app = new Framework7({
       // video and PDF content
       pdfList: [],
       videoList: [],
+      favoritesList: [],
     };
   },
   // App root methods
@@ -54,6 +55,7 @@ var tempCredentials = {
   password: '',
   serverURL: '',
 };
+var test = false;
 
 // Init/Create views
 var homeView = app.views.create('#view-home', {
@@ -62,16 +64,16 @@ var homeView = app.views.create('#view-home', {
 var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
-var videoView = app.views.create('#view-video', {
-  url: '/mhbsvideos/'
+var viewFavorites = app.views.create('#view-favorites',{
+  url: '/favorites/'
 });
+
 var guideView = app.views.create('#view-guide', {
   url: '/mhbsmain/'
 });
-var videoListView = app.views.create('#view-videoList', {
+var view = app.views.create('#view-videoList', {
   url: '/videoList/'
 });
-
 
 /* synchronize write and read to secure storage,
    makes sure if username, password, serverURL set,
@@ -208,6 +210,7 @@ app.on('contentType', function () {
   }
   console.log(app.data.videoList);
   console.log(app.data.pdfList);
+
 });
 
 
@@ -250,6 +253,21 @@ $$(document).on('click', ".pb-standalone-video", function () {
   setXMLRequestHeaders();
 });
 
+
+// add to favorites
+function addToFavorites(id){
+  var id = id.slice(1, -1);
+
+  for(var i in app.data.videoList){
+    if(app.data.videoList[i].id === id){
+      console.log(id);
+      app.data.favoritesList.push(app.data.videoList[i]);
+    }
+  }
+
+}
+
+
 function fileExists(fileEntry) {
   console.log("File Exists");
   app.emit("fileStatus", fileEntry.fullPath);
@@ -259,7 +277,6 @@ function fileExists(fileEntry) {
 function fileDoesNotExist() {
   console.log("File does not Exist");
   app.preloader.show('blue');
-
   downloadContent();
 }
 
@@ -413,6 +430,7 @@ function accessOnlineDocuments(rawXML) {
       tempID = documents[i].id;
       if (tempID != null) {
         doc.id = tempID;
+        // grabs video durations, but too time consuming currently
         // parseMetaData(doc);
         doc.title = documents[i].textContent;
         getContentTypes(parser, doc, tempID, semaphore);
@@ -421,7 +439,6 @@ function accessOnlineDocuments(rawXML) {
     }
   }
 }
-
 
 function parseMetaData(doc) {
   var video = document.createElement("video");
@@ -666,13 +683,6 @@ $$(document).on('page:init', '.page[data-name="testvideo"]', function (e) {
 
   console.log("video loaded");
 });
-
-$$(document).on('click', ".pb-videoplayer1", function () {
-  console.log("in videoplayer1");
-  videoView.router.navigate('/mediaplayer/');
-  console.log("page navigated");
-});
-
 
 $$(document).on('page:init', '.page[data-name="mediaplayer"]', function (e) {
 
