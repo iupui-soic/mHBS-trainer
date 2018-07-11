@@ -253,6 +253,19 @@ $$(document).on('click', ".pb-standalone-video", function () {
   setXMLRequestHeaders();
 });
 
+var favoriteToastSuccess = app.toast.create({
+  icon: app.theme === 'ios' ? '<i class="f7-icons">star</i>' : '<i class="material-icons">star</i>',
+  text: 'Successfully added to favorites',
+  position: 'center',
+  closeTimeout: 2000,
+});
+
+var favoriteToastErr = app.toast.create({
+  icon: app.theme === 'ios' ? '<i class="f7-icons">star</i>' : '<i class="material-icons">star</i>',
+  text: 'Item is already added to favorites',
+  position: 'center',
+  closeTimeout: 2000,
+});
 
 // add to favorites
 function addToFavorites(id){
@@ -260,8 +273,13 @@ function addToFavorites(id){
 
   for(var i in app.data.videoList){
     if(app.data.videoList[i].id === id){
-      console.log(id);
-      app.data.favoritesList.push(app.data.videoList[i]);
+      if(!app.data.videoList[i].isFavorite) {
+        favoriteToastSuccess.open();
+        app.data.favoritesList.push(app.data.videoList[i]);
+        app.data.videoList[i].isFavorite = true;
+      }else{
+        favoriteToastErr.open();
+      }
     }
   }
 
@@ -425,7 +443,8 @@ function accessOnlineDocuments(rawXML) {
         title: '',
         id: '',
         contentType: '',
-        duration: ''
+        duration: '',
+        isFavorite: false
       };
       tempID = documents[i].id;
       if (tempID != null) {
