@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="http://schemas.android.com/tools">
+    <string name="activity_name">@string/launcher_name</string>
+    <string name="app_name">mHBS</string>
+    <string name="com.crashlytics.android.build_id" ns1:ignore="UnusedResources,TypographyDashes" translatable="false">21440cd1-0bd9-46e1-88ba-f06792b43a66</string>
+    <string name="launcher_name">@string/app_name</string>
+</resources>

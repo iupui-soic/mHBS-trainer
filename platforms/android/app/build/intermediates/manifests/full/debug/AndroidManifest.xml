@@ -38,6 +38,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="b40e830e776f80dffd15e8df6ba58733a36b1e48" />
+
+        <provider
+            android:name="com.crashlytics.android.CrashlyticsInitProvider"
+            android:authorities="com.example.mHBS.crashlyticsinitprovider"
+            android:exported="false"
+            android:initOrder="100" />
     </application>
 
 </manifest>

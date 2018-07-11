@@ -39,15 +39,16 @@
       "android"
     ],
     "plugins": {
-      "com.moust.cordova.videoplayer": {},
-      "cordova-plugin-whitelist": {}
+      "cordova-plugin-whitelist": {},
+      "cordova-fabric-plugin": {
+        "FABRIC_API_KEY": "b40e830e776f80dffd15e8df6ba58733a36b1e48",
+        "FABRIC_API_SECRET": "c308c5f1b372bab0c488e92c997d17ee8930b538bb5cf2d514818ff1fe7f84ba"
+      }
     }
   },
   "dependencies": {
-    "Html5Video": "git+https://github.com/jaeger25/Html5Video.git",
-    "com.moust.cordova.videoplayer": "~1.0.1",
     "cordova-android": "^7.0.0",
-    "cordova-plugin-video-player": "^1.0.1",
+    "cordova-fabric-plugin": "^1.1.14-dev",
     "cordova-plugin-whitelist": "1"
   }
 }

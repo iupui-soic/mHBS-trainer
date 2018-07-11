@@ -7,20 +7,15 @@
     "is_top_level": true,
     "variables": {}
   },
-  "com.moust.cordova.videoplayer": {
+  "cordova-fabric-plugin": {
     "source": {
       "type": "registry",
-      "id": "cordova-plugin-video-player@^1.0.1"
+      "id": "cordova-fabric-plugin"
     },
     "is_top_level": true,
-    "variables": {}
-  },
-  "jaeger.Html5Video": {
-    "source": {
-      "type": "registry",
-      "id": "https://github.com/jaeger25/Html5Video.git"
-    },
-    "is_top_level": true,
-    "variables": {}
+    "variables": {
+      "FABRIC_API_KEY": "b40e830e776f80dffd15e8df6ba58733a36b1e48",
+      "FABRIC_API_SECRET": "c308c5f1b372bab0c488e92c997d17ee8930b538bb5cf2d514818ff1fe7f84ba"
+    }
   }
 }

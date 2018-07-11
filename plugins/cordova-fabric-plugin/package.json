@@ -1,0 +1,92 @@
+{
+  "_from": "cordova-fabric-plugin",
+  "_id": "cordova-fabric-plugin@1.1.14-dev",
+  "_inBundle": false,
+  "_integrity": "sha512-KngBYyya54DDXh53d3DKLlXIZxZTe3vbccEn97PaoMTr2ETPG6/2aHjNtKMmUuB3o/xeOO7YHH1qjgKK5Elb9w==",
+  "_location": "/cordova-fabric-plugin",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "cordova-fabric-plugin",
+    "name": "cordova-fabric-plugin",
+    "escapedName": "cordova-fabric-plugin",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-fabric-plugin/-/cordova-fabric-plugin-1.1.14-dev.tgz",
+  "_shasum": "be481c2d81269c05300b130d496fe4f1e10f7faf",
+  "_spec": "cordova-fabric-plugin",
+  "_where": "C:\\hybridApp\\mHBS",
+  "author": {
+    "name": "Roman A. Sarria"
+  },
+  "bugs": {
+    "url": "https://github.com/sarriaroman/FabricPlugin/issues"
+  },
+  "bundleDependencies": false,
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/FabricPlugin"
+  },
+  "contributors": [
+    {
+      "name": "Justin Unterreiner",
+      "email": "justin.unterreiner@gmail.com",
+      "url": "https://github.com/Justin-Credible"
+    },
+    {
+      "name": "Eric McNiece",
+      "email": "emcniece@gmail.com",
+      "url": "https://github.com/emcniece"
+    }
+  ],
+  "cordova": {
+    "id": "cordova-fabric-plugin",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "dependencies": {
+    "opencollective": "^1.0.3"
+  },
+  "deprecated": false,
+  "description": "Cordova Fabric.io Plugin",
+  "devDependencies": {
+    "babel": "^5.8.35"
+  },
+  "homepage": "https://github.com/sarriaroman/FabricPlugin#readme",
+  "keywords": [
+    "cordova",
+    "fabric",
+    "crashlytics",
+    "answers",
+    "events",
+    "device",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "license": "MIT",
+  "name": "cordova-fabric-plugin",
+  "packages": {
+    "fabric": "1.7.2",
+    "crashlytics": "3.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarriaroman/FabricPlugin.git"
+  },
+  "scripts": {
+    "add-packages": "./scripts/add-packages.sh",
+    "postinstall": "opencollective postinstall",
+    "transpile": "babel www/*.es6 --out-dir ."
+  },
+  "version": "1.1.14-dev"
+}

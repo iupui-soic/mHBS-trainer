@@ -6,18 +6,33 @@
                 {
                     "source": "C:\\hybridApp\\mHBS\\platforms\\android\\app\\src\\main\\res\\values\\strings.xml",
                     "from": {
-                        "startLines": "4,2,3",
-                        "startColumns": "4,4,4",
-                        "startOffsets": "156,55,97",
-                        "endColumns": "63,41,58",
-                        "endOffsets": "215,92,151"
+                        "startLines": "-1,-1,-1",
+                        "startColumns": "-1,-1,-1",
+                        "startOffsets": "-1,-1,-1"
                     },
                     "to": {
-                        "startLines": "2,3,4",
+                        "startLines": "2,3,5",
                         "startColumns": "4,4,4",
-                        "startOffsets": "55,119,161",
+                        "startOffsets": "100,164,371",
                         "endColumns": "63,41,58",
-                        "endOffsets": "114,156,215"
+                        "endOffsets": "159,201,425"
+                    }
+                },
+                {
+                    "source": "C:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\generated\\fabric\\res\\debug\\values\\com_crashlytics_build_id.xml",
+                    "from": {
+                        "startLines": "8",
+                        "startColumns": "0",
+                        "startOffsets": "311",
+                        "endColumns": "162",
+                        "endOffsets": "473"
+                    },
+                    "to": {
+                        "startLines": "4",
+                        "startColumns": "4",
+                        "startOffsets": "206",
+                        "endColumns": "164",
+                        "endOffsets": "366"
                     }
                 }
             ]

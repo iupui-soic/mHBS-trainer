@@ -10,7 +10,9 @@
     "cordova-plugin-whitelist": {
       "PACKAGE_NAME": "com.example.mHBS"
     },
-    "com.moust.cordova.videoplayer": {
+    "cordova-fabric-plugin": {
+      "FABRIC_API_KEY": "b40e830e776f80dffd15e8df6ba58733a36b1e48",
+      "FABRIC_API_SECRET": "c308c5f1b372bab0c488e92c997d17ee8930b538bb5cf2d514818ff1fe7f84ba",
       "PACKAGE_NAME": "com.example.mHBS"
     }
   },

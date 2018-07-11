@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="css/icons.css">
   <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
+<body class="color-theme-green">
   <div id="app">
     <!-- Status bar overlay for fullscreen mode-->
     <div class="statusbar"></div>
@@ -70,25 +70,13 @@
             <i class="icon material-icons md-only">home</i>
             <span class="tabbar-label">Home</span>
           </a>
-          <a href="#view-catalog" class="tab-link">
-            <i class="icon f7-icons ios-only">list</i>
-            <i class="icon f7-icons ios-only icon-ios-fill">list_fill</i>
-            <i class="icon material-icons md-only">view_list</i>
-            <span class="tabbar-label">Catalog</span>
-          </a>
-          <a href="#view-settings" class="tab-link">
-            <i class="icon f7-icons ios-only">settings</i>
-            <i class="icon f7-icons ios-only icon-ios-fill">settings_fill</i>
-            <i class="icon material-icons md-only">settings</i>
-            <span class="tabbar-label">Settings</span>
-		   </a>
 		   <a href="#view-video" class="tab-link">
 			<i class="icon f7-icons ios-only">play</i>
             <i class="icon f7-icons ios-only icon-ios-fill">play_fill</i>
             <i class="icon material-icons md-only">play</i>
             <span class="tabbar-label">mHBS videos</span>
           </a>
-		    <a href="#view-guide" class="tab-link">
+		    <a href="#view-guide" class="tab-link" id="mhbs_guide">
 			<i class="icon f7-icons ios-only">book</i>
             <i class="icon f7-icons ios-only icon-ios-fill">book_fill</i>
             <i class="icon material-icons md-only">book</i>
@@ -122,19 +110,8 @@
           <!-- Scrollable page content-->
           <div class="page-content">
             <div class="block block-strong">
-              <p>This is an example of tabs-layout application. The main point of such tabbed layout is that each tab contains independent view with its own routing and navigation.</p>
-              <p>Each tab/view may have different layout, different navbar type (dynamic, fixed or static) or without navbar like this tab.</p>
+			<img src="img/mHBSlogo.svg" style="width:200px;height:240px;display: block;margin: 0 auto;">
             </div>
-
-            <div class="block-title">Navigation</div>
-            <div class="list">
-              <ul>
-                <li>
-
-                </li>
-              </ul>
-            </div>
-
             <div class="block-title">Modals</div>
             <div class="block block-strong">
               <div class="row">
@@ -158,37 +135,11 @@
                 </div>
               </div>
             </div>
-
-            <div class="block-title searchbar-hide-on-search">Page Loaders & Router</div>
-            <div class="list links-list searchbar-hide-on-search">
-              <ul>
-                <li>
-                  <a href="/page-loader-template7/vladimir/123/about-me/1/?start=0&end=30#top">Template7 Page</a>
-                </li>
-                <li>
-                  <a href="/page-loader-component/vladimir/123/about-me/1/?start=0&end=30#top">Component Page</a>
-                </li>
-                <li>
-                  <a href="/load-something-that-doesnt-exist/">Default Route (404)</a>
-                </li>
-                <li>
-                  <a href="/request-and-load/user/123456/">Request Data & Load</a>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Catalog View -->
-      <div id="view-catalog" class="view tab">
-        <!-- Catalog page will be loaded here dynamically from /catalog/ route -->
-      </div>
 
-      <!-- Settings View -->
-      <div id="view-settings" class="view tab">
-        <!-- Settings page will be loaded here dynamically from /settings/ route -->
-      </div>
 	  <div id="view-video" class="view tab">
 	  <!-- Settings page will be loaded here dynamically from /settings/ route -->
 	  </div>
@@ -257,12 +208,11 @@
       </div>
     </div>
   </div>
-  
-  
+
+
   <!-- Cordova -->
-  <!--
+
   <script src="cordova.js"></script>
-  -->
 
   <!-- Framework7 library -->
   <script src="framework7/js/framework7.min.js"></script>
@@ -272,6 +222,7 @@
 
   <!-- Your custom app scripts -->
   <script src="js/app.js"></script>
-  
+  <script src="plugins/cordova-fabric-plugin/www/FabricPlugin.Answers.js"></script>
+
 </body>
 </html>

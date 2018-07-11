@@ -13,7 +13,23 @@
               "count": 1
             },
             {
-              "xml": "<feature name=\"VideoPlayer\"><param name=\"android-package\" value=\"com.moust.cordova.videoplayer.VideoPlayer\" /></feature>",
+              "xml": "<feature name=\"FabricPlugin\"><param name=\"android-package\" value=\"com.sarriaroman.fabric.FabricPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
+              "count": 1
+            }
+          ]
+        }
+      },
+      "AndroidManifest.xml": {
+        "parents": {
+          "/*": [
+            {
+              "xml": "<uses-permission android:name=\"android.permission.INTERNET\" />",
+              "count": 1
+            }
+          ],
+          "application": [
+            {
+              "xml": "<meta-data android:name=\"io.fabric.ApiKey\" android:value=\"b40e830e776f80dffd15e8df6ba58733a36b1e48\" />",
               "count": 1
             }
           ]
@@ -25,23 +41,41 @@
     "cordova-plugin-whitelist": {
       "PACKAGE_NAME": "com.example.mHBS"
     },
-    "com.moust.cordova.videoplayer": {
+    "cordova-fabric-plugin": {
+      "FABRIC_API_KEY": "b40e830e776f80dffd15e8df6ba58733a36b1e48",
+      "FABRIC_API_SECRET": "c308c5f1b372bab0c488e92c997d17ee8930b538bb5cf2d514818ff1fe7f84ba",
       "PACKAGE_NAME": "com.example.mHBS"
     }
   },
   "dependent_plugins": {},
   "modules": [
     {
-      "id": "com.moust.cordova.videoplayer.VideoPlayer",
-      "file": "plugins/com.moust.cordova.videoplayer/www/videoplayer.js",
-      "pluginId": "com.moust.cordova.videoplayer",
+      "id": "cordova-fabric-plugin.FabricPlugin",
+      "file": "plugins/cordova-fabric-plugin/www/FabricPlugin.js",
+      "pluginId": "cordova-fabric-plugin",
       "clobbers": [
-        "VideoPlayer"
+        "window.fabric.core"
+      ]
+    },
+    {
+      "id": "cordova-fabric-plugin.FabricAnswersPlugin",
+      "file": "plugins/cordova-fabric-plugin/www/FabricPlugin.Answers.js",
+      "pluginId": "cordova-fabric-plugin",
+      "clobbers": [
+        "window.fabric.Answers"
+      ]
+    },
+    {
+      "id": "cordova-fabric-plugin.FabricCrashlyticsPlugin",
+      "file": "plugins/cordova-fabric-plugin/www/FabricPlugin.Crashlytics.js",
+      "pluginId": "cordova-fabric-plugin",
+      "clobbers": [
+        "window.fabric.Crashlytics"
       ]
     }
   ],
   "plugin_metadata": {
     "cordova-plugin-whitelist": "1.3.3",
-    "com.moust.cordova.videoplayer": "1.0.1"
+    "cordova-fabric-plugin": "1.1.14-dev"
   }
 }
