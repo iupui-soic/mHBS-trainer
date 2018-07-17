@@ -55,7 +55,7 @@ var tempCredentials = {
   password: '',
   serverURL: '',
 };
-var test = false;
+var download = false;
 
 // Init/Create views
 var homeView = app.views.create('#view-home', {
@@ -107,13 +107,8 @@ function readFromSecure() {
 // Events
 app.on('credentialsRead', function () {
   if (downloadAble) {
-    console.log("Downloadable...");
-    accessOnlineContent();
-  } else {
-    console.log("Other credentials Read");
-    // reset flag since we are done reading
-    downloadAble = true;
-    setHeaders();
+    app.preloader.hide();
+   download = true;
   }
 });
 
@@ -411,6 +406,23 @@ function accessOnlineContent() {
       alert(error + "The content is not retrievable");
     })
 }
+
+$$(document).on('page:init', '.page[data-name="videoList"]', function (e) {
+  console.log("trigger downloading content");
+  if(download){
+    app.preloader.show();
+    console.log("We can download");
+    accessOnlineContent();
+    download = false;
+  }
+  else {
+    console.log("Other credentials Read");
+    // reset flag since we are done reading
+    downloadAble = true;
+    setHeaders();
+  }
+});
+
 
 // use to re-download media content
 function syncOnlineContent() {
