@@ -27,9 +27,9 @@ var app = new Framework7({
     helloWorld: function () {
       app.dialog.alert('Hello World!');
     },
-    triggerOnlineContent: function (){
+    triggerOnlineContent: function () {
       console.log("trigger downloading content");
-      if(download){
+      if (download) {
         app.preloader.show();
         console.log("We can download");
         accessOnlineContent();
@@ -51,7 +51,7 @@ var app = new Framework7({
     pageInit: function (e, page) {
       // do something when page initialized
     },
-    pageBeforeIn: function(e,page){
+    pageBeforeIn: function (e, page) {
     }
   }
 });
@@ -82,7 +82,7 @@ var homeView = app.views.create('#view-home', {
 var settingsView = app.views.create('#view-settings', {
   url: '/settings/'
 });
-var viewFavorites = app.views.create('#view-favorites',{
+var viewFavorites = app.views.create('#view-favorites', {
   url: '/favorites/'
 });
 
@@ -126,7 +126,7 @@ function readFromSecure() {
 app.on('credentialsRead', function () {
   if (downloadAble) {
     app.preloader.hide();
-   download = true;
+    download = true;
   }
 });
 
@@ -231,23 +231,23 @@ app.on('contentType', function () {
 app.on("fileStatus", function (filePath) {
   console.log("FULL FILE PATH TO ACCESS:" + "/data/data/com.example.mHBS/files/files" + filePath);
 
-    var photos = [
-      {
-        html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files' + filePath + '" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
-        captions: '',
-      }
-    ];
+  var photos = [
+    {
+      html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files' + filePath + '" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
+      captions: '',
+    }
+  ];
 
-    myPhotoBrowserPopupDark = app.photoBrowser.create({
-      photos,
-      theme: 'dark',
-      type: 'popup',
-      navbar: true,
-      navbarOfText: "/",
-      toolbar: false,
-    });
-    app.preloader.hide();
-    myPhotoBrowserPopupDark.open();
+  myPhotoBrowserPopupDark = app.photoBrowser.create({
+    photos,
+    theme: 'dark',
+    type: 'popup',
+    navbar: true,
+    navbarOfText: "/",
+    toolbar: false,
+  });
+  app.preloader.hide();
+  myPhotoBrowserPopupDark.open();
 });
 
 function checkFile() {
@@ -267,6 +267,15 @@ $$(document).on('click', ".pb-standalone-video", function () {
   setXMLRequestHeaders();
 });
 
+$$(document).on('click', ".mHBSTracker", function () {
+  console.log("clicked");
+
+  var sApp = startApp.set({
+    "application":'org.hisp.dhis.android.trackercapture'
+  }).start();
+});
+
+
 var favoriteToastSuccess = app.toast.create({
   icon: app.theme === 'ios' ? '<i class="f7-icons">star</i>' : '<i class="material-icons">star</i>',
   text: 'Successfully added to favorites',
@@ -282,16 +291,16 @@ var favoriteToastErr = app.toast.create({
 });
 
 // add to favorites
-function addToFavorites(id){
+function addToFavorites(id) {
   var id = id.slice(1, -1);
 
-  for(var i in app.data.videoList){
-    if(app.data.videoList[i].id === id){
-      if(!app.data.videoList[i].isFavorite) {
+  for (var i in app.data.videoList) {
+    if (app.data.videoList[i].id === id) {
+      if (!app.data.videoList[i].isFavorite) {
         favoriteToastSuccess.open();
         app.data.favoritesList.push(app.data.videoList[i]);
         app.data.videoList[i].isFavorite = true;
-      }else{
+      } else {
         favoriteToastErr.open();
       }
     }
@@ -369,8 +378,8 @@ function fileToWrite(obj, id) {
       writeFile(fileEntry, obj);
     }, function (fs) {
       // successfully wrote file, display
-    //  console.log("Successfully wrote file " + fs.toString());
-  //    app.emit("fileStatus",fs);
+      //  console.log("Successfully wrote file " + fs.toString());
+      //    app.emit("fileStatus",fs);
     });
 
   }, function (fileError) {
@@ -383,7 +392,7 @@ function writeFile(fileEntry, dataObj) {
   // Create a FileWriter object for our FileEntry (log.txt).
   fileEntry.createWriter(function (fileWriter) {
     fileWriter.onwriteend = function () {
-      app.emit("fileStatus",fileEntry.fullPath);
+      app.emit("fileStatus", fileEntry.fullPath);
     };
 
     fileWriter.onerror = function (e) {
@@ -445,6 +454,7 @@ $$(document).on('page:onPageBeforeInit', '.page[data-name="videoList"]', functio
 
 });
 */
+
 // use to re-download media content
 function syncOnlineContent() {
   app.preloader.show('blue');
@@ -464,16 +474,16 @@ function accessOnlineDocuments(rawXML) {
     var tempID;
     var semaphoreCount = 0;
     var semaphore = function () {
-     // semaphoreCount += 1;
-     // if (semaphoreCount < documents.length) {
-     //   return;
-     // }
-     // app.emit('contentType');
+      // semaphoreCount += 1;
+      // if (semaphoreCount < documents.length) {
+      //   return;
+      // }
+      // app.emit('contentType');
     };
     // get a list of ID's and titles
     //for (var i in documents) {
-      for(var i=0;i<1;i++){
-        console.log(i);
+    for (var i = 0; i < 1; i++) {
+      console.log(i);
       var doc = {
         title: '',
         id: '',
@@ -511,24 +521,24 @@ function parseMetaData(doc) {
       console.log(this.response);
       video.src = window.URL.createObjectURL(videoBlob);
 
-      video.addEventListener("loadedmetadata", function(){
-      var minutes = Math.floor(video.duration/60);
-      var seconds = (video.duration%60).toFixed(0);
-      if(seconds.toString().length===1){
-       seconds = seconds.toString().concat("0");
-      }
-      doc.duration = minutes + ":"+ seconds;
-         app.emit('contentType');
+      video.addEventListener("loadedmetadata", function () {
+        var minutes = Math.floor(video.duration / 60);
+        var seconds = (video.duration % 60).toFixed(0);
+        if (seconds.toString().length === 1) {
+          seconds = seconds.toString().concat("0");
+        }
+        doc.duration = minutes + ":" + seconds;
+        app.emit('contentType');
 
       });
 
     }
   };
-req.onerror = function(e){
-  console.log(e);
-};
+  req.onerror = function (e) {
+    console.log(e);
+  };
 
-req.send();
+  req.send();
 
 }
 
@@ -553,14 +563,14 @@ function getContentTypes(parser, doc, id, callback) {
     });
 }
 
-document.addEventListener("deviceready", function(e){
+document.addEventListener("deviceready", function (e) {
 
-  document.addEventListener("offline", function(e){
+  document.addEventListener("offline", function (e) {
     app.data.offlineMode = true;
 
   }, false);
 
-  document.addEventListener("online", function(e){
+  document.addEventListener("online", function (e) {
     app.data.offlineMode = false;
   })
 }, false);

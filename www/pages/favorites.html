@@ -14,32 +14,30 @@
     </div>
     <div class="page-content">
       <div class="list">
+
         <!-- Media list block has additional "media-list" class -->
         <div class="list-block media-list">
-          <ul style="list-style: none;">
+          <ul>
             {{#each videos}}
             <li>
-              <a href="#" id="item-link item-content">
-                <div class="item-content">
-                  <div class="item-media">
-                    <img width="80" height="80" src="img/icon2.svg">
-                  </div>
-                  <div class="item-inner">
-                    <div class="item-title-row">
-                      <div a href="#" id={{id}} class="button pb-standalone-video item-title">{{title}}</div>
-                      <!-- uncomment this and line parseMetaData(doc) in app.js to see video duration POC)
-                      <!--div class="item-after">{{duration}}</div-->
-                    </div>
-                    <div class="item-text">
-                    </div>
-                    <!--div class="item-text">description</div-->
-                  </div>
+              <div class="item-content">
+                <div class="item-media">
+                  <img width="80" height="80" src="img/icon2.svg">
                 </div>
-              </a>
+                <div class="item-inner">
+                  <div class="item-title-row">
+                    <div a href="#" id={{id}} class="button pb-standalone-video item-title">{{title}}</div>
+                    <div class="item-after">{{duration}}</div>
+                  </div>
+                  <div class="item-subtitle">Subtitle</div>
+                </div>
+              </div>
             </li>
             {{/each}}
           </ul>
         </div>
+      </div>
+    </div>
       </div>
     </div>
   </div>
