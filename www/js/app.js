@@ -464,14 +464,16 @@ function accessOnlineDocuments(rawXML) {
     var tempID;
     var semaphoreCount = 0;
     var semaphore = function () {
-      semaphoreCount += 1;
-      if (semaphoreCount < documents.length) {
-        return;
-      }
-      app.emit('contentType');
+     // semaphoreCount += 1;
+     // if (semaphoreCount < documents.length) {
+     //   return;
+     // }
+     // app.emit('contentType');
     };
     // get a list of ID's and titles
-    for (var i in documents) {
+    //for (var i in documents) {
+      for(var i=0;i<1;i++){
+        console.log(i);
       var doc = {
         title: '',
         id: '',
@@ -480,11 +482,14 @@ function accessOnlineDocuments(rawXML) {
         isFavorite: false
       };
       tempID = documents[i].id;
+      console.log(tempID);
       if (tempID != null) {
         doc.id = tempID;
         // grabs video durations, but too time consuming currently
-        // parseMetaData(doc);
+        parseMetaData(doc);
         doc.title = documents[i].textContent;
+        console.log(doc.title);
+
         getContentTypes(parser, doc, tempID, semaphore);
         documentList.push(doc);
       }
@@ -493,6 +498,7 @@ function accessOnlineDocuments(rawXML) {
 }
 
 function parseMetaData(doc) {
+  console.log("Parsing Meta Data");
   var video = document.createElement("video");
   var server = appServer + "/" + doc.id + "/data";
   var req = new XMLHttpRequest();
@@ -512,6 +518,8 @@ function parseMetaData(doc) {
        seconds = seconds.toString().concat("0");
       }
       doc.duration = minutes + ":"+ seconds;
+         app.emit('contentType');
+
       });
 
     }

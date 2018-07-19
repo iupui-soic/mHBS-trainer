@@ -14,37 +14,36 @@
     </div>
     <div class="page-content">
       <div class="list">
+
         <!-- Media list block has additional "media-list" class -->
         <div class="list-block media-list">
-          <ul style="list-style: none;">
+          <ul>
             {{#each videos}}
             <li>
-              <a href="#" id="item-link item-content">
-                <div class="item-content">
-                  <div class="item-media">
+              <div class="item-content">
+                <div class="item-media">
                   <img width="80" height="80" src="img/icon2.svg">
+                </div>
+                <div class="item-inner">
+                  <div class="item-title-row">
+                    <div a href="#" id={{id}} class="button pb-standalone-video item-title">{{title}}</div>
+                    <div class="item-after">{{duration}}</div>
                   </div>
-                  <div class="item-inner">
-                    <div class="item-title-row">
-                      <div a href="#" id={{id}} class="button pb-standalone-video item-title">{{title}}</div>
-                      <!-- uncomment this and line parseMetaData(doc) in app.js to see video duration POC)
-                      <!--div class="item-after">{{duration}}</div-->
-                    </div>
-                    <div class="item-text testingThis">
-                      <a class="button pb-standalone-favorites testingThis" onclick=addToFavorites('{{{id}}}')>
-                        <i class="icon f7-icons ios-only testingThis">star</i>
-                        <i class="icon f7-icons ios-only icon-ios-fill testingThis">star_fill</i>
-                        <i class="icon material-icons md-only testingThis">star</i>
-                        Add to favorites</a>
-                    </div>
-                    <!--div class="item-text">description</div-->
+                  <div class="item-subtitle">Subtitle</div>
+                  <div class="item-text testingThis">
+                    <a class="button pb-standalone-favorites testingThis" onclick=addToFavorites('{{{id}}}')>
+                      <i class="icon f7-icons ios-only testingThis">star</i>
+                      <i class="icon f7-icons ios-only icon-ios-fill testingThis">star_fill</i>
+                      <i class="icon material-icons md-only testingThis">star</i>
+                      Add to favorites</a>
                   </div>
                 </div>
-              </a>
+              </div>
             </li>
             {{/each}}
           </ul>
         </div>
+
       </div>
     </div>
   </div>
@@ -58,3 +57,11 @@
     }
   };
 </script>
+
+
+
+
+
+
+
+
