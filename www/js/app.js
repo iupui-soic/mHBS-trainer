@@ -25,19 +25,36 @@ var app = new Framework7({
   methods: {
     helloWorld: function () {
       app.dialog.alert('Hello World!');
+    },
+    triggerOnlineContent: function (){
+      console.log("trigger downloading content");
+      if(download){
+        app.preloader.show();
+        console.log("We can download");
+        accessOnlineContent();
+        download = false;
+      }
+      else {
+        console.log("Other credentials Read");
+        // reset flag since we are done reading
+        downloadAble = true;
+        setHeaders();
+      }
     }
   },
   // App routes
   routes: routes,
   on: {
     pageAfterIn: function (e, page) {
-      // do something after page gets into the view
     },
     pageInit: function (e, page) {
       // do something when page initialized
     },
+    pageBeforeIn: function(e,page){
+    }
   }
 });
+
 
 // local declarations
 var secureParamsStored = 0;
@@ -206,6 +223,7 @@ app.on('contentType', function () {
   console.log(app.data.videoList);
   console.log(app.data.pdfList);
 
+  homeView.router.navigate('/videoList/');
 });
 
 
@@ -407,7 +425,9 @@ function accessOnlineContent() {
     })
 }
 
-$$(document).on('page:init', '.page[data-name="videoList"]', function (e) {
+/*
+$$(document).on('page:onPageBeforeInit', '.page[data-name="videoList"]', function (e) {
+  /*
   console.log("trigger downloading content");
   if(download){
     app.preloader.show();
@@ -421,9 +441,9 @@ $$(document).on('page:init', '.page[data-name="videoList"]', function (e) {
     downloadAble = true;
     setHeaders();
   }
+
 });
-
-
+*/
 // use to re-download media content
 function syncOnlineContent() {
   app.preloader.show('blue');

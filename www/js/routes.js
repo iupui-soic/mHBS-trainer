@@ -162,7 +162,39 @@ routes = [
   {
     path: '/videoList/',
     id: 'videoList',
-    componentUrl: './pages/videoList.html'
+    on:{
+      pageBeforeIn: function(event,page){
+        /*
+        console.log(event);
+        // Router instance
+        var router = this;
+        // App instance
+        var app = router.app;
+        console.log(event + page);
+        app.triggerOnlineContent();
+        */
+      }
+    },
+    async: function(routeTo,routeFrom,resolve,reject){
+      // Router instance
+      var router = this;
+
+      // App instance
+      var app = router.app;
+
+      if(app.data.videoList.length>0) {
+        resolve({
+          componentUrl: './pages/videoList.html'
+        });
+      }
+        else{
+        console.log("Rejecting");
+        app.methods.triggerOnlineContent();
+        reject({
+          url: routeFrom
+        })
+        }
+    }
   },
   {
     path: '/favorites/',
