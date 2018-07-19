@@ -1,5 +1,5 @@
 #Internal package file, do not edit.
-#Sat Jul 07 01:26:32 EDT 2018
+#Wed Jul 11 15:20:54 EDT 2018
 175.set=ASSET
 122.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\pages\\section6c.html
 60.set=ASSET
@@ -353,7 +353,7 @@
 55.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\img\\logo.png
 106.set=ASSET
 65.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
-count=184
+count=185
 168.set=ANDROID_RESOURCE
 148.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\cordova-js-src\\platform.js
 116.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_
@@ -494,6 +494,7 @@ count=184
 147.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 14.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 46.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\framework7\\css\\framework7.css
+184.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\js\\Hammer.js
 61.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 93.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\pages\\mhbsmain.html
 9.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\img\\mHBSlogo.svg
@@ -511,6 +512,7 @@ count=184
 114.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 13.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_\\res\\mipmap-mdpi-v4\\icon.png
 23.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
+184.set=ASSET
 161.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 60.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\img\\iconSec2c.svg
 70.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
@@ -549,6 +551,7 @@ count=184
 2.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 139.set=ASSET
 46.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
+184.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 83.file=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug\\www\\pages\\page2.html
 93.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
 9.base=C\:\\hybridApp\\mHBS\\platforms\\android\\app\\build\\intermediates\\assets\\debug
