@@ -271,7 +271,7 @@ $$(document).on('click', ".mHBSTracker", function () {
   console.log("clicked");
 
   var sApp = startApp.set({
-    "application":'org.hisp.dhis.android.trackercapture'
+    "application": 'org.hisp.dhis.android.trackercapture'
   }).start();
 });
 
@@ -292,8 +292,11 @@ var favoriteToastErr = app.toast.create({
 
 // add to favorites
 function addToFavorites(id) {
-  var id = id.slice(1, -1);
 
+  // will write user favorites file iff it doesn't exist yet
+  writeUserFavoritesFile();
+
+  var id = id.slice(1, -1);
   for (var i in app.data.videoList) {
     if (app.data.videoList[i].id === id) {
       if (!app.data.videoList[i].isFavorite) {
@@ -306,6 +309,19 @@ function addToFavorites(id) {
     }
   }
 
+}
+
+// write the file
+
+function writeUserFavoritesFile() {
+  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+    fileSystem.root.getDirectory(app.data.user.username, {create: true, exclusive: true}, function (fs) {
+      console.log("success");
+    }, function (fail) {
+      console.log("fail" + fail.toString());
+    });
+
+  });
 }
 
 
@@ -663,7 +679,7 @@ function clearCredentials() {
 // set user name for our app
 function setAppUsername() {
   app.storage.get(function (value) {
-    app.data.user.userName = value;
+    app.data.user.username = value;
   }, function (error) {
     console.log(error);
   }, 'username');
