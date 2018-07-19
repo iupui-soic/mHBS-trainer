@@ -19,6 +19,7 @@ var app = new Framework7({
       pdfList: [],
       videoList: [],
       favoritesList: [],
+      offlineMode: false,
     };
   },
   // App root methods
@@ -544,6 +545,17 @@ function getContentTypes(parser, doc, id, callback) {
     });
 }
 
+document.addEventListener("deviceready", function(e){
+
+  document.addEventListener("offline", function(e){
+    app.data.offlineMode = true;
+
+  }, false);
+
+  document.addEventListener("online", function(e){
+    app.data.offlineMode = false;
+  })
+}, false);
 
 // set intent listener, send broadcast
 function onLoad() {

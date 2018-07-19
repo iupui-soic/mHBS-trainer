@@ -188,8 +188,12 @@ routes = [
         });
       }
         else{
-        console.log("Rejecting");
-        app.methods.triggerOnlineContent();
+
+        if(app.data.offlineMode){
+          alert("Please activate wifi to download content");
+        }else{
+          app.methods.triggerOnlineContent();
+        }
         reject({
           url: routeFrom
         })
