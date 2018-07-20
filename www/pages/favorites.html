@@ -19,7 +19,9 @@
         <div class="list-block media-list">
           <ul>
             {{#each videos}}
-            <li>
+            {{#if isFavorite}}
+            <li class="swipeout">
+              <div class="swipeout-content">
               <div class="item-content">
                 <div class="item-media">
                   <img width="80" height="80" src="img/icon2.svg">
@@ -31,9 +33,17 @@
                   </div>
                   <div class="item-subtitle">Subtitle</div>
                 </div>
+                </div>
+              </div>
+              <!-- Swipeout actions right -->
+              <div class="swipeout-actions-left">
+                <!-- Swipeout actions links/buttons -->
+                <a href="#" class="swipeout-delete favorites-delete" onclick=removeFromFavorites("{{id}},{{@index}}")>Remove from favorites</a>
               </div>
             </li>
+            {{/if}}
             {{/each}}
+
           </ul>
         </div>
       </div>
@@ -46,7 +56,7 @@
   return {
     data: function () {
       return {
-        videos: this.$root.favoritesList,
+        videos: this.$root.videoList,
       };
     }
   };

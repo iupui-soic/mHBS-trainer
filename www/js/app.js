@@ -18,7 +18,7 @@ var app = new Framework7({
       // video and PDF content
       pdfList: [],
       videoList: [],
-      favoritesList: [],
+      //favoritesList: [],
       offlineMode: false,
     };
   },
@@ -261,6 +261,7 @@ function checkFile() {
 }
 
 $$(document).on('click', ".pb-standalone-video", function () {
+  console.log(this);
   currentID = this.id;
   videoCaption = this.innerText;
   checkFile();
@@ -290,38 +291,89 @@ var favoriteToastErr = app.toast.create({
   closeTimeout: 2000,
 });
 
+
 // add to favorites
 function addToFavorites(id) {
-
-  // will write user favorites file iff it doesn't exist yet
-  writeUserFavoritesFile();
-
   var id = id.slice(1, -1);
+
+  // get storage
+  var storage = window.localStorage;
+
+
+  // get favorites list of user
+  var value = storage.getItem(app.data.user.username + "favorites");
+
+  // if this is the first favorite for the user, create a key/value pair
+  if (value === null) {
+    console.log("was null");
+    storage.setItem(app.data.user.username + "favorites", id);
+    value = "";
+  }
+
+  // turn to array
+  var favoritesArray = value.split(',');
+
+  // check if the id passed in is already in the favorites list
+  if (favoritesArray.includes(id)) {
+    favoriteToastErr.open();
+  } else {
+    value += "," + id;
+    storage.setItem(app.data.user.username + "favorites", value);
+    favoriteToastSuccess.open();
+    console.log("added" + value);
+  }
+}
+
+$$(document).on('click', "#updateFavorites", function () {
+  console.log("UPDATE FAVORITES");
+  // get storage
+  var storage = window.localStorage;
+
+  var favorites = storage.getItem(app.data.user.username + "favorites");
+  var favoritesToArr = favorites.split(',');
+
   for (var i in app.data.videoList) {
-    if (app.data.videoList[i].id === id) {
-      if (!app.data.videoList[i].isFavorite) {
-        favoriteToastSuccess.open();
-        app.data.favoritesList.push(app.data.videoList[i]);
-        app.data.videoList[i].isFavorite = true;
-      } else {
-        favoriteToastErr.open();
+    for (var j in favoritesToArr) {
+      if (app.data.videoList[i].id === favoritesToArr[j]) {
+        if (!app.data.videoList[i].isFavorite) {
+          app.data.videoList[i].isFavorite = true;
+          //app.data.favoritesList.push(app.data.videoList[i]);
+        }
       }
     }
   }
+});
 
-}
+function removeFromFavorites(param){
+  // get local storage
+  var storage = window.localStorage;
 
-// write the file
+  // holds the index and id of element
+  var arr = param.split(",");
 
-function writeUserFavoritesFile() {
-  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
-    fileSystem.root.getDirectory(app.data.user.username, {create: true, exclusive: true}, function (fs) {
-      console.log("success");
-    }, function (fail) {
-      console.log("fail" + fail.toString());
-    });
+  var id = arr[0];
+  var index = arr[1];
 
-  });
+  // un-mark this element from favorites
+  app.data.videoList[index].isFavorite = false;
+
+  // updating storage
+  var favorites = storage.getItem(app.data.user.username + "favorites");
+  var favoritesToArr = favorites.split(',');
+  var newValue = "";
+  for(var i in favoritesToArr){
+    if(favoritesToArr[i] === id){
+      favoritesToArr[i] = ""
+    }else{
+      newValue+= "," + favoritesToArr[i];
+    }
+  }
+
+  console.log(newValue + "new Value");
+  storage.setItem(app.data.user.username + "favorites", newValue);
+
+ // document.getElementById('updateFavorites').click();
+
 }
 
 
