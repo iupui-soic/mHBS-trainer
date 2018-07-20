@@ -29,7 +29,7 @@
     <!-- Status bar overlay for fullscreen mode-->
     <div class="statusbar"></div>
     <!-- Left panel with cover effect-->
-    <div class="panel panel-left panel-cover theme-dark">
+    <div class="panel panel-left">
       <div class="view">
         <div class="page">
           <div class="navbar">
@@ -38,27 +38,37 @@
             </div>
           </div>
           <div class="page-content">
-            <div class="block">Left panel content goes here</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Right panel with reveal effect-->
-    <div class="panel panel-right panel-reveal theme-dark">
-      <div class="view">
-        <div class="page">
-          <div class="navbar">
-            <div class="navbar-inner">
-              <div class="title">Right Panel</div>
+            <div class="block">
+              <div class="list">
+                <ul>
+                  <li>
+                    <a href="/" class="item-content item-link">
+                      <div class="item-inner">
+                        <div class="item-title">Home</div>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/about/" class="item-content item-link">
+                      <div class="item-inner">
+                        <div class="item-title">about</div>
+                      </div>
+                    </a>
+                  </li>
+                 <li>
+                    <a href="" class="item-content item-link">
+                      <div class="item-inner">
+                        <div class="item-title">mHBS Tracker </div>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-          <div class="page-content">
-            <div class="block">Right panel content goes here</div>
-          </div>
         </div>
       </div>
     </div>
-
     <!-- Views/Tabs container -->
     <div class="views tabs ios-edges">
       <!-- Tabbar for switching views-tabs -->
@@ -97,44 +107,13 @@
                   <i class="icon material-icons md-only">menu</i>
                 </a>
               </div>
-              <div class="title sliding">Home</div>
-              <div class="right">
-                <a href="#" class="link icon-only panel-open" data-panel="right">
-                  <i class="icon f7-icons ios-only">menu</i>
-                  <i class="icon material-icons md-only">menu</i>
-                </a>
-              </div>
+              <div class="title sliding">mHBS</div>
             </div>
           </div>
 
           <!-- Scrollable page content-->
           <div class="page-content">
-            <div class="block block-strong">
 			<img src="img/mHBSlogo.svg" style="width:200px;height:240px;display: block;margin: 0 auto;">
-            </div>
-            <div class="block-title">Modals</div>
-            <div class="block block-strong">
-              <div class="row">
-                <div class="col-50">
-                  <a href="#" class="button button-raised button-fill popup-open" data-popup="#my-popup">Popup</a>
-                </div>
-                <div class="col-50">
-                  <a href="#" class="button button-raised button-fill login-screen-open" data-login-screen="#my-login-screen">Login Screen</a>
-                </div>
-              </div>
-            </div>
-
-            <div class="block-title">Panels</div>
-            <div class="block block-strong">
-              <div class="row">
-                <div class="col-50">
-                  <a href="#" class="button button-raised button-fill panel-open" data-panel="left">Left Panel</a>
-                </div>
-                <div class="col-50">
-                  <a href="#" class="button button-raised button-fill panel-open" data-panel="right">Right Panel</a>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

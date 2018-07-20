@@ -4,6 +4,10 @@ routes = [
     url: './index.html',
   },
   {
+    path: '/about/',
+    url: './pages/about.html',
+  },
+  {
     path: '/page1/',
     url: './pages/page1.html',
   },
@@ -169,7 +173,7 @@ routes = [
     url: './pages/mediaplayer.html',
   },
   {
-    path: '/mhbsvideos/', 
+    path: '/mhbsvideos/',
 	url: './pages/mhbsvideos.html',},
    {
     path: '/testvideo/',
