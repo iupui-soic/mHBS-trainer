@@ -221,6 +221,9 @@ app.on('contentType', function () {
       app.data.pdfList.push(documentList[i]);
     }
   }
+  if(app.data.videoList.length>0){
+    $$("#updateFavorites").show();
+  }
   console.log(app.data.videoList);
   console.log(app.data.pdfList);
 
@@ -292,52 +295,55 @@ var favoriteToastErr = app.toast.create({
 });
 
 
-// add to favorites
+// add to favorites when we click favorites button
 function addToFavorites(id) {
+  // grab the id of the item to add
   var id = id.slice(1, -1);
 
-  // get storage
+  // get local storage
   var storage = window.localStorage;
 
-
   // get favorites list of user
-  var value = storage.getItem(app.data.user.username + "favorites");
+  var storedFavorites = storage.getItem(app.data.user.username + "favorites");
+  // item to append
+  var appendToFavorites;
+  var favoritesArray = [];
 
   // if this is the first favorite for the user, create a key/value pair
-  if (value === null) {
-    console.log("was null");
-    storage.setItem(app.data.user.username + "favorites", id);
-    value = "";
+  if (storedFavorites === null) {
+    appendToFavorites = id;
+  }else{
+    appendToFavorites = storedFavorites + "," + id;
+
+    // turn to array
+    favoritesArray = storedFavorites.split(',');
   }
 
-  // turn to array
-  var favoritesArray = value.split(',');
 
   // check if the id passed in is already in the favorites list
   if (favoritesArray.includes(id)) {
     favoriteToastErr.open();
   } else {
-    value += "," + id;
-    storage.setItem(app.data.user.username + "favorites", value);
+    storage.setItem(app.data.user.username + "favorites", appendToFavorites);
     favoriteToastSuccess.open();
-    console.log("added" + value);
   }
 }
 
+// triggered when we open favorites
 $$(document).on('click', "#updateFavorites", function () {
-  console.log("UPDATE FAVORITES");
   // get storage
   var storage = window.localStorage;
 
   var favorites = storage.getItem(app.data.user.username + "favorites");
-  var favoritesToArr = favorites.split(',');
+  if(favorites!=null) {
+    var favoritesToArr = favorites.split(',');
 
-  for (var i in app.data.videoList) {
-    for (var j in favoritesToArr) {
-      if (app.data.videoList[i].id === favoritesToArr[j]) {
-        if (!app.data.videoList[i].isFavorite) {
-          app.data.videoList[i].isFavorite = true;
-          //app.data.favoritesList.push(app.data.videoList[i]);
+    for (var i in app.data.videoList) {
+      for (var j in favoritesToArr) {
+        if (app.data.videoList[i].id === favoritesToArr[j]) {
+          if (!app.data.videoList[i].isFavorite) {
+            app.data.videoList[i].isFavorite = true;
+          }
         }
       }
     }
@@ -347,6 +353,7 @@ $$(document).on('click', "#updateFavorites", function () {
 function removeFromFavorites(param){
   // get local storage
   var storage = window.localStorage;
+  //storage.clear();
 
   // holds the index and id of element
   var arr = param.split(",");
@@ -359,21 +366,20 @@ function removeFromFavorites(param){
 
   // updating storage
   var favorites = storage.getItem(app.data.user.username + "favorites");
-  var favoritesToArr = favorites.split(',');
-  var newValue = "";
-  for(var i in favoritesToArr){
-    if(favoritesToArr[i] === id){
-      favoritesToArr[i] = ""
-    }else{
-      newValue+= "," + favoritesToArr[i];
+  if(favorites!=null) {
+    var favoritesToArr = favorites.split(',');
+    var newValue = "";
+
+    favoritesToArr = favoritesToArr.filter(item => item !== id);
+
+    console.log("favorites arr length" + favoritesToArr.length);
+
+    for (var i in favoritesToArr) {
+      newValue += "," + favoritesToArr[i];
     }
+
+    storage.setItem(app.data.user.username + "favorites", newValue);
   }
-
-  console.log(newValue + "new Value");
-  storage.setItem(app.data.user.username + "favorites", newValue);
-
- // document.getElementById('updateFavorites').click();
-
 }
 
 
@@ -649,6 +655,7 @@ function onLoad() {
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (ssInactive) {
     console.log("firing APP");
+    $$("#updateFavorites").hide();
     window.plugins.intent.setNewIntentHandler(onIntent);
 // show the spinner while we are logging the user in and downloading content.
     app.preloader.show('blue');
