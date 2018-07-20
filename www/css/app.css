@@ -5,3 +5,7 @@
 .ios .tabbar-labels .tab-link.tab-link-active .icon:not(.icon-ios-fill) {
   display: none;
 }
+#arrow_favorites {
+  padding-right:10%;
+  padding-left:10%;
+}
