@@ -21,6 +21,7 @@
   <meta name="theme-color" content="#2196f3">
   <meta name="format-detection" content="telephone=no">
   <meta name="msapplication-tap-highlight" content="no">
+
   <!-- Cordova -->
   <script src="cordova.js"></script>
 
@@ -35,7 +36,7 @@
   <!-- Status bar overlay for fullscreen mode-->
   <div class="statusbar"></div>
   <!-- Left panel with cover effect-->
-  <div class="panel panel-left panel-cover theme-dark">
+  <div class="panel panel-left">
     <div class="view">
       <div class="page">
         <div class="navbar">
@@ -45,12 +46,39 @@
         </div>
         <div class="page-content">
           <div class="block mHBSTracker">
-                <a href="#" class="item-link">
-                  <i class="icon f7-icons ios-only">arrow_left_fille</i>
-                  <i class="icon f7-icons ios-only icon-ios-fill">arrow_left_fill</i>
-                  <i class="icon material-icons md-only">arrow_left_fill</i>
-                  <span class="item-label"> mHBS Tracker Capture</span>
-                </a>
+            <div class="list">
+              <ul>
+                <li>
+                  <a href="#" class="item-link">
+                    <i class="icon f7-icons ios-only">arrow_left_fille</i>
+                    <i class="icon f7-icons ios-only icon-ios-fill">arrow_left_fill</i>
+                    <i class="icon material-icons md-only">arrow_left_fill</i>
+                    <span class="item-label"> mHBS Tracker Capture</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="/" class="item-content item-link">
+                    <div class="item-inner">
+                      <div class="item-title">Home</div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a href="/about/" class="item-content item-link">
+                    <div class="item-inner">
+                      <div class="item-title">About</div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a href="" class="item-content item-link">
+                    <div class="item-inner">
+                      <div class="item-title">mHBS Tracker</div>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -89,24 +117,24 @@
           <i class="icon material-icons md-only">view_list</i>
           <span class="tabbar-label">Favorites</span>
         </a>
-          <a href="/videoList/" class="tab-link" data-route-tab-id="videoList">
-            <i class="icon f7-icons ios-only">play</i>
-            <i class="icon f7-icons ios-only icon-ios-fill">videocam_fill</i>
-            <i class="icon material-icons md-only">videocam</i>
-            <span class="tabbar-label">Videos</span>
-          </a>
-          <a href="/mhbsmain/" class="tab-link" data-route-tab-id="mhbsmain">
-            <i class="icon f7-icons ios-only">book</i>
-            <i class="icon f7-icons ios-only icon-ios-fill">book_fill</i>
-            <i class="icon material-icons md-only">book</i>
-            <span class="tabbar-label">mHBS guide</span>
-          </a>
-        <a href="/settings/" class="tab-link" data-route-tab-id="settings">
+        <a href="/videoList/" class="tab-link" data-route-tab-id="videoList">
+          <i class="icon f7-icons ios-only">play</i>
+          <i class="icon f7-icons ios-only icon-ios-fill">videocam_fill</i>
+          <i class="icon material-icons md-only">videocam</i>
+          <span class="tabbar-label">Videos</span>
+        </a>
+        <a href="/mhbsmain/" class="tab-link" data-route-tab-id="mhbsmain">
+          <i class="icon f7-icons ios-only">book</i>
+          <i class="icon f7-icons ios-only icon-ios-fill">book_fill</i>
+          <i class="icon material-icons md-only">book</i>
+          <span class="tabbar-label">Guide</span>
+        </a>
+        <!--a href="#view-settings" class="tab-link">
           <i class="icon f7-icons ios-only">settings</i>
           <i class="icon f7-icons ios-only icon-ios-fill">settings_fill</i>
           <i class="icon material-icons md-only">settings</i>
           <span class="tabbar-label">Settings</span>
-        </a>
+        </a-->
       </div>
     </div>
     <!-- Your main view/tab, should have "view-main" class. It also has "tab-active" class -->
@@ -122,153 +150,52 @@
                 <i class="icon material-icons md-only">menu</i>
               </a>
             </div>
-            <div class="title sliding">Home</div>
-            <!--div class="right">
-              <a href="#" class="link icon-only panel-open" data-panel="right">
-                <i class="icon f7-icons ios-only">menu</i>
-                <i class="icon material-icons md-only">menu</i>
-              </a>
-            </div-->
+            <div class="title sliding">mHBS</div>
           </div>
         </div>
 
         <!-- Scrollable page content-->
         <div class="page-content">
+          <img src="img/mHBSlogo.svg" style="width:200px;height:240px;display: block;margin: 0 auto;">
         </div>
       </div>
-          <!--div class="block block-strong">
-            <p>This is an example of tabs-layout application. The main point of such tabbed layout is that each tab
-              contains independent view with its own routing and navigation.</p>
-            <p>Each tab/view may have different layout, different navbar type (dynamic, fixed or static) or without
-              navbar like this tab.</p>
-          </div>
-
-          <div class="block-title">Navigation</div>
-          <div class="block-title">Modals</div>
-          <div class="block block-strong">
-            <div class="row">
-              <div class="col-50">
-                <a href="#" class="button button-raised button-fill popup-open" data-popup="#my-popup">Popup</a>
-              </div>
-              <div class="col-50">
-                <a href="#" class="button button-raised button-fill login-screen-open"
-                   data-login-screen="#my-login-screen">Login Screen</a>
-              </div>
-
-              <li>
-                <a href="/videoList/" class="item-content item-link">
-                    <div class="item-title">video list</div>
-                </a>
-            </div>
-          </div>
-
-          <div class="block-title">Panels</div>
-          <div class="block block-strong">
-            <div class="row">
-              <div class="col-50">
-                <a href="#" class="button button-raised button-fill panel-open" data-panel="left">Left Panel</a>
-              </div>
-              <!--div class="col-50">
-                <a href="#" class="button button-raised button-fill panel-open" data-panel="right">Right Panel</a>
-              </div>
-            </div>
-          </div>
-
-          <!--div class="block-title searchbar-hide-on-search">Page Loaders & Router</div>
-          <div class="list links-list searchbar-hide-on-search">
-            <ul>
-              <li>
-                <a href="/page-loader-template7/vladimir/123/about-me/1/?start=0&end=30#top">Template7 Page</a>
-              </li>
-              <li>
-                <a href="/page-loader-component/vladimir/123/about-me/1/?start=0&end=30#top">Component Page</a>
-              </li>
-              <li>
-                <a href="/load-something-that-doesnt-exist/">Default Route (404)</a>
-              </li>
-              <li>
-                <a href="/request-and-load/user/123456/">Request Data & Load</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div-->
 
 
-
-    <!-- Settings View -->
-    <div id="view-settings" class="view tab">
-      <!-- Settings page will be loaded here dynamically from /settings/ route -->
-    </div>
-    <div id="view-video" class="view tab">
-      <!-- Settings page will be loaded here dynamically from /mhbsvideos/ route -->
-    </div>
-    <div id="view-guide" class="view tab">
-      <!-- Settings page will be loaded here dynamically from /mhbsmain/ route -->
-    </div>
-    <div id="view-favorites" class="view tab">
-      <!-- Settings page will be loaded here dynamically from /favorites/ route -->
-    </div>
-    <!-- video List View-->
-    <div id="view-videoList" class="view tab">
-      <!-- videoList page will be loaded here dynamically from /videoList/ route -->
-    </div>
-  </div>
-
-  <!-- Popup -->
-  <div class="popup" id="my-popup">
-    <div class="view">
-      <div class="page">
-        <div class="navbar">
-          <div class="navbar-inner">
-            <div class="title">Popup</div>
-            <div class="right">
-              <a href="#" class="link popup-close">Close</a>
-            </div>
-          </div>
-        </div>
-        <div class="page-content">
-          <div class="block">
-            <p>Popup content goes here.</p>
-          </div>
-        </div>
+      <!-- Settings View -->
+      <div id="view-settings" class="view tab">
+        <!-- Settings page will be loaded here dynamically from /settings/ route -->
+      </div>
+      <div id="view-video" class="view tab">
+        <!-- Settings page will be loaded here dynamically from /mhbsvideos/ route -->
+      </div>
+      <div id="view-guide" class="view tab">
+        <!-- Settings page will be loaded here dynamically from /mhbsmain/ route -->
+      </div>
+      <div id="view-favorites" class="view tab">
+        <!-- Settings page will be loaded here dynamically from /favorites/ route -->
+      </div>
+      <!-- video List View-->
+      <div id="view-videoList" class="view tab">
+        <!-- videoList page will be loaded here dynamically from /videoList/ route -->
       </div>
     </div>
-  </div>
 
-  <!-- Login Screen -->
-  <div class="login-screen" id="my-login-screen">
-    <div class="view">
-      <div class="page">
-        <div class="page-content login-screen-content">
-          <div class="login-screen-title">Login</div>
-          <div class="list">
-            <ul>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">Username</div>
-                  <div class="item-input-wrap">
-                    <input type="text" name="username" placeholder="Your username">
-                  </div>
-                </div>
-              </li>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">Password</div>
-                  <div class="item-input-wrap">
-                    <input type="password" name="password" placeholder="Your password">
-                  </div>
-                </div>
-              </li>
-            </ul>
+    <!-- Popup -->
+    <div class="popup" id="my-popup">
+      <div class="view">
+        <div class="page">
+          <div class="navbar">
+            <div class="navbar-inner">
+              <div class="title">Popup</div>
+              <div class="right">
+                <a href="#" class="link popup-close">Close</a>
+              </div>
+            </div>
           </div>
-          <div class="list">
-            <ul>
-              <li>
-                <a href="#" class="item-link list-button login-button">Sign In</a>
-              </li>
-            </ul>
-            <div class="block-footer">Some text about login information.<br>Click "Sign In" to close Login Screen</div>
+          <div class="page-content">
+            <div class="block">
+              <p>Popup content goes here.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -276,15 +203,15 @@
   </div>
 </div>
 
-<!-- Framework7 library -->
-<script src="framework7/js/framework7.min.js"></script>
+    <!-- Framework7 library -->
+    <script src="framework7/js/framework7.min.js"></script>
 
+    <!-- App routes -->
+    <script src="js/routes.js"></script>
 
-<!-- App routes -->
-<script src="js/routes.js"></script>
-
-<!-- Your custom app scripts -->
-<script src="js/app.js"></script>
+    <!-- Your custom app scripts -->
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="js/Hammer.js"></script>
 
 </body>
 </html>

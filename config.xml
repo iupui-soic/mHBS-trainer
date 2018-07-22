@@ -28,9 +28,9 @@
     <plugin name="cordova-plugin-whitelist" spec="1" />
     <plugin name="com-darryncampbell-cordova-plugin-intent" spec="^1.0.2" />
     <plugin name="com.napolitano.cordova.plugin.intent" spec="https://github.com/napolitano/cordova-plugin-intent" />
-    <plugin name="cordova-plugin-secure-storage" spec="^2.6.8" />
     <plugin name="cordova-plugin-dialogs" spec="^2.0.1" />
     <plugin name="cordova-plugin-file" spec="^6.0.1" />
     <plugin name="cordova-plugin-network-information" spec="^2.0.1" />
     <plugin name="com.lampa.startapp" spec="^6.1.6" />
+    <plugin name="cordova-plugin-secure-storage" spec="^2.6.8" />
 </widget>
