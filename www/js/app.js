@@ -76,56 +76,6 @@ var view = app.views.create('#view-videoList', {
 });
 
 
-
-
-
-
-  /*
-  var pageVisits = {
-    'mhbsmain':0,
-    'mhbsvideos':0,
-    'page1':0,
-    'section1':0,
-    'section1a':0,
-    'section1b':0,
-    'section1c':0,
-    'section2':0,
-    'section2a':0,
-    'section2b':0,
-    'section2c':0,
-    'section2d':0,
-    'section2e':0,
-    'section3':0,
-    'section3a':0,
-    'section3b':0,
-    'section3c':0,
-    'section3d':0,
-    'section3e':0,
-    'section3f':0,
-    'section3g':0,
-    'section4':0,
-    'section4a':0,
-    'section4b':0,
-    'section4c':0,
-    'section4d':0,
-    'section4e':0,
-    'section5':0,
-    'section5a':0,
-    'section5b':0,
-    'section6':0,
-    'section6a':0,
-    'section6b':0,
-    'section6c':0,
-    'section6d':0,
-    'section6e':0,
-    'section7':0,
-  };
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-}
-}
-*/
-
-
 /*
 if (localStorage.getItem("checkboxVals") === null) {
   var checkboxVals = {
@@ -2165,19 +2115,34 @@ document.addEventListener("deviceready", function (e) {
   })
 }, false);
 
+
+// gets all the pages defined in pages/ and adds to page visits
+function setupPageVisits(){
+  var storage = window.localStorage;
+  if (localStorage.getItem("pageVisits") === null) {
+    var pageVisits = {};
+    for(var i in this.app.routes){
+      var tempPage = {};
+      var strSplit;
+      var route = this.app.routes[i];
+      if(route.url!=null) {
+        if(route.url.includes("pages")) {
+          strSplit = route.url.split("/").pop();
+          strSplit = strSplit.substring(0, strSplit.indexOf(".html"));
+          tempPage[strSplit] = 0;
+          pageVisits[i]= tempPage;
+        }
+      }
+    }
+    storage.setItem("pageVisits",JSON.stringify(pageVisits));
+  }
+}
+
 // set intent listener, send broadcast
 function onLoad() {
   console.log("TEST ONLOAD ");
-  localStorage.clear();
-  var pageArr = localStorage.getItem("pageVisits");
-  if (pageArr === null) {
-    console.log("We don't have page visits");
+  setupPageVisits();
 
-    var storage = window.localStorage;
-  }else{
-    console.log("We have page visits");
-    console.log(pageArr.toString());
-  }
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (ssInactive) {
     console.log("firing APP");
