@@ -42,7 +42,6 @@ var app = new Framework7({
   routes: routes,
 });
 
-
 // local declarations
 var secureParamsStored = 0;
 var myPhotoBrowserPopupDark;
@@ -61,7 +60,6 @@ var tempCredentials = {
 var download = false;
 var storage = window.localStorage;
 
-
 // Init/Create views
 var homeView = app.views.create('#view-home', {
   url: '/'
@@ -76,187 +74,148 @@ var view = app.views.create('#view-videoList', {
   url: '/videoList/'
 });
 
+// todo: automate
+var checkboxVals = {
+  'check1a1': false,
+  'check1a2': false,
+  'check1a3': false,
+  'check1a4': false,
+  'check1b1': false,
+  'check1b2': false,
+  'check1b3': false,
+  'check1b4': false,
+  'check1c1': false,
+  'check1c2': false,
+  'check1c3': false,
+  'check1c4': false,
+  'check1c5': false,
+  'check1c6': false,
+  'check1c7': false,
+  'check2a1': false,
+  'check2a2': false,
+  'check2a3': false,
+  'check2a4': false,
+  'check2b1': false,
+  'check2b2': false,
+  'check2b3': false,
+  'check2b4': false,
+  'check2c1': false,
+  'check2c2': false,
+  'check2c3': false,
+  'check2c4': false,
+  'check2d1': false,
+  'check2d2': false,
+  'check2d3': false,
+  'check2d4': false,
+  'check2e1': false,
+  'check2e2': false,
+  'check2e3': false,
+  'check2e4': false,
+  'check2e5': false,
+  'check2e6': false,
+  'check2e7': false,
+  'check2e8': false,
+  'check3a1': false,
+  'check3a2': false,
+  'check3a3': false,
+  'check3a4': false,
+  'check3b1': false,
+  'check3b2': false,
+  'check3b3': false,
+  'check3b4': false,
+  'check3c1': false,
+  'check3c2': false,
+  'check3c3': false,
+  'check3c4': false,
+  'check3c5': false,
+  'check3c6': false,
+  'check3c7': false,
+  'check3c8': false,
+  'check3c9': false,
+  'check3c10': false,
+  'check3d1': false,
+  'check3d2': false,
+  'check3d3': false,
+  'check3d4': false,
+  'check3e1': false,
+  'check3e2': false,
+  'check3e3': false,
+  'check3e4': false,
+  'check3f1': false,
+  'check3f2': false,
+  'check3f3': false,
+  'check3f4': false,
+  'check3g1': false,
+  'check3g2': false,
+  'check3g3': false,
+  'check3g4': false,
+  'check3g5': false,
+  'check3g6': false,
+  'check3g7': false,
+  'check3g8': false,
+  'check3g9': false,
+  'check3g10': false,
+  'check3g11': false,
+  'check3g12': false,
+  'check4a1': false,
+  'check4a2': false,
+  'check4a3': false,
+  'check4a4': false,
+  'check4b1': false,
+  'check4b2': false,
+  'check4b3': false,
+  'check4b4': false,
+  'check4c1': false,
+  'check4c2': false,
+  'check4c3': false,
+  'check4c4': false,
+  'check4d1': false,
+  'check4d2': false,
+  'check4d3': false,
+  'check4d4': false,
+  'check4e1': false,
+  'check4e2': false,
+  'check4e3': false,
+  'check4e4': false,
+  'check4e5': false,
+  'check4e6': false,
+  'check4e7': false,
+  'check4e8': false,
+  'check4e9': false,
+  'check4e10': false,
+};
+
+// gets all the pages defined in pages/ and adds to page visits
+function setupPageVisits() {
+  if (storage.getItem("pageVisits") === null) {
+    for (var i in this.app.routes) {
+      var pageName;
+      var route = this.app.routes[i];
+      if (route.url != null) {
+        if (route.url.includes("pages")) {
+          pageName = route.url.split("/").pop();
+          pageName = pageName.substring(0, pageName.indexOf(".html"));
+          storage.setItem(pageName, JSON.stringify(0));
+        }
+      }
+    }
+  }
+}
 
 // set up checkbox values and pages to collect metrics
 function setupCheckBoxValues() {
-  //todo: automatically find and setup checkboxes
   if (localStorage.getItem("checkboxVals") === null) {
-    var checkboxVals = {
-      'sec1a1': false,
-      'sec1a2': false,
-      'sec1a3': false,
-      'sec1a4': false,
-      'sec1b1': false,
-      'sec1b2': false,
-      'sec1b3': false,
-      'sec1b4': false,
-      'sec1c1': false,
-      'sec1c2': false,
-      'sec1c3': false,
-      'sec1c4': false,
-      'sec1c5': false,
-      'sec1c6': false,
-      'sec1c7': false,
-      'sec2a1': false,
-      'sec2a2': false,
-      'sec2a3': false,
-      'sec2a4': false,
-      'sec2b1': false,
-      'sec2b2': false,
-      'sec2b3': false,
-      'sec2b4': false,
-      'sec2c1': false,
-      'sec2c2': false,
-      'sec2c3': false,
-      'sec2c4': false,
-      'sec2d1': false,
-      'sec2d2': false,
-      'sec2d3': false,
-      'sec2d4': false,
-      'sec2e1': false,
-      'sec2e2': false,
-      'sec2e3': false,
-      'sec2e4': false,
-      'sec2e5': false,
-      'sec2e6': false,
-      'sec2e7': false,
-      'sec2e8': false,
-      'sec3a1': false,
-      'sec3a2': false,
-      'sec3a3': false,
-      'sec3a4': false,
-      'sec3b1': false,
-      'sec3b2': false,
-      'sec3b3': false,
-      'sec3b4': false,
-      'sec3c1': false,
-      'sec3c2': false,
-      'sec3c3': false,
-      'sec3c4': false,
-      'sec3c5': false,
-      'sec3c6': false,
-      'sec3c7': false,
-      'sec3c8': false,
-      'sec3c9': false,
-      'sec3c10': false,
-      'sec3d1': false,
-      'sec3d2': false,
-      'sec3d3': false,
-      'sec3d4': false,
-      'sec3e1': false,
-      'sec3e2': false,
-      'sec3e3': false,
-      'sec3e4': false,
-      'sec3f1': false,
-      'sec3f2': false,
-      'sec3f3': false,
-      'sec3f4': false,
-      'sec3g1': false,
-      'sec3g2': false,
-      'sec3g3': false,
-      'sec3g4': false,
-      'sec3g5': false,
-      'sec3g6': false,
-      'sec3g7': false,
-      'sec3g8': false,
-      'sec3g9': false,
-      'sec3g10': false,
-      'sec3g11': false,
-      'sec3g12': false,
-      'sec4a1': false,
-      'sec4a2': false,
-      'sec4a3': false,
-      'sec4a4': false,
-      'sec4b1': false,
-      'sec4b2': false,
-      'sec4b3': false,
-      'sec4b4': false,
-      'sec4c1': false,
-      'sec4c2': false,
-      'sec4c3': false,
-      'sec4c4': false,
-      'sec4d1': false,
-      'sec4d2': false,
-      'sec4d3': false,
-      'sec4d4': false,
-      'sec4e1': false,
-      'sec4e2': false,
-      'sec4e3': false,
-      'sec4e4': false,
-      'sec4e5': false,
-      'sec4e6': false,
-      'sec4e7': false,
-      'sec4e8': false,
-      'sec4e9': false,
-      'sec4e10': false,
-    };
     for (var checkBoxName in checkboxVals) {
-     storage.setItem(checkBoxName,JSON.stringify(checkboxVals[checkBoxName]));
+      storage.setItem(checkBoxName, JSON.stringify(checkboxVals[checkBoxName]));
     }
   }
 }
 
-/*
-
-storage.setItem = function(key, value) {
-  this.setItem(key, JSON.stringify(value));
-}
-*/
-function setupPageVisits() {
-  var storage = window.localStorage;
-
-  if (localStorage.getItem("pageVisits") === null) {
-    var pageVisits = {
-      'mhbsmain': 0,
-      'mhbsvideos': 0,
-      'page1': 0,
-      'section1': 0,
-      'section1a': 0,
-      'section1b': 0,
-      'section1c': 0,
-      'section2': 0,
-      'section2a': 0,
-      'section2b': 0,
-      'section2c': 0,
-      'section2d': 0,
-      'section2e': 0,
-      'section3': 0,
-      'section3a': 0,
-      'section3b': 0,
-      'section3c': 0,
-      'section3d': 0,
-      'section3e': 0,
-      'section3f': 0,
-      'section3g': 0,
-      'section4': 0,
-      'section4a': 0,
-      'section4b': 0,
-      'section4c': 0,
-      'section4d': 0,
-      'section4e': 0,
-      'section5': 0,
-      'section5a': 0,
-      'section5b': 0,
-      'section6': 0,
-      'section6a': 0,
-      'section6b': 0,
-      'section6c': 0,
-      'section6d': 0,
-      'section6e': 0,
-      'section7': 0,
-    };
-    for (var pageName in pageVisits) {
-      storage.setItem(pageName,JSON.stringify(pageVisits[pageName]));
-    }
-  }
-}
-
-//swiper
+//*swiper
 var swiper = app.swiper.create('.swiper-container', {
   speed: 400,
   spaceBetween: 100
 });
-
 
 // Events
 app.on('credentialsRead', function () {
@@ -459,27 +418,21 @@ var favoriteToastErr = app.toast.create({
 function addToFavorites(id) {
   // grab the id of the item to add
   var id = id.slice(1, -1);
-
   // get local storage
   var storage = window.localStorage;
-
   // get favorites list of user
   var storedFavorites = storage.getItem(app.data.user.username + "favorites");
   // item to append
   var appendToFavorites;
   var favoritesArray = [];
-
   // if this is the first favorite for the user, create a key/value pair
   if (storedFavorites === null) {
     appendToFavorites = id;
   } else {
     appendToFavorites = storedFavorites + "," + id;
-
     // turn to array
     favoritesArray = storedFavorites.split(',');
   }
-
-
   // check if the id passed in is already in the favorites list
   if (favoritesArray.includes(id)) {
     favoriteToastErr.open();
@@ -510,12 +463,10 @@ $$(document).on('click', "#updateFavorites", function () {
   }
 });
 
-
 // remove from favorites
 function removeFromFavorites(param) {
   // holds the index and id of element
   var arr = param.split(",");
-
   var id = arr[0];
   var index = arr[1];
 
@@ -527,15 +478,11 @@ function removeFromFavorites(param) {
   if (favorites != null) {
     var favoritesToArr = favorites.split(',');
     var newValue = "";
-
     favoritesToArr = favoritesToArr.filter(item => item !== id);
-
     console.log("favorites arr length" + favoritesToArr.length);
-
     for (var i in favoritesToArr) {
       newValue += "," + favoritesToArr[i];
     }
-
     storage.setItem(app.data.user.username + "favorites", newValue);
   }
 }
@@ -560,25 +507,19 @@ function downloadContent() {
   var id = currentID;
   console.log("LOGIN INFO" + tempCredentials.username + " " + id + " " + tempCredentials.password);
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-
     console.log('file system open: ' + fs.name);
-
     fs.root.getFile('bot.png', {create: true, exclusive: false}, function (fileEntry) {
       console.log('fileEntry is file? ' + fileEntry.isFile.toString());
       var oReq = new XMLHttpRequest();
-
       var server = appServer + "/" + id + "/data";
       // Make sure you add the domain name to the Content-Security-Policy <meta> element.
       oReq.open("GET", server, true);
       oReq.setRequestHeader('Authorization', 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password));
-
       // Define how you want the XHR data to come back
       oReq.responseType = "blob";
       oReq.onload = function (oEvent) {
         var blob = oReq.response; // Note: not oReq.responseText
-
         if (blob) {
-
           var reader = new FileReader();
           reader.onloadend = function (evt) {
             // writing the file
@@ -611,7 +552,6 @@ function fileToWrite(obj, id) {
       //  console.log("Successfully wrote file " + fs.toString());
       //    app.emit("fileStatus",fs);
     });
-
   }, function (fileError) {
     console.log("error writing to file" + fileError);
   });
@@ -624,31 +564,25 @@ function writeFile(fileEntry, dataObj) {
     fileWriter.onwriteend = function () {
       app.emit("fileStatus", fileEntry.fullPath);
     };
-
     fileWriter.onerror = function (e) {
       console.log("Failed file write: " + e.toString());
     };
-
     // If data object is not passed in,
     // create a new Blob instead.
     if (!dataObj) {
       dataObj = new Blob(['some file data'], {type: 'video/ogg'});
     }
-
     fileWriter.write(dataObj);
   });
 }
 
 // log in to the server to get xml data
 function accessOnlineContent() {
-
   var rawDocuments = {
     rawXML: {}
   };
-
   var server = appServer + ".xml";
   console.log("Access Online Content");
-
   // send request
   app.request.get(server, {
       username: tempCredentials.username,
@@ -664,26 +598,6 @@ function accessOnlineContent() {
       alert(error + "The content is not retrievable");
     })
 }
-
-/*
-$$(document).on('page:onPageBeforeInit', '.page[data-name="videoList"]', function (e) {
-  /*
-  console.log("trigger downloading content");
-  if(download){
-    app.preloader.show();
-    console.log("We can download");
-    accessOnlineContent();
-    download = false;
-  }
-  else {
-    console.log("Other credentials Read");
-    // reset flag since we are done reading
-    downloadAble = true;
-    setHeaders();
-  }
-
-});
-*/
 
 // use to re-download media content
 function syncOnlineContent() {
@@ -768,9 +682,7 @@ function parseMetaData(doc) {
   req.onerror = function (e) {
     console.log(e);
   };
-
   req.send();
-
 }
 
 function getContentTypes(parser, doc, id, callback) {
@@ -808,9 +720,12 @@ document.addEventListener("deviceready", function (e) {
 // set intent listener, send broadcast
 function onLoad() {
   console.log("loading app ");
-var storage = window.localStorage;
+  var storage = window.localStorage;
+  storage.clear();
   setupPageVisits();
   setupCheckBoxValues();
+  setUpCheckBoxListeners();
+  setUpPageEvents();
 
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (ssInactive) {
@@ -877,7 +792,6 @@ function logIn() {
       username: tempCredentials.username,
       password: tempCredentials.password
     }, function (data) {
-
       app.emit("login");
       if (!data.includes(tempCredentials.username)) {
         alert('Login was not successful, please login mHBS tracker-capture');
@@ -915,7 +829,6 @@ function onIntent(intent) {
   console.log("got intent");
   // clear out the intent handler
   window.plugins.intent.setNewIntentHandler(null);
-
   //todo: error handling, check if null
   if (intent != null) {
     console.log("intent not null");
@@ -945,7 +858,6 @@ function onIntent(intent) {
 function isEmpty(str) {
   return (!str || 0 === str.length);
 }
-
 // set tempCredentials
 function storeCredentials() {
   app.storage.set(function () {
@@ -990,2554 +902,112 @@ function getCredentials() {
   }, 'serverURL');
 }
 
-
 // get the tempCredentials from the JSON
 function parseCredentials(intent) {
   return intent.extras['key:loginRequest'];
 }
 
-
-//fabric
-function getTimeStamp(){
+// Helpers ----------
+function getTimeStamp() {
   var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
+  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
   return dateTime;
 }
 
-
-function sendAnswerToFabric(pageName){
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+ pageName + getTimeStamp()});
-
+// send to fabric
+function sendAnswerToFabric(pageName) {
+  window.fabric.Answers.sendContentView("mHBSguide", "timestamps", 1234, {"username page startTime": app.data.user.username + pageName + getTimeStamp()});
 }
 
-function logPageVisit(pageName){
+// log page visits
+function logPageVisit(pageName) {
   var numberOfPageVisits = localStorage.getItem(pageName);
   console.log("Page Name: " + pageName);
   console.log("Number of Page Visits: " + numberOfPageVisits);
-  numberOfPageVisits = numberOfPageVisits + 1;
-  storage.setItem(pageName, JSON.stringify(numberOfPageVisits));
+  numberOfPageVisits = parseInt(numberOfPageVisits) + 1;
+  storage.setItem(pageName, numberOfPageVisits);
 }
 
-//guide main page
-$$(document).on('page:beforein', '.page[data-name="mhbsmain"]', function (e,page) {
-//sendAnswerToFabric(page.name);
-logPageVisit(page.name);
-});
+// used to initialize checkboxes to false
+function initCheckboxesToFalse() {
+  $$('input[type="checkbox"]').prop('checked', false);
+}
 
-/*
-$$(document).on('page:beforeout', '.page[data-name="mhbsmain"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" mhbsmain "+dateTime});
-});
-//fabric page1
-$$(document).on('page:beforein', '.page[data-name="page1"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" page1 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.page1 = pageVisits.page1+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="page1"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" page1 "+dateTime});
-});
-//fabric section1
-$$(document).on('page:beforein', '.page[data-name="section1"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section1 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section1 = pageVisits.section1+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section1"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section1 "+dateTime});
-});
-//section1a
-$$(document).on('page:beforein', '.page[data-name="section1a"]', function (e) {
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec1a1===true){
-    document.getElementById("check1a1").checked = true;
-  }else {
-    document.getElementById("check1a1").checked = false;
+// initializes checkboxes to stored values
+function initCheckboxesToStoredVal(checkBoxes) {
+  for (var i = 0; i < checkBoxes.length; i++) {
+    var checkBoxVal = storage.getItem(checkBoxes[i].id);
+    if (checkBoxVal === true) {
+      document.getElementById(checkBoxes[i].id).checked = true;
+    } else {
+      document.getElementById(checkBoxes[i].id).checked = false;
+    }
   }
-  //second checkbox
-  if(checkboxVals.sec1a2===true){
-    document.getElementById("check1a2").checked = true;
-  }else {
-    document.getElementById("check1a2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec1a3===true){
-    document.getElementById("check1a3").checked = true;
-  }else {
-    document.getElementById("check1a3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec1a4===true){
-    document.getElementById("check1a4").checked = true;
-  }else {
-    document.getElementById("check1a4").checked = false;
-  }
-  //fabric
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section1a "+dateTime});
-  //local storage no of visits
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section1a = pageVisits.section1a+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-  //store checkbox values
-  $$(document).on('change','#check1a1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1a1 = true;
-    }
-    else{
-      checkboxVals.sec1a1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check1a2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1a2 = true;
-    }
-    else{
-      checkboxVals.sec1a2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check1a3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1a3 = true;
-    }
-    else{
-      checkboxVals.sec1a3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check1a4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1a4 = true;
-    }
-    else{
-      checkboxVals.sec1a4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //zoom
-  $$(document).on('click',".zoomImage", function () {
-    console.log("click image");
-    hammerIt(document.getElementById("sampleImage"));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section1a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section1a "+dateTime});
-});
-//fabric section1b
-$$(document).on('page:beforein', '.page[data-name="section1b"]', function (e) {
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec1b1===true){
-    document.getElementById("check1b1").checked = true;
-  }else {
-    document.getElementById("check1b1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec1b2===true){
-    document.getElementById("check1b2").checked = true;
-  }else {
-    document.getElementById("check1b2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec1b3===true){
-    document.getElementById("check1b3").checked = true;
-  }else {
-    document.getElementById("check1b3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec1b4===true){
-    document.getElementById("check1b4").checked = true;
-  }else {
-    document.getElementById("check1b4").checked = false;
-  }
-  //fabric
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section1b "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section1b = pageVisits.section1b+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-  //store checkbox values
-  $$(document).on('change','#check1b1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1b1 = true;
-    }
-    else{
-      checkboxVals.sec1b1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check1b2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1b2 = true;
-    }
-    else{
-      checkboxVals.sec1b2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check1b3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1b3 = true;
-    }
-    else{
-      checkboxVals.sec1b3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check1b4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1b4 = true;
-    }
-    else{
-      checkboxVals.sec1b4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section1b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section1b "+dateTime});
-});
-//fabric section1c
-$$(document).on('page:beforein', '.page[data-name="section1c"]', function (e) {
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec1c1===true){
-    document.getElementById("check1c1").checked = true;
-  }else {
-    document.getElementById("check1c1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec1c2===true){
-    document.getElementById("check1c2").checked = true;
-  }else {
-    document.getElementById("check1c2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec1c3===true){
-    document.getElementById("check1c3").checked = true;
-  }else {
-    document.getElementById("check1c3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec1c4===true){
-    document.getElementById("check1c4").checked = true;
-  }else {
-    document.getElementById("check1c4").checked = false;
-  }
-  //5th
-  if(checkboxVals.sec1c5===true){
-    document.getElementById("check1c5").checked = true;
-  }else {
-    document.getElementById("check1c5").checked = false;
-  }
-  //6th
-  if(checkboxVals.sec1c6===true){
-    document.getElementById("check1c6").checked = true;
-  }else {
-    document.getElementById("check1c6").checked = false;
-  }
-  //7th checkbox
-  if(checkboxVals.sec1c7===true){
-    document.getElementById("check1c7").checked = true;
-  }else {
-    document.getElementById("check1c7").checked = false;
-  }
-  //fabric
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section1c "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section1c = pageVisits.section1c+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
+}
 
-  //store checkbox values
-  $$(document).on('change','#check1c1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1c1 = true;
-    }
-    else{
-      checkboxVals.sec1c1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check1c2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1c2 = true;
-    }
-    else{
-      checkboxVals.sec1c2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check1c3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1c3 = true;
-    }
-    else{
-      checkboxVals.sec1c3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check1c4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1c4 = true;
-    }
-    else{
-      checkboxVals.sec1c4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //5 checkbox
-  $$(document).on('change','#check1c5',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1c5 = true;
-    }
-    else{
-      checkboxVals.sec1c5 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //6 checkbox
-  $$(document).on('change','#check1c6',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1c6 = true;
-    }
-    else{
-      checkboxVals.sec1c6 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //7 checkbox
-  $$(document).on('change','#check1c7',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec1c7 = true;
-    }
-    else{
-      checkboxVals.sec1c7 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section1c"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section1c "+dateTime});
-});
-//fabric section2
-$$(document).on('page:beforein', '.page[data-name="section2"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section2 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section2 = pageVisits.section2+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section2"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section2 "+dateTime});
-});
-//section2a
-$$(document).on('page:beforein', '.page[data-name="section2a"]', function (e) {
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec2a1===true){
-    document.getElementById("check2a1").checked = true;
-  }else {
-    document.getElementById("check2a1").checked = false;
+// set up checkbox listeners for whole app
+function setUpCheckBoxListeners() {
+  for (var key in checkboxVals) {
+    var checkboxDomID = "#" + key;
+    $$(document).on('change', checkboxDomID, function () {
+      var checkboxVal = storage.getItem(key);
+      if (this.checked) {
+        checkboxVal = true;
+      } else {
+        checkboxVal = false;
+      }
+      storage.setItem(key, JSON.stringify(checkboxVal));
+    })
   }
-  //second checkbox
-  if(checkboxVals.sec2a2===true){
-    document.getElementById("check2a2").checked = true;
-  }else {
-    document.getElementById("check2a2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec2a3===true){
-    document.getElementById("check2a3").checked = true;
-  }else {
-    document.getElementById("check2a3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec2a4===true){
-    document.getElementById("check2a4").checked = true;
-  }else {
-    document.getElementById("check2a4").checked = false;
-  }
+}
 
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section2a "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section2a = pageVisits.section2a+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check2a1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2a1 = true;
-    }
-    else{
-      checkboxVals.sec2a1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check2a2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2a2 = true;
-    }
-    else{
-      checkboxVals.sec2a2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check2a3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2a3 = true;
-    }
-    else{
-      checkboxVals.sec2a3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check2a4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2a4 = true;
-    }
-    else{
-      checkboxVals.sec2a4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section2a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section2a "+dateTime});
-});
-//section2b
-$$(document).on('page:beforein', '.page[data-name="section2b"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec2b1===true){
-    document.getElementById("check2b1").checked = true;
-  }else {
-    document.getElementById("check2b1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec2b2===true){
-    document.getElementById("check2b2").checked = true;
-  }else {
-    document.getElementById("check2b2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec2b3===true){
-    document.getElementById("check2b3").checked = true;
-  }else {
-    document.getElementById("check2b3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec2b4===true){
-    document.getElementById("check2b4").checked = true;
-  }else {
-    document.getElementById("check2b4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section2b "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section2b = pageVisits.section2b+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check2b1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2b1 = true;
-    }
-    else{
-      checkboxVals.sec2b1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check2b2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2b2 = true;
-    }
-    else{
-      checkboxVals.sec2b2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check2b3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2b3 = true;
-    }
-    else{
-      checkboxVals.sec2b3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check2b4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2b4 = true;
-    }
-    else{
-      checkboxVals.sec2b4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section2b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section2b "+dateTime});
-});
-//section2c
-$$(document).on('page:beforein', '.page[data-name="section2c"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec2c1===true){
-    document.getElementById("check2c1").checked = true;
-  }else {
-    document.getElementById("check2c1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec2c2===true){
-    document.getElementById("check2c2").checked = true;
-  }else {
-    document.getElementById("check2c2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec2c3===true){
-    document.getElementById("check2c3").checked = true;
-  }else {
-    document.getElementById("check2c3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec2c4===true){
-    document.getElementById("check2c4").checked = true;
-  }else {
-    document.getElementById("check2c4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section2c "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section2c = pageVisits.section2c+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check2c1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2c1 = true;
-    }
-    else{
-      checkboxVals.sec2c1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check2c2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2c2 = true;
-    }
-    else{
-      checkboxVals.sec2c2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check2c3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2c3 = true;
-    }
-    else{
-      checkboxVals.sec2c3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check2c4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2c4 = true;
-    }
-    else{
-      checkboxVals.sec2c4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-
-});
-$$(document).on('page:afterout', '.page[data-name="section2c"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section2c "+dateTime});
-});
-//section2d
-$$(document).on('page:beforein', '.page[data-name="section2d"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec2d1===true){
-    document.getElementById("check2d1").checked = true;
-  }else {
-    document.getElementById("check2d1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec2d2===true){
-    document.getElementById("check2d2").checked = true;
-  }else {
-    document.getElementById("check2d2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec2d3===true){
-    document.getElementById("check2d3").checked = true;
-  }else {
-    document.getElementById("check2d3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec2d4===true){
-    document.getElementById("check2d4").checked = true;
-  }else {
-    document.getElementById("check2d4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section2d "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section2d = pageVisits.section2d+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check2d1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2d1 = true;
-    }
-    else{
-      checkboxVals.sec2d1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check2d2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2d2 = true;
-    }
-    else{
-      checkboxVals.sec2d2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check2d3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2d3 = true;
-    }
-    else{
-      checkboxVals.sec2d3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check2d4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2d4 = true;
-    }
-    else{
-      checkboxVals.sec2d4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section2d"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section2d "+dateTime});
-});
-//section2e
-$$(document).on('page:beforein', '.page[data-name="section2e"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec2e1===true){
-    document.getElementById("check2e1").checked = true;
-  }else {
-    document.getElementById("check2e1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec2e2===true){
-    document.getElementById("check2e2").checked = true;
-  }else {
-    document.getElementById("check2e2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec2e3===true){
-    document.getElementById("check2e3").checked = true;
-  }else {
-    document.getElementById("check2e3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec2e4===true){
-    document.getElementById("check2e4").checked = true;
-  }else {
-    document.getElementById("check2e4").checked = false;
-  }
-  //5th
-  if(checkboxVals.sec2e5===true){
-    document.getElementById("check2e5").checked = true;
-  }else {
-    document.getElementById("check2e5").checked = false;
-  }
-  //6th
-  if(checkboxVals.sec2e6===true){
-    document.getElementById("check2e6").checked = true;
-  }else {
-    document.getElementById("check2e6").checked = false;
-  }
-  //7th checkbox
-  if(checkboxVals.sec2e7===true){
-    document.getElementById("check2e7").checked = true;
-  }else {
-    document.getElementById("check2e7").checked = false;
-  }
-  //8th checkbox
-  if(checkboxVals.sec2e8===true){
-    document.getElementById("check2e8").checked = true;
-  }else {
-    document.getElementById("check2e8").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section2e "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section2e = pageVisits.section2e+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check2e1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e1 = true;
-    }
-    else{
-      checkboxVals.sec2e1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check2e2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e2 = true;
-    }
-    else{
-      checkboxVals.sec2e2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check2e3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e3 = true;
-    }
-    else{
-      checkboxVals.sec2e3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check2e4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e4 = true;
-    }
-    else{
-      checkboxVals.sec2e4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //5 checkbox
-  $$(document).on('change','#check2e5',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e5 = true;
-    }
-    else{
-      checkboxVals.sec2e5 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //6 checkbox
-  $$(document).on('change','#check2e6',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e6 = true;
-    }
-    else{
-      checkboxVals.sec2e6 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //7 checkbox
-  $$(document).on('change','#check2e7',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e7 = true;
-    }
-    else{
-      checkboxVals.sec2e7 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //8 checkbox
-  $$(document).on('change','#check2e8',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec2e8 = true;
-    }
-    else{
-      checkboxVals.sec2e8 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section2e"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section2e "+dateTime});
-});
-//section3
-$$(document).on('page:beforein', '.page[data-name="section3"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section3 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3 = pageVisits.section3+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section3"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section3 "+dateTime});
-});
-//section3a
-$$(document).on('page:beforein', '.page[data-name="section3a"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec3a1===true){
-    document.getElementById("check3a1").checked = true;
-  }else {
-    document.getElementById("check3a1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec3a2===true){
-    document.getElementById("check3a2").checked = true;
-  }else {
-    document.getElementById("check3a2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec3a3===true){
-    document.getElementById("check3a3").checked = true;
-  }else {
-    document.getElementById("check3a3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec3a4===true){
-    document.getElementById("check3a4").checked = true;
-  }else {
-    document.getElementById("check3a4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section3a "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3a = pageVisits.section3a+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check3a1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3a1 = true;
-    }
-    else{
-      checkboxVals.sec3a1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check3a2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3a2 = true;
-    }
-    else{
-      checkboxVals.sec3a2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check3a3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3a3 = true;
-    }
-    else{
-      checkboxVals.sec3a3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check3a4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3a4 = true;
-    }
-    else{
-      checkboxVals.sec3a4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section3a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section3a "+dateTime});
-});
-//section3b
-$$(document).on('page:beforein', '.page[data-name="section3b"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec3b1===true){
-    document.getElementById("check3b1").checked = true;
-  }else {
-    document.getElementById("check3b1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec3b2===true){
-    document.getElementById("check3b2").checked = true;
-  }else {
-    document.getElementById("check3b2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec3b3===true){
-    document.getElementById("check3b3").checked = true;
-  }else {
-    document.getElementById("check3b3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec3b4===true){
-    document.getElementById("check3b4").checked = true;
-  }else {
-    document.getElementById("check3b4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section3b "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3b = pageVisits.section3b+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check3b1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3b1 = true;
-    }
-    else{
-      checkboxVals.sec3b1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check3b2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3b2 = true;
-    }
-    else{
-      checkboxVals.sec3b2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check3b3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3b3 = true;
-    }
-    else{
-      checkboxVals.sec3b3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check3b4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3b4 = true;
-    }
-    else{
-      checkboxVals.sec3b4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section3b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section3b "+dateTime});
-});
-//section3c
-$$(document).on('page:beforein', '.page[data-name="section3c"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec3c1===true){
-    document.getElementById("check3c1").checked = true;
-  }else {
-    document.getElementById("check3c1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec3c2===true){
-    document.getElementById("check3c2").checked = true;
-  }else {
-    document.getElementById("check3c2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec3c3===true){
-    document.getElementById("check3c3").checked = true;
-  }else {
-    document.getElementById("check3c3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec3c4===true){
-    document.getElementById("check3c4").checked = true;
-  }else {
-    document.getElementById("check3c4").checked = false;
-  }
-  //5th
-  if(checkboxVals.sec3c5===true){
-    document.getElementById("check3c5").checked = true;
-  }else {
-    document.getElementById("check3c5").checked = false;
-  }
-  //6th
-  if(checkboxVals.sec3c6===true){
-    document.getElementById("check3c6").checked = true;
-  }else {
-    document.getElementById("check3c6").checked = false;
-  }
-  //7th checkbox
-  if(checkboxVals.sec3c7===true){
-    document.getElementById("check3c7").checked = true;
-  }else {
-    document.getElementById("check3c7").checked = false;
-  }
-  //8th checkbox
-  if(checkboxVals.sec3c8===true){
-    document.getElementById("check3c8").checked = true;
-  }else {
-    document.getElementById("check3c8").checked = false;
-  }
-  //9th checkbox
-  if(checkboxVals.sec3c9===true){
-    document.getElementById("check3c9").checked = true;
-  }else {
-    document.getElementById("check3c9").checked = false;
-  }
-  //10th checkbox
-  if(checkboxVals.sec3c10===true){
-    document.getElementById("check3c10").checked = true;
-  }else {
-    document.getElementById("check3c10").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section3c "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3c = pageVisits.section3c+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check3c1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c1 = true;
-    }
-    else{
-      checkboxVals.sec3c1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check3c2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c2 = true;
-    }
-    else{
-      checkboxVals.sec3c2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check3c3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c3 = true;
-    }
-    else{
-      checkboxVals.sec3c3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check3c4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c4 = true;
-    }
-    else{
-      checkboxVals.sec3c4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //5 checkbox
-  $$(document).on('change','#check3c5',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c5 = true;
-    }
-    else{
-      checkboxVals.sec3c5 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //6 checkbox
-  $$(document).on('change','#check3c6',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c6 = true;
-    }
-    else{
-      checkboxVals.sec3c6 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //7 checkbox
-  $$(document).on('change','#check3c7',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c7 = true;
-    }
-    else{
-      checkboxVals.sec3c7 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //8 checkbox
-  $$(document).on('change','#check3c8',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c8 = true;
-    }
-    else{
-      checkboxVals.sec3c8 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //9 checkbox
-  $$(document).on('change','#check3c9',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c9 = true;
-    }
-    else{
-      checkboxVals.sec3c9 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //10 checkbox
-  $$(document).on('change','#check3c10',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3c10 = true;
-    }
-    else{
-      checkboxVals.sec3c10 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section3c"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section3c "+dateTime});
-});
-//section3d
-$$(document).on('page:beforein', '.page[data-name="section3d"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec3d1===true){
-    document.getElementById("check3d1").checked = true;
-  }else {
-    document.getElementById("check3d1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec3d2===true){
-    document.getElementById("check3d2").checked = true;
-  }else {
-    document.getElementById("check3d2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec3d3===true){
-    document.getElementById("check3d3").checked = true;
-  }else {
-    document.getElementById("check3d3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec3d4===true){
-    document.getElementById("check3d4").checked = true;
-  }else {
-    document.getElementById("check3d4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section3d "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3d = pageVisits.section3d+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check3d1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3d1 = true;
-    }
-    else{
-      checkboxVals.sec3d1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check3d2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3d2 = true;
-    }
-    else{
-      checkboxVals.sec3d2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check3d3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3d3 = true;
-    }
-    else{
-      checkboxVals.sec3d3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check3d4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3d4 = true;
-    }
-    else{
-      checkboxVals.sec3d4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section3d"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section3d "+dateTime});
-});
-//section3e
-$$(document).on('page:beforein', '.page[data-name="section3e"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec3e1===true){
-    document.getElementById("check3e1").checked = true;
-  }else {
-    document.getElementById("check3e1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec3e2===true){
-    document.getElementById("check3e2").checked = true;
-  }else {
-    document.getElementById("check3e2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec3e3===true){
-    document.getElementById("check3e3").checked = true;
-  }else {
-    document.getElementById("check3e3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec3e4===true){
-    document.getElementById("check3e4").checked = true;
-  }else {
-    document.getElementById("check3e4").checked = false;
-  }
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":app.data.user.username+" section3e "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3e = pageVisits.section3e+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check3e1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3e1 = true;
-    }
-    else{
-      checkboxVals.sec3e1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check3e2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3e2 = true;
-    }
-    else{
-      checkboxVals.sec3e2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check3e3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3e3 = true;
-    }
-    else{
-      checkboxVals.sec3e3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check3e4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3e4 = true;
-    }
-    else{
-      checkboxVals.sec3e4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section3e"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":app.data.user.username+" section3e "+dateTime});
-});
--------------------------------------------------
-*/
-
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//section3f
-$$(document).on('page:beforein', '.page[data-name="section3f"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if (checkboxVals.sec3f1 === true) {
-    document.getElementById("check3f1").checked = true;
-  } else {
-    document.getElementById("check3f1").checked = false;
-  }
-  //second checkbox
-  if (checkboxVals.sec3f2 === true) {
-    document.getElementById("check3f2").checked = true;
-  } else {
-    document.getElementById("check3f2").checked = false;
-  }
-  //third checkbox
-  if (checkboxVals.sec3f3 === true) {
-    document.getElementById("check3f3").checked = true;
-  } else {
-    document.getElementById("check3f3").checked = false;
-  }
-  //forth checkbox
-  if (checkboxVals.sec3f4 === true) {
-    document.getElementById("check3f4").checked = true;
-  } else {
-    document.getElementById("check3f4").checked = false;
-  }
-});
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide", "timestamps", 1234, {"username page startTime": username + " section3f " + dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3f = pageVisits.section3f + 1;
-  storage.setItem("pageVisits", JSON.stringify(pageVisits));
-
-
-  //store checkbox values
-  $$(document).on('change','#check3f1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3f1 = true;
-    }
-    else{
-      checkboxVals.sec3f1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check3f2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3f2 = true;
-    }
-    else{
-      checkboxVals.sec3f2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check3f3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3f3 = true;
-    }
-    else{
-      checkboxVals.sec3f3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check3f4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3f4 = true;
-    }
-    else{
-      checkboxVals.sec3f4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section3f"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section3f "+dateTime});
-});
-//section3g
-$$(document).on('page:beforein', '.page[data-name="section3g"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec3g1===true){
-    document.getElementById("check3g1").checked = true;
-  }else {
-    document.getElementById("check3g1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec3g2===true){
-    document.getElementById("check3g2").checked = true;
-  }else {
-    document.getElementById("check3g2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec3g3===true){
-    document.getElementById("check3g3").checked = true;
-  }else {
-    document.getElementById("check3g3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec3g4===true){
-    document.getElementById("check3g4").checked = true;
-  }else {
-    document.getElementById("check3g4").checked = false;
-  }
-  //5th
-  if(checkboxVals.sec3g5===true){
-    document.getElementById("check3g5").checked = true;
-  }else {
-    document.getElementById("check3g5").checked = false;
-  }
-  //6th
-  if(checkboxVals.sec3g6===true){
-    document.getElementById("check3g6").checked = true;
-  }else {
-    document.getElementById("check3g6").checked = false;
-  }
-  //7th checkbox
-  if(checkboxVals.sec3g7===true){
-    document.getElementById("check3g7").checked = true;
-  }else {
-    document.getElementById("check3g7").checked = false;
-  }
-  //8th checkbox
-  if(checkboxVals.sec3g8===true){
-    document.getElementById("check3g8").checked = true;
-  }else {
-    document.getElementById("check3g8").checked = false;
-  }
-  //9th checkbox
-  if(checkboxVals.sec3g9===true){
-    document.getElementById("check3g9").checked = true;
-  }else {
-    document.getElementById("check3g9").checked = false;
-  }
-  //10th checkbox
-  if(checkboxVals.sec3g10===true){
-    document.getElementById("check3g10").checked = true;
-  }else {
-    document.getElementById("check3g10").checked = false;
-  }
-  //11th checkbox
-  if(checkboxVals.sec3g11===true){
-    document.getElementById("check3g11").checked = true;
-  }else {
-    document.getElementById("check3g11").checked = false;
-  }
-   //12th checkbox
-    if(checkboxVals.sec3g12===true){
-      document.getElementById("check3g12").checked = true;
-    }else {
-      document.getElementById("check3g12").checked = false;
-    }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section3g "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section3g = pageVisits.section3g+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-  //store checkbox values
-  $$(document).on('change','#check3g1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g1 = true;
-    }
-    else{
-      checkboxVals.sec3g1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check3g2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g2 = true;
-    }
-    else{
-      checkboxVals.sec3g2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check3g3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g3 = true;
-    }
-    else{
-      checkboxVals.sec3g3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check3g4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g4 = true;
-    }
-    else{
-      checkboxVals.sec3g4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //5 checkbox
-  $$(document).on('change','#check3g5',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g5 = true;
-    }
-    else{
-      checkboxVals.sec3g5 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //6 checkbox
-  $$(document).on('change','#check3g6',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g6 = true;
-    }
-    else{
-      checkboxVals.sec3g6 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //7 checkbox
-  $$(document).on('change','#check3g7',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g7 = true;
-    }
-    else{
-      checkboxVals.sec3g7 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //8 checkbox
-  $$(document).on('change','#check3g8',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g8 = true;
-    }
-    else{
-      checkboxVals.sec3g8 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //9 checkbox
-  $$(document).on('change','#check3g9',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g9 = true;
-    }
-    else{
-      checkboxVals.sec3g9 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //10 checkbox
-  $$(document).on('change','#check3g10',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g10 = true;
-    }
-    else{
-      checkboxVals.sec3g10 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //11 checkbox
-  $$(document).on('change','#check3g11',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g11 = true;
-    }
-    else{
-      checkboxVals.sec3g11 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //12 checkbox
-  $$(document).on('change','#check3g12',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec3g12 = true;
-    }
-    else{
-      checkboxVals.sec3g12 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section3g"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section3g "+dateTime});
-});
-//section4
-$$(document).on('page:beforein', '.page[data-name="section4"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section4 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section4 = pageVisits.section4+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section4"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section4 "+dateTime});
-});
-//section4a
-$$(document).on('page:beforein', '.page[data-name="section4a"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec4a1===true){
-    document.getElementById("check4a1").checked = true;
-  }else {
-    document.getElementById("check4a1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec4a2===true){
-    document.getElementById("check4a2").checked = true;
-  }else {
-    document.getElementById("check4a2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec4a3===true){
-    document.getElementById("check4a3").checked = true;
-  }else {
-    document.getElementById("check4a3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec4a4===true){
-    document.getElementById("check4a4").checked = true;
-  }else {
-    document.getElementById("check4a4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section4a "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section4a = pageVisits.section4a+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check4a1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4a1 = true;
-    }
-    else{
-      checkboxVals.sec4a1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check4a2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4a2 = true;
-    }
-    else{
-      checkboxVals.sec4a2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check4a3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4a3 = true;
-    }
-    else{
-      checkboxVals.sec4a3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check4a4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4a4 = true;
-    }
-    else{
-      checkboxVals.sec4a4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section4a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section4a "+dateTime});
-});
-//section4b
-$$(document).on('page:beforein', '.page[data-name="section4b"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec4b1===true){
-    document.getElementById("check4b1").checked = true;
-  }else {
-    document.getElementById("check4b1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec4b2===true){
-    document.getElementById("check4b2").checked = true;
-  }else {
-    document.getElementById("check4b2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec4b3===true){
-    document.getElementById("check4b3").checked = true;
-  }else {
-    document.getElementById("check4b3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec4b4===true){
-    document.getElementById("check4b4").checked = true;
-  }else {
-    document.getElementById("check4b4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section4b "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section4b = pageVisits.section4b+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check4b1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4b1 = true;
-    }
-    else{
-      checkboxVals.sec4b1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check4b2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4b2 = true;
-    }
-    else{
-      checkboxVals.sec4b2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check4b3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4b3 = true;
-    }
-    else{
-      checkboxVals.sec4b3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check4b4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4b4 = true;
-    }
-    else{
-      checkboxVals.sec4b4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section4b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section4b "+dateTime});
-});
-//section4c
-$$(document).on('page:beforein', '.page[data-name="section4c"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec4c1===true){
-    document.getElementById("check4c1").checked = true;
-  }else {
-    document.getElementById("check4c1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec4c2===true){
-    document.getElementById("check4c2").checked = true;
-  }else {
-    document.getElementById("check4c2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec4c3===true){
-    document.getElementById("check4c3").checked = true;
-  }else {
-    document.getElementById("check4c3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec4c4===true){
-    document.getElementById("check4c4").checked = true;
-  }else {
-    document.getElementById("check4c4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section4c "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section4c = pageVisits.section4c+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check4c1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4c1 = true;
-    }
-    else{
-      checkboxVals.sec4c1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check4c2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4c2 = true;
-    }
-    else{
-      checkboxVals.sec4c2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check4c3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4c3 = true;
-    }
-    else{
-      checkboxVals.sec4c3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check4c4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4c4 = true;
-    }
-    else{
-      checkboxVals.sec4c4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section4c"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section4c "+dateTime});
-});
-//section4d
-$$(document).on('page:beforein', '.page[data-name="section4d"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec4d1===true){
-    document.getElementById("check4d1").checked = true;
-  }else {
-    document.getElementById("check4d1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec4d2===true){
-    document.getElementById("check4d2").checked = true;
-  }else {
-    document.getElementById("check4d2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec4d3===true){
-    document.getElementById("check4d3").checked = true;
-  }else {
-    document.getElementById("check4d3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec4d4===true){
-    document.getElementById("check4d4").checked = true;
-  }else {
-    document.getElementById("check4d4").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section4d "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section4d = pageVisits.section4d+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check4d1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4d1 = true;
-    }
-    else{
-      checkboxVals.sec4d1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check4d2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4d2 = true;
-    }
-    else{
-      checkboxVals.sec4d2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check4d3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4d3 = true;
-    }
-    else{
-      checkboxVals.sec4d3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check4d4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4d4 = true;
-    }
-    else{
-      checkboxVals.sec4d4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-});
-$$(document).on('page:afterout', '.page[data-name="section4d"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section4d "+dateTime});
-});
-//section4e
-$$(document).on('page:beforein', '.page[data-name="section4e"]', function (e) {
-
-  //initialize checkbox values from local storage
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec4e1===true){
-    document.getElementById("check4e1").checked = true;
-  }else {
-    document.getElementById("check4e1").checked = false;
-  }
-  //second checkbox
-  if(checkboxVals.sec4e2===true){
-    document.getElementById("check4e2").checked = true;
-  }else {
-    document.getElementById("check4e2").checked = false;
-  }
-  //third checkbox
-  if(checkboxVals.sec4e3===true){
-    document.getElementById("check4e3").checked = true;
-  }else {
-    document.getElementById("check4e3").checked = false;
-  }
-  //forth checkbox
-  if(checkboxVals.sec4e4===true){
-    document.getElementById("check4e4").checked = true;
-  }else {
-    document.getElementById("check4e4").checked = false;
-  }
-  //five
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec4e5===true){
-    document.getElementById("check4e5").checked = true;
-  }else {
-    document.getElementById("check4e5").checked = false;
-  }
-  //6 checkbox
-  if(checkboxVals.sec4e6===true){
-    document.getElementById("check4e6").checked = true;
-  }else {
-    document.getElementById("check4e6").checked = false;
-  }
-  //7 checkbox
-  if(checkboxVals.sec4e7===true){
-    document.getElementById("check4e7").checked = true;
-  }else {
-    document.getElementById("check4e7").checked = false;
-  }
-  //8 checkbox
-  if(checkboxVals.sec4e8===true){
-    document.getElementById("check4e8").checked = true;
-  }else {
-    document.getElementById("check4e8").checked = false;
-  }
-  //9
-  var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-  if(checkboxVals.sec4e9===true){
-    document.getElementById("check4e9").checked = true;
-  }else {
-    document.getElementById("check4e9").checked = false;
-  }
-  //10 checkbox
-  if(checkboxVals.sec4e10===true){
-    document.getElementById("check4e10").checked = true;
-  }else {
-    document.getElementById("check4e10").checked = false;
-  }
-
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section4e "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section4e = pageVisits.section4e+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-
-  //store checkbox values
-  $$(document).on('change','#check4e1',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e1 = true;
-    }
-    else{
-      checkboxVals.sec4e1 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //second checkbox
-  $$(document).on('change','#check4e2',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e2 = true;
-    }
-    else{
-      checkboxVals.sec4e2 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //thrid checkbox
-  $$(document).on('change','#check4e3',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e3 = true;
-    }
-    else{
-      checkboxVals.sec4e3 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //fourth checkbox
-  $$(document).on('change','#check4e4',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e4 = true;
-    }
-    else{
-      checkboxVals.sec4e4 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //5 checkbox
-  $$(document).on('change','#check4e5',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e5 = true;
-    }
-    else{
-      checkboxVals.sec4e5 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //6 checkbox
-  $$(document).on('change','#check4e6',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e6 = true;
-    }
-    else{
-      checkboxVals.sec4e6 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //7 checkbox
-  $$(document).on('change','#check4e7',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e7 = true;
-    }
-    else{
-      checkboxVals.sec4e7 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //8 checkbox
-  $$(document).on('change','#check4e8',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e8 = true;
-    }
-    else{
-      checkboxVals.sec4e8 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //9 checkbox
-  $$(document).on('change','#check4e9',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e9 = true;
-    }
-    else{
-      checkboxVals.sec4e9 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-  //10 checkbox
-  $$(document).on('change','#check4e10',function(){
-    var checkboxVals = JSON.parse(localStorage.getItem('checkboxVals'));
-    if(this.checked){
-      checkboxVals.sec4e10 = true;
-    }
-    else{
-      checkboxVals.sec4e10 = false;
-    }
-    storage.setItem("checkboxVals",JSON.stringify(checkboxVals));
-  });
-
-});
-$$(document).on('page:afterout', '.page[data-name="section4e"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section4e "+dateTime});
-});
-//section5
-$$(document).on('page:beforein', '.page[data-name="section5"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section5 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section5 = pageVisits.section5+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section5"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section5 "+dateTime});
-});
-//section5a
-$$(document).on('page:beforein', '.page[data-name="section5a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section5a "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section5a = pageVisits.section5a+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section5a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section5a "+dateTime});
-});
-//section5b
-$$(document).on('page:beforein', '.page[data-name="section5b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section5b "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section5b = pageVisits.section5b+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section5b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section5b "+dateTime});
-});
-//section6
-$$(document).on('page:beforein', '.page[data-name="section6"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section6 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section6 = pageVisits.section6+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section6"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section6 "+dateTime});
-});
-//section6a
-$$(document).on('page:beforein', '.page[data-name="section6a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section6a "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section6a = pageVisits.section6a+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section6a"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section6a "+dateTime});
-});
-//section6b
-$$(document).on('page:beforein', '.page[data-name="section6b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section6b "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section6b = pageVisits.section6b+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section6b"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section6b "+dateTime});
-});
-//section6c
-$$(document).on('page:beforein', '.page[data-name="section6c"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section6c "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section6c = pageVisits.section6c+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section6c"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section6a "+dateTime});
-});
-//section6d
-$$(document).on('page:beforein', '.page[data-name="section6d"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section6d "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section6d = pageVisits.section6d+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section6d"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section6d "+dateTime});
-});
-//section6e
-$$(document).on('page:beforein', '.page[data-name="section6e"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section6e "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section6e = pageVisits.section6e+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section6e"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section6e "+dateTime});
-});
-//section7
-$$(document).on('page:beforein', '.page[data-name="section7"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" section7 "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.section7 = pageVisits.section7+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:afterout', '.page[data-name="section7"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" section7 "+dateTime});
-});
-//video main page
-$$(document).on('page:beforein', '.page[data-name="mhbsvideos"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page startTime":username+" mHBSvideos "+dateTime});
-  //local storage
-  var retrievedObject = localStorage.getItem('pageVisits');
-  var pageVisits = JSON.parse(retrievedObject);
-  pageVisits.mhbsvideos = pageVisits.mhbsvideos+1;
-  storage.setItem("pageVisits",JSON.stringify(pageVisits));
-});
-$$(document).on('page:beforeout', '.page[data-name="mhbsvideos"]', function (e) {
-  var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth()+1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  window.fabric.Answers.sendContentView("mHBSguide","timestamps",1234,{"username page endTime":username+" mHBSvideos "+dateTime});
-});
-*/
-
-
-/*
-//todo: implement with automated checkbox initialization
-// gets all the pages defined in pages/ and adds to page visits
-function setupPageVisits(){
-  var storage = window.localStorage;
-  if (localStorage.getItem("pageVisits") === null) {
-    var pageVisits = {};
-    for(var i in this.app.routes){
-      var tempPage = {};
-      var strSplit;
-      var route = this.app.routes[i];
-      if(route.url!=null) {
-        if(route.url.includes("pages")) {
-          strSplit = route.url.split("/").pop();
-          strSplit = strSplit.substring(0, strSplit.indexOf(".html"));
-          tempPage[strSplit] = 0;
-          pageVisits[i]= tempPage;
-        }
+// set up page events for all pages in app
+function setUpPageEvents() {
+  for (var i in this.app.routes) {
+    var pageName;
+    var route = this.app.routes[i];
+    if (route.url != null) {
+      if (route.url.includes("pages")) {
+        pageName = route.url.split("/").pop();
+        pageName = pageName.substring(0, pageName.indexOf(".html"));
+        setUpPageBeforeInEvent(pageName);
+        setUpPageBeforeOutEvent(pageName);
+        setUpAfterOutEvent(pageName);
       }
     }
-    storage.setItem("pageVisits",JSON.stringify(pageVisits));
   }
 }
-*/
+
+// set up page before in events
+function setUpPageBeforeInEvent(pageName) {
+  $$(document).on('page:beforein', '.page[data-name="' + pageName + '"]', function (e, page) {
+    // sendAnswerToFabric(page.name);
+    logPageVisit(page.name);
+    // if the page has checkboxes, init checkboxes to stored value
+    var checkBoxes = $$('input[type="checkbox"]');
+    if (checkBoxes.length > 0) {
+      console.log("this page has checkboxes");
+      initCheckboxesToStoredVal(checkBoxes);
+    } else {
+      console.log("this page does not have checkboxes");
+    }
+  });
+}
+
+// set up page before out events
+function setUpPageBeforeOutEvent(pageName) {
+  $$(document).on('page:beforeout', '.page[data-name="' + pageName + '"]', function (e, page) {
+    // sendAnswerToFabric(page.name);
+  });
+}
+
+// set up page after out events
+function setUpAfterOutEvent(pageName) {
+  $$(document).on('page:afterout', '.page[data-name="' + pageName + '"]', function (e, page) {
+    // sendAnswerToFabric(page.name);
+  });
+}
+
+
+
 
