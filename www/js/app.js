@@ -392,10 +392,23 @@ $$(document).on('click', ".pb-standalone-video", function () {
 });
 
 $$(document).on('click', ".mHBSTracker", function () {
-  console.log("clicked");
-  var sApp = startApp.set({
-    "application": 'org.hisp.dhis.android.trackercapture'
-  }).start();
+  window.plugins.intentShim.startActivity(
+    {
+      component:
+        {
+          "package": "org.hisp.dhis.android.trackercapture",
+          "class": "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"
+        }
+    },
+    function(intent)
+    {
+        console.log("success" + intent);
+    },
+    function()
+    {
+      console.log("fail");
+    }
+  );
 });
 
 // toasts to alert when user has added to favorites
@@ -732,13 +745,14 @@ function onLoad() {
     console.log("firing APP");
     $$("#updateFavorites").hide();
     window.plugins.intent.setNewIntentHandler(onIntent);
-// show the spinner while we are logging the user in and downloading content.
     app.preloader.show('blue');
+    // set up secure storage
     this.app.storage = ss();
     sendBroadcastToTracker();
   }
 }
 
+// send broadcast to tracker capture
 // send broadcast to tracker capture
 function sendBroadcastToTracker() {
   window.plugins.intentShim.sendBroadcast({
@@ -858,6 +872,7 @@ function onIntent(intent) {
 function isEmpty(str) {
   return (!str || 0 === str.length);
 }
+
 // set tempCredentials
 function storeCredentials() {
   app.storage.set(function () {
@@ -904,7 +919,11 @@ function getCredentials() {
 
 // get the tempCredentials from the JSON
 function parseCredentials(intent) {
-  return intent.extras['key:loginRequest'];
+  if(intent.extras['key:loginRequest']!=null) {
+    return intent.extras['key:loginRequest'];
+  }else{
+    alert("Something went wrong");
+  }
 }
 
 // Helpers ----------
