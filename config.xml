@@ -31,5 +31,4 @@
     <plugin name="cordova-plugin-file" spec="^6.0.1" />
     <plugin name="cordova-plugin-network-information" spec="^2.0.1" />
     <plugin name="cordova-plugin-secure-storage" spec="^2.6.8" />
-    <plugin name="com.napolitano.cordova.plugin.intent" spec="https://github.com/napolitano/cordova-plugin-intent" />
 </widget>

@@ -744,13 +744,16 @@ function onLoad() {
   if (ssInactive) {
     console.log("firing APP");
     $$("#updateFavorites").hide();
-    window.plugins.intent.setNewIntentHandler(onIntent);
+
+    window.plugins.intentShim.onIntent(onIntent);
+
     app.preloader.show('blue');
     // set up secure storage
     this.app.storage = ss();
     sendBroadcastToTracker();
   }
 }
+
 
 // send broadcast to tracker capture
 // send broadcast to tracker capture
@@ -842,7 +845,6 @@ function setAppUsername() {
 function onIntent(intent) {
   console.log("got intent");
   // clear out the intent handler
-  window.plugins.intent.setNewIntentHandler(null);
   //todo: error handling, check if null
   if (intent != null) {
     console.log("intent not null");
