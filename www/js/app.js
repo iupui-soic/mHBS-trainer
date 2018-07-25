@@ -733,8 +733,6 @@ document.addEventListener("deviceready", function (e) {
 // set intent listener, send broadcast
 function onLoad() {
   console.log("loading app ");
-  var storage = window.localStorage;
-  storage.clear();
   setupPageVisits();
   setupCheckBoxValues();
   setUpCheckBoxListeners();
@@ -843,34 +841,34 @@ function setAppUsername() {
 
 // handle any incoming intent
 function onIntent(intent) {
-  console.log("got intent");
   // clear out the intent handler
-  //todo: error handling, check if null
-  if (intent != null) {
-    console.log("intent not null");
     var credentialsArr = parseCredentials(intent);
-    if (credentialsArr.length === 3) {
-      console.log("length of tempCredentials " + credentialsArr.length);
-      tempCredentials.username = credentialsArr[0];
-      tempCredentials.password = credentialsArr[1];
-      tempCredentials.serverURL = credentialsArr[2];
-
-      // set app headers
-      setHeaders();
-      if (!isEmpty(tempCredentials.username) && !isEmpty(tempCredentials.password) && !isEmpty(tempCredentials.serverURL)) {
-        //todo: errors out if attempting to use app.data.tempCredentials
-        // storeCredentials
-        storeCredentials();
-        // login
-        logIn();
+    if (credentialsArr != null) {
+      if (credentialsArr.length === 3) {
+        console.log("length of tempCredentials " + credentialsArr.length);
+        tempCredentials.username = credentialsArr[0];
+        tempCredentials.password = credentialsArr[1];
+        tempCredentials.serverURL = credentialsArr[2];
+        // set app headers
+        setHeaders();
+        if (!isEmpty(tempCredentials.username) && !isEmpty(tempCredentials.password) && !isEmpty(tempCredentials.serverURL)) {
+          //todo: errors out if attempting to use app.data.tempCredentials
+          // storeCredentials
+          storeCredentials();
+          // login
+          logIn();
+        }
+      } else {
+        loginAlert();
       }
-    } else {
-      alert("Please login tracker-capture");
+    }else{
+      loginAlert();
     }
-
-  }
 }
 
+function loginAlert(){
+  alert("Please login tracker-capture");
+}
 function isEmpty(str) {
   return (!str || 0 === str.length);
 }
@@ -921,10 +919,15 @@ function getCredentials() {
 
 // get the tempCredentials from the JSON
 function parseCredentials(intent) {
-  if(intent.extras['key:loginRequest']!=null) {
-    return intent.extras['key:loginRequest'];
+  if(intent!=null) {
+    console.log(intent);
+    if(intent.extras!=null){
+      return intent.extras['key:loginRequest'];
+    }else{
+      loginAlert();
+    }
   }else{
-    alert("Something went wrong");
+    loginAlert();
   }
 }
 
