@@ -74,6 +74,34 @@ var view = app.views.create('#view-videoList', {
   url: '/videoList/'
 });
 
+//todo: change to tei org unit
+
+var eventPayload = {
+  "program": "dbEHq0V0V5j",
+  "orgUnit": "Hm0rRRXqFi5",
+  "eventDate": "",
+  "status": "COMPLETED",
+  "storedBy": "admin",
+  "coordinate": {
+    "latitude": 59.8,
+    "longitude": 10.9
+  },
+  "dataValues": [
+    // Number of abrupt exits or incomplete workflow for mHBS training app
+    { "dataElement": "ZYQJ87n45ye", "value": "" },
+    // Number of mHBS training app logins by pin
+    { "dataElement": "getqONgfDtE", "value": "" },
+    // Number of minutes mHBS training app was used offline
+    { "dataElement": "qOyP28eirAx", "value": "" },
+    // Number of screens used in mHBS training app
+    { "dataElement": "RrIe9CA11n6", "value": "" },
+    // Number of times mHBS training app was started
+    { "dataElement": "BgzISR1GmP8", "value": "" },
+    // Number of times mHBS training app was with network usage
+    { "dataElement": "qbT1F1k8cD7", "value": "" },
+  ]
+};
+
 // todo: automate
 var checkboxVals = {
   'check1a1': false,
