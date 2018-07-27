@@ -47,7 +47,7 @@ var secureParamsStored = 0;
 var myPhotoBrowserPopupDark;
 var logCount = 0;
 var videoCaption = "";
-var appServer = 'https://mhbs.info/api/documents';
+var appServer = 'https://mhbs.info/api/';
 var documentList = [];
 var downloadAble = false;
 var ssInactive = true;
@@ -75,7 +75,6 @@ var view = app.views.create('#view-videoList', {
 });
 
 //todo: change to tei org unit
-
 var eventPayload = {
   "program": "dbEHq0V0V5j",
   "orgUnit": "Hm0rRRXqFi5",
@@ -552,7 +551,7 @@ function downloadContent() {
     fs.root.getFile('bot.png', {create: true, exclusive: false}, function (fileEntry) {
       console.log('fileEntry is file? ' + fileEntry.isFile.toString());
       var oReq = new XMLHttpRequest();
-      var server = appServer + "/" + id + "/data";
+      var server = appServer + "documents/" + id + "/data";
       // Make sure you add the domain name to the Content-Security-Policy <meta> element.
       oReq.open("GET", server, true);
       oReq.setRequestHeader('Authorization', 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password));
@@ -622,7 +621,7 @@ function accessOnlineContent() {
   var rawDocuments = {
     rawXML: {}
   };
-  var server = appServer + ".xml";
+  var server = appServer + "documents.xml";
   console.log("Access Online Content");
   // send request
   app.request.get(server, {
@@ -696,7 +695,7 @@ function accessOnlineDocuments(rawXML) {
 function parseMetaData(doc) {
   console.log("Parsing Meta Data");
   var video = document.createElement("video");
-  var server = appServer + "/" + doc.id + "/data";
+  var server = appServer + "documents/" + doc.id + "/data";
   var req = new XMLHttpRequest();
   req.open('GET', server, true);
   req.responseType = 'blob';
@@ -727,7 +726,7 @@ function parseMetaData(doc) {
 }
 
 function getContentTypes(parser, doc, id, callback) {
-  var server = appServer + "/" + id + ".xml";
+  var server = appServer + "documents/" + id + ".xml";
   // send request
   app.request.get(server, {}, function (data) {
       var xmlDoc = parser.parseFromString(data, "text/xml");
@@ -1061,5 +1060,6 @@ function setUpAfterOutEvent(pageName) {
 }
 
 
-
-
+function postEventData(){
+ var eventServer = appServer + "26/events/";
+}
