@@ -10,14 +10,19 @@ var app = new Framework7({
     return {
       user: {
         username: 'DemoUser',
+        pin: 'somePin'
       },
       // secure local storage to hold credentials
       storage: {},
       // video and PDF content
       pdfList: [],
       videoList: [],
-      //favoritesList: [],
       offlineMode: false,
+      timeOffline: {
+        startTime: Date,
+        endTime: Date,
+        date: "",
+      }
     };
   },
   // App root methods
@@ -87,17 +92,17 @@ var eventPayload = {
   },
   "dataValues": [
     // Number of abrupt exits or incomplete workflow for mHBS training app
-    { "dataElement": "ZYQJ87n45ye", "value": "" },
+    {"dataElement": "ZYQJ87n45ye", "value": ""},
     // Number of mHBS training app logins by pin
-    { "dataElement": "getqONgfDtE", "value": "" },
+    {"dataElement": "getqONgfDtE", "value": ""},
     // Number of minutes mHBS training app was used offline
-    { "dataElement": "qOyP28eirAx", "value": "" },
+    {"dataElement": "qOyP28eirAx", "value": ""},
     // Number of screens used in mHBS training app
-    { "dataElement": "RrIe9CA11n6", "value": "" },
+    {"dataElement": "RrIe9CA11n6", "value": ""},
     // Number of times mHBS training app was started
-    { "dataElement": "BgzISR1GmP8", "value": "" },
+    {"dataElement": "BgzISR1GmP8", "value": ""},
     // Number of times mHBS training app was with network usage
-    { "dataElement": "qbT1F1k8cD7", "value": "" },
+    {"dataElement": "qbT1F1k8cD7", "value": ""},
   ]
 };
 
@@ -250,6 +255,30 @@ app.on('credentialsRead', function () {
     app.preloader.hide();
     download = true;
   }
+});
+
+// Events
+//todo:test
+app.on('wentOnline', function () {
+  var timeElapsed = calculateElapsedTime(app.data.timeOffline.startTime, app.data.timeOffline.endTime);
+  var storedOfflineTime = storage.getItem("timeOffline");
+  if (storedOfflineTime === null) {
+    storage.setItem("timeOffline", timeElapsed);
+  }
+  else {
+    storedOfflineTime = storedOfflineTime + "," + timeElapsed;
+    console.log("stored offline time: " + storedOfflineTime);
+    storage.setItem("timeOffline", storedOfflineTime);
+  }
+  app.data.timeOffline.startTime = null;
+  app.data.timeOffline.endTime = null;
+});
+
+// Events
+app.on('launch', function () {
+  // always post when app launches
+  console.log("We launched the app");
+  postEventData();
 });
 
 // set basic auth request header
@@ -427,12 +456,10 @@ $$(document).on('click', ".mHBSTracker", function () {
           "class": "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"
         }
     },
-    function(intent)
-    {
-        console.log("success" + intent);
+    function (intent) {
+      console.log("success" + intent);
     },
-    function()
-    {
+    function () {
       console.log("fail");
     }
   );
@@ -748,14 +775,47 @@ function getContentTypes(parser, doc, id, callback) {
 
 // check offline/online mode
 document.addEventListener("deviceready", function (e) {
-  document.addEventListener("offline", function (e) {
-    app.data.offlineMode = true;
-  }, false);
+  document.addEventListener("offline", wentOffline, false);
+  document.addEventListener("online", wentOnline, false);
+});
 
-  document.addEventListener("online", function (e) {
-    app.data.offlineMode = false;
-  })
-}, false);
+
+wentOffline = function (e) {
+  app.preloader.show('blue');
+  console.log(e + "Went offline");
+  app.data.timeOffline.startTime = new Date();
+  alert("Please connect to the internet to use the mHBS training app");
+  // todo if they never went back online?
+  app.data.offlineMode = true;
+};
+
+wentOnline = function (e) {
+  app.preloader.hide();
+  app.data.timeOffline.endTime = new Date();
+  console.log(e + "Went online");
+  app.data.offlineMode = false;
+  //trigger
+  app.emit("wentOnline");
+};
+
+
+function calculateElapsedTime(startTime, endTime) {
+  console.log("start and end: " + startTime + " " + endTime);
+  if (startTime <= endTime) {
+    var seconds = Math.round((endTime - startTime) / 1000);
+    console.log("seconds in calculation: " + seconds);
+    if(seconds<=60){
+      return seconds + "s";
+    }else {
+      var minutes = Math.round(seconds / 60);
+      console.log("minutes in calculation: " + minutes);
+      return minutes;
+    }
+  } else {
+    return 0;
+  }
+}
+
 
 // set intent listener, send broadcast
 function onLoad() {
@@ -836,17 +896,22 @@ function logIn() {
     }, function (data) {
       app.emit("login");
       if (!data.includes(tempCredentials.username)) {
-        alert('Login was not successful, please login mHBS tracker-capture');
+        credentialsFailAlert();
       } else {
         ssInactive = false;
       }
     },
     function (error) {
-      alert('Login was not successful, please login mHBS tracker-capture ' + JSON.stringify(error));
-      //TODO: launch tracker-capture instead
-
+      // if we have internet and reached here display error
+      if (!app.data.offlineMode) {
+        credentialsFailAlert();
+      }
     });
 
+}
+
+function credentialsFailAlert() {
+  alert('Login was not successful, please login mHBS tracker-capture ');
 }
 
 // clear tempCredentials
@@ -861,6 +926,8 @@ function clearCredentials() {
 function setAppUsername() {
   app.storage.get(function (value) {
     app.data.user.username = value;
+    // todo: pass over from tracker
+    app.data.user.pin = "M5zQapPyTZI";
   }, function (error) {
     console.log(error);
   }, 'username');
@@ -869,33 +936,34 @@ function setAppUsername() {
 // handle any incoming intent
 function onIntent(intent) {
   // clear out the intent handler
-    var credentialsArr = parseCredentials(intent);
-    if (credentialsArr != null) {
-      if (credentialsArr.length === 3) {
-        console.log("length of tempCredentials " + credentialsArr.length);
-        tempCredentials.username = credentialsArr[0];
-        tempCredentials.password = credentialsArr[1];
-        tempCredentials.serverURL = credentialsArr[2];
-        // set app headers
-        setHeaders();
-        if (!isEmpty(tempCredentials.username) && !isEmpty(tempCredentials.password) && !isEmpty(tempCredentials.serverURL)) {
-          //todo: errors out if attempting to use app.data.tempCredentials
-          // storeCredentials
-          storeCredentials();
-          // login
-          logIn();
-        }
-      } else {
-        loginAlert();
+  var credentialsArr = parseCredentials(intent);
+  if (credentialsArr != null) {
+    if (credentialsArr.length === 3) {
+      console.log("length of tempCredentials " + credentialsArr.length);
+      tempCredentials.username = credentialsArr[0];
+      tempCredentials.password = credentialsArr[1];
+      tempCredentials.serverURL = credentialsArr[2];
+      // set app headers
+      setHeaders();
+      if (!isEmpty(tempCredentials.username) && !isEmpty(tempCredentials.password) && !isEmpty(tempCredentials.serverURL)) {
+        //todo: errors out if attempting to use app.data.tempCredentials
+        // storeCredentials
+        storeCredentials();
+        // login
+        logIn();
       }
-    }else{
+    } else {
+      alert("case 1");
       loginAlert();
     }
+  }
+  app.emit("launch");
 }
 
-function loginAlert(){
+function loginAlert() {
   alert("Please login tracker-capture");
 }
+
 function isEmpty(str) {
   return (!str || 0 === str.length);
 }
@@ -946,28 +1014,36 @@ function getCredentials() {
 
 // get the tempCredentials from the JSON
 function parseCredentials(intent) {
-  if(intent!=null) {
+  if (intent != null) {
     console.log(intent);
-    if(intent.extras!=null){
+    if (intent.extras != null) {
       return intent.extras['key:loginRequest'];
-    }else{
-      loginAlert();
     }
-  }else{
+  } else {
     loginAlert();
   }
 }
 
 // Helpers ----------
+
+function getDateStamp() {
+  var currentDate = new Date();
+  return currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
+}
+
+function getDateTimeStamp() {
+  var currentDate = new Date();
+  return getDateStamp() + "  " + getTimeStamp();
+}
+
 function getTimeStamp() {
   var currentDate = new Date();
-  var dateTime = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear() + "  " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-  return dateTime;
+  return currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
 }
 
 // send to fabric
 function sendAnswerToFabric(pageName) {
-  window.fabric.Answers.sendContentView("mHBSguide", "timestamps", 1234, {"username page startTime": app.data.user.username + pageName + getTimeStamp()});
+  window.fabric.Answers.sendContentView("mHBSguide", "timestamps", 1234, {"username page startTime": app.data.user.username + pageName + getDateTimeStamp()});
 }
 
 // log page visits
@@ -1060,6 +1136,49 @@ function setUpAfterOutEvent(pageName) {
 }
 
 
-function postEventData(){
- var eventServer = appServer + "26/events/";
+function postEventData() {
+  var eventServer = appServer + "26/events/";
+  // todo: date format
+  eventPayload['eventDate'] = getDateStamp();
+  console.log("sending Payload: " + JSON.stringify(eventPayload));
+  var elapsedTimes = storage.getItem('timeOffline');
+  var test = elapsedTimes.split(",");
+  var timeOfflineInMinutes = 0;
+  var seconds = 0;
+
+  for(var t in test){
+    if(test[t].includes("s")){
+      // accumulate seconds
+      seconds += parseInt(test[t].substring(0, test[t].length - 1));
+    }
+    else{
+     // accumulate minutes
+      if(!isNaN(parseInt(test[t]))){
+        timeOfflineInMinutes += parseInt(test[t]);
+        }
+    }
+  }
+
+  // if the seconds make up more than a minute, add it to minutes offline
+  if(seconds>60){
+    timeOfflineInMinutes += convertSecondsToMinutes(seconds);
+  }
+
+  for (var i in eventPayload['dataValues']) {
+    if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
+        eventPayload['dataValues'][i].value = timeOfflineInMinutes;
+    }
+    console.log("EVENT PAY: " + eventPayload['dataValues'][i].value);
+    console.log("-----------------");
+  }
+ // clearStorage();
 }
+
+function convertSecondsToMinutes(seconds){
+  return Math.round(seconds/60);
+}
+
+function clearStorage(){
+  storage.setItem("elapsedTime",null);
+}
+
