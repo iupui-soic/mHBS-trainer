@@ -4,13 +4,14 @@ var app = new Framework7({
   root: '#app', // App root element
   id: 'io.framework7.testapp', // App bundle ID
   name: 'Framework7', // App name
-  theme: 'auto', // Automatic theme detection
+  theme: 'auto',
+  // Automatic theme detection
   // App root data
-  data: function () {
+  data: function(){
     return {
       user: {
         username: 'DemoUser',
-        pin: 'somePin'
+        pin: null
       },
       // secure local storage to hold credentials
       storage: {},
@@ -41,6 +42,9 @@ var app = new Framework7({
         downloadAble = true;
         setHeaders();
       }
+    },
+    initialize: function(){
+      return this.data
     }
   },
   // App routes
@@ -64,6 +68,7 @@ var tempCredentials = {
 };
 var download = false;
 var storage = window.localStorage;
+
 
 // Init/Create views
 var homeView = app.views.create('#view-home', {
@@ -231,7 +236,9 @@ function setupPageVisits() {
         }
       }
     }
+    storage.setItem("pageVisits", "true");
   }
+
 }
 
 // set up checkbox values and pages to collect metrics
@@ -255,6 +262,7 @@ app.on('credentialsRead', function () {
     app.preloader.hide();
     download = true;
   }
+  console.log("testdata");
 });
 
 // Events
@@ -276,9 +284,12 @@ app.on('wentOnline', function () {
 
 // Events
 app.on('launch', function () {
-  // always post when app launches
+  // always post when app launches if the app pin is set
   console.log("We launched the app");
-  postEventData();
+  //todo: figure out null error
+  if(app.data.user.pin!=null) {
+    postEventData();
+  }
 });
 
 // set basic auth request header
@@ -825,6 +836,21 @@ function onLoad() {
   setUpCheckBoxListeners();
   setUpPageEvents();
 
+/*
+  // shows data property but
+  console.log(app);
+  // undefined
+  console.log(app.data);
+
+    /* does not show data property
+  for(var propName in this.app) {
+    var propValue = this.app[propName];
+    console.log("app: " + propName,propValue);
+  }
+  */
+
+
+
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (ssInactive) {
     console.log("firing APP");
@@ -924,18 +950,33 @@ function clearCredentials() {
 
 // set user name for our app
 function setAppUsername() {
+  console.log("setAppUsername");
   app.storage.get(function (value) {
     app.data.user.username = value;
-    // todo: pass over from tracker
-    app.data.user.pin = "M5zQapPyTZI";
+    trackNumLoginsByPin();
   }, function (error) {
     console.log(error);
   }, 'username');
 }
 
+function trackNumLoginsByPin(){
+  console.log("TRACKING PINS");
+  // todo: pass over from tracker
+  app.data.user.pin = "M5zQapPyTZI";
+  var numLogins = storage.getItem(app.data.user.pin);
+  console.log("stored logins "  + numLogins);
+  if(isNaN(parseInt(numLogins)) || parseInt(numLogins)===0)  {
+    numLogins = 1;
+  }else{
+   numLogins = parseInt(numLogins) + 1;
+  }
+  storage.setItem(app.data.user.pin, JSON.stringify(numLogins));
+}
+
 // handle any incoming intent
 function onIntent(intent) {
-  // clear out the intent handler
+
+  //` clear out the intent handler
   var credentialsArr = parseCredentials(intent);
   if (credentialsArr != null) {
     if (credentialsArr.length === 3) {
@@ -953,7 +994,6 @@ function onIntent(intent) {
         logIn();
       }
     } else {
-      alert("case 1");
       loginAlert();
     }
   }
@@ -1139,39 +1179,51 @@ function setUpAfterOutEvent(pageName) {
 function postEventData() {
   var eventServer = appServer + "26/events/";
   // todo: date format
+
+  console.log("PIN " + app.data.user.pin);
+
+
   eventPayload['eventDate'] = getDateStamp();
   console.log("sending Payload: " + JSON.stringify(eventPayload));
-  var elapsedTimes = storage.getItem('timeOffline');
-  var test = elapsedTimes.split(",");
-  var timeOfflineInMinutes = 0;
-  var seconds = 0;
-
-  for(var t in test){
-    if(test[t].includes("s")){
-      // accumulate seconds
-      seconds += parseInt(test[t].substring(0, test[t].length - 1));
-    }
-    else{
-     // accumulate minutes
-      if(!isNaN(parseInt(test[t]))){
-        timeOfflineInMinutes += parseInt(test[t]);
-        }
-    }
-  }
-
-  // if the seconds make up more than a minute, add it to minutes offline
-  if(seconds>60){
-    timeOfflineInMinutes += convertSecondsToMinutes(seconds);
-  }
+  var timeOfflineInMinutes = getStoredTimeOffline();
 
   for (var i in eventPayload['dataValues']) {
+
+    // send time offline in minutes
     if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
         eventPayload['dataValues'][i].value = timeOfflineInMinutes;
     }
+    // send logins by pin
+    else if(eventPayload['dataValues'][i].dataElement === 'getqONgfDtE'){
+       eventPayload['dataValues'][i].value = storage.getItem(app.data.user.pin);
+    }
+    else if(eventPayload['dataValues'][i].dataElement === 'RrIe9CA11n6'){
+      eventPayload['dataValues'][i].value = getNumberOfScreens();
+    }
+
+
     console.log("EVENT PAY: " + eventPayload['dataValues'][i].value);
     console.log("-----------------");
   }
  // clearStorage();
+}
+
+function getNumberOfScreens(){
+  var numberOfScreens = 0;
+    for (var i in this.app.routes) {
+      var pageName;
+      var route = this.app.routes[i];
+      if (route.url != null) {
+        if (route.url.includes("pages")) {
+          pageName = route.url.split("/").pop();
+          pageName = pageName.substring(0, pageName.indexOf(".html"));
+          if(storage.getItem(pageName)!=0) {
+            numberOfScreens++;
+          }
+        }
+      }
+  }
+  return numberOfScreens;
 }
 
 function convertSecondsToMinutes(seconds){
@@ -1182,3 +1234,30 @@ function clearStorage(){
   storage.setItem("elapsedTime",null);
 }
 
+// combine stored seconds and minutes offline
+function getStoredTimeOffline() {
+  var elapsedTimes = storage.getItem('timeOffline');
+  var elapsedTimeArr = elapsedTimes.split(",");
+  var minutes = 0;
+  var seconds = 0;
+
+  for (var t in elapsedTimeArr) {
+    if (elapsedTimeArr[t].includes("s")) {
+      // accumulate seconds
+      seconds += parseInt(elapsedTimeArr[t].substring(0, elapsedTimeArr[t].length - 1));
+    }
+    else {
+      // accumulate minutes
+      if (!isNaN(parseInt(elapsedTimeArr[t]))) {
+        minutes += parseInt(elapsedTimeArr[t]);
+      }
+    }
+  }
+
+// if the seconds make up more than a minute, add it to minutes offline
+  if (seconds > 60) {
+    minutes += convertSecondsToMinutes(seconds);
+  }
+
+  return minutes;
+}
