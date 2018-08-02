@@ -61,6 +61,7 @@ var documentList = [];
 var downloadAble = false;
 var ssInactive = true;
 var currentID;
+var appLaunches = 0;
 var tempCredentials = {
   username: '',
   password: '',
@@ -284,6 +285,7 @@ app.on('wentOnline', function () {
 
 // Events
 app.on('launch', function () {
+  storage.setItem("appLaunches", JSON.stringify(appLaunches++));
   // always post when app launches if the app pin is set
   console.log("We launched the app");
   //todo: figure out null error
@@ -1197,8 +1199,13 @@ function postEventData() {
     else if(eventPayload['dataValues'][i].dataElement === 'getqONgfDtE'){
        eventPayload['dataValues'][i].value = storage.getItem(app.data.user.pin);
     }
+    // get number of screens
     else if(eventPayload['dataValues'][i].dataElement === 'RrIe9CA11n6'){
       eventPayload['dataValues'][i].value = getNumberOfScreens();
+    }
+    // number of times app was started
+    else if(eventPayload['dataValues'][i].dataElement === 'BgzISR1GmP8'){
+      eventPayload['dataValues'][i].value = storage.getItem("appLaunches");
     }
 
 
