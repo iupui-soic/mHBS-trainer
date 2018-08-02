@@ -62,6 +62,8 @@ var downloadAble = false;
 var ssInactive = true;
 var currentID;
 var appLaunches = 0;
+var networkUsage = 1;
+var paused = 0;
 var tempCredentials = {
   username: '',
   password: '',
@@ -263,11 +265,9 @@ app.on('credentialsRead', function () {
     app.preloader.hide();
     download = true;
   }
-  console.log("testdata");
 });
 
 // Events
-//todo:test
 app.on('wentOnline', function () {
   var timeElapsed = calculateElapsedTime(app.data.timeOffline.startTime, app.data.timeOffline.endTime);
   var storedOfflineTime = storage.getItem("timeOffline");
@@ -790,19 +790,31 @@ function getContentTypes(parser, doc, id, callback) {
 document.addEventListener("deviceready", function (e) {
   document.addEventListener("offline", wentOffline, false);
   document.addEventListener("online", wentOnline, false);
+  document.addEventListener("pause", onPause, false);
 });
+
+onPause = function(){
+  console.log("app was paused");
+  paused++;
+};
 
 
 wentOffline = function (e) {
+  // if we started the app and have never been online, networkUsage = 0,
+  // otherwise it starts at 1.
+  //todo: test
+  if((parseInt(storage.getItem("appLaunches"))===0)){
+    networkUsage = 0;
+  }
   app.preloader.show('blue');
   console.log(e + "Went offline");
   app.data.timeOffline.startTime = new Date();
   alert("Please connect to the internet to use the mHBS training app");
-  // todo if they never went back online?
   app.data.offlineMode = true;
 };
 
 wentOnline = function (e) {
+  networkUsage++;
   app.preloader.hide();
   app.data.timeOffline.endTime = new Date();
   console.log(e + "Went online");
@@ -1179,21 +1191,22 @@ function setUpAfterOutEvent(pageName) {
 
 
 function postEventData() {
-  var eventServer = appServer + "26/events/";
-  // todo: date format
 
   console.log("PIN " + app.data.user.pin);
 
 
   eventPayload['eventDate'] = getDateStamp();
   console.log("sending Payload: " + JSON.stringify(eventPayload));
-  var timeOfflineInMinutes = getStoredTimeOffline();
 
   for (var i in eventPayload['dataValues']) {
-
+    // todo: check this val
+    // Number of abrupt exits or incomplete workflow for mHBS training app
+    if(eventPayload['dataValues'][i].dataElement === 'ZYQJ87n45ye'){
+      eventPayload['dataValues'][i].value = paused;
+    }
     // send time offline in minutes
-    if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
-        eventPayload['dataValues'][i].value = timeOfflineInMinutes;
+    else if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
+        eventPayload['dataValues'][i].value = getStoredTimeOffline();
     }
     // send logins by pin
     else if(eventPayload['dataValues'][i].dataElement === 'getqONgfDtE'){
@@ -1207,12 +1220,38 @@ function postEventData() {
     else if(eventPayload['dataValues'][i].dataElement === 'BgzISR1GmP8'){
       eventPayload['dataValues'][i].value = storage.getItem("appLaunches");
     }
+    // number of times there was network usage
+    else if(eventPayload['dataValues'][i].dataElement === 'qbT1F1k8cD7'){
+      eventPayload['dataValues'][i].value = networkUsage;
 
-
+    }
     console.log("EVENT PAY: " + eventPayload['dataValues'][i].value);
     console.log("-----------------");
   }
- // clearStorage();
+
+  postPayload();
+  // clearPayloadValues();
+}
+
+function clearPayloadValues(){
+  // resetting values
+  networkUsage = 1;
+  storage.setItem("appLaunches", JSON.stringify(0));
+  setupPageVisits();
+  storage.setItem(app.data.user.pin,JSON.stringify(0));
+  storage.setItem("timeOffline",null);
+}
+
+function postPayload(){
+  var eventServer = appServer + "26/events/";
+  app.storage.get(function (value) {
+    console.log(app.data.user.username + value);
+    app.request.post(eventServer, { username:app.data.user.username, password: value, data: eventPayload}, function (data) {
+      console.log('data was posted');
+    });
+  }, function (error) {
+    console.log("Could not post data " + error);
+  }, 'password');
 }
 
 function getNumberOfScreens(){
