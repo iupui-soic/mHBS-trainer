@@ -7,11 +7,11 @@ var app = new Framework7({
   theme: 'auto',
   // Automatic theme detection
   // App root data
-  data: function(){
+  data: function () {
     return {
       user: {
         username: 'DemoUser',
-        pin: null
+        // pin: null
       },
       // secure local storage to hold credentials
       storage: {},
@@ -43,7 +43,7 @@ var app = new Framework7({
         setHeaders();
       }
     },
-    initialize: function(){
+    initialize: function () {
       return this.data
     }
   },
@@ -64,6 +64,7 @@ var currentID;
 var appLaunches = 0;
 var networkUsage = 1;
 var paused = 0;
+var pin = null;
 var tempCredentials = {
   username: '',
   password: '',
@@ -91,6 +92,7 @@ var view = app.views.create('#view-videoList', {
 var eventPayload = {
   "program": "dbEHq0V0V5j",
   "orgUnit": "Hm0rRRXqFi5",
+  //todo
   "eventDate": "",
   "status": "COMPLETED",
   "storedBy": "admin",
@@ -244,6 +246,12 @@ function setupPageVisits() {
 
 }
 
+function setupTimeOffline() {
+  if (storage.getItem("timeOffline") === null) {
+    storage.setItem("timeOffline", JSON.stringify(0));
+  }
+}
+
 // set up checkbox values and pages to collect metrics
 function setupCheckBoxValues() {
   if (localStorage.getItem("checkboxVals") === null) {
@@ -289,7 +297,11 @@ app.on('launch', function () {
   // always post when app launches if the app pin is set
   console.log("We launched the app");
   //todo: figure out null error
-  if(app.data.user.pin!=null) {
+  /* if (app.data.user.pin != null) {
+     postEventData();
+   }
+   */
+  if (pin != null) {
     postEventData();
   }
 });
@@ -743,18 +755,19 @@ function parseMetaData(doc) {
 
     if (this.status === 200) {
       var videoBlob = this.response;
-      console.log(this.response);
+      console.log("RESPONSE " + this.response);
       video.src = window.URL.createObjectURL(videoBlob);
 
       video.addEventListener("loadedmetadata", function () {
+        console.log("loaded meta Data");
         var minutes = Math.floor(video.duration / 60);
         var seconds = (video.duration % 60).toFixed(0);
         if (seconds.toString().length === 1) {
           seconds = seconds.toString().concat("0");
         }
         doc.duration = minutes + ":" + seconds;
+        console.log("Duration " + doc.duration);
         app.emit('contentType');
-
       });
 
     }
@@ -793,7 +806,7 @@ document.addEventListener("deviceready", function (e) {
   document.addEventListener("pause", onPause, false);
 });
 
-onPause = function(){
+onPause = function () {
   console.log("app was paused");
   paused++;
 };
@@ -803,7 +816,7 @@ wentOffline = function (e) {
   // if we started the app and have never been online, networkUsage = 0,
   // otherwise it starts at 1.
   //todo: test
-  if((parseInt(storage.getItem("appLaunches"))===0)){
+  if ((parseInt(storage.getItem("appLaunches")) === 0)) {
     networkUsage = 0;
   }
   app.preloader.show('blue');
@@ -829,9 +842,9 @@ function calculateElapsedTime(startTime, endTime) {
   if (startTime <= endTime) {
     var seconds = Math.round((endTime - startTime) / 1000);
     console.log("seconds in calculation: " + seconds);
-    if(seconds<=60){
+    if (seconds <= 60) {
       return seconds + "s";
-    }else {
+    } else {
       var minutes = Math.round(seconds / 60);
       console.log("minutes in calculation: " + minutes);
       return minutes;
@@ -849,21 +862,20 @@ function onLoad() {
   setupCheckBoxValues();
   setUpCheckBoxListeners();
   setUpPageEvents();
+  setupTimeOffline();
 
-/*
-  // shows data property but
-  console.log(app);
-  // undefined
-  console.log(app.data);
+  /*
+    // shows data property but
+    console.log(app);
+    // undefined
+    console.log(app.data);
 
-    /* does not show data property
-  for(var propName in this.app) {
-    var propValue = this.app[propName];
-    console.log("app: " + propName,propValue);
-  }
-  */
-
-
+      /* does not show data property
+    for(var propName in this.app) {
+      var propValue = this.app[propName];
+      console.log("app: " + propName,propValue);
+    }
+    */
 
   // if we don't have tempCredentials, send a broadcast, store them, and log the user in
   if (ssInactive) {
@@ -973,18 +985,18 @@ function setAppUsername() {
   }, 'username');
 }
 
-function trackNumLoginsByPin(){
+function trackNumLoginsByPin() {
   console.log("TRACKING PINS");
   // todo: pass over from tracker
-  app.data.user.pin = "M5zQapPyTZI";
-  var numLogins = storage.getItem(app.data.user.pin);
-  console.log("stored logins "  + numLogins);
-  if(isNaN(parseInt(numLogins)) || parseInt(numLogins)===0)  {
+  pin = "M5zQapPyTZI";
+  var numLogins = storage.getItem(pin);
+  console.log("stored logins " + numLogins);
+  if (isNaN(parseInt(numLogins)) || parseInt(numLogins) === 0) {
     numLogins = 1;
-  }else{
-   numLogins = parseInt(numLogins) + 1;
+  } else {
+    numLogins = parseInt(numLogins) + 1;
   }
-  storage.setItem(app.data.user.pin, JSON.stringify(numLogins));
+  storage.setItem(pin, JSON.stringify(numLogins));
 }
 
 // handle any incoming intent
@@ -1192,7 +1204,7 @@ function setUpAfterOutEvent(pageName) {
 
 function postEventData() {
 
-  console.log("PIN " + app.data.user.pin);
+  ///console.log("PIN " + app.data.user.pin);
 
 
   eventPayload['eventDate'] = getDateStamp();
@@ -1201,27 +1213,27 @@ function postEventData() {
   for (var i in eventPayload['dataValues']) {
     // todo: check this val
     // Number of abrupt exits or incomplete workflow for mHBS training app
-    if(eventPayload['dataValues'][i].dataElement === 'ZYQJ87n45ye'){
+    if (eventPayload['dataValues'][i].dataElement === 'ZYQJ87n45ye') {
       eventPayload['dataValues'][i].value = paused;
     }
     // send time offline in minutes
     else if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
-        eventPayload['dataValues'][i].value = getStoredTimeOffline();
+      //   eventPayload['dataValues'][i].value = getStoredTimeOffline();
     }
     // send logins by pin
-    else if(eventPayload['dataValues'][i].dataElement === 'getqONgfDtE'){
-       eventPayload['dataValues'][i].value = storage.getItem(app.data.user.pin);
+    else if (eventPayload['dataValues'][i].dataElement === 'getqONgfDtE') {
+      eventPayload['dataValues'][i].value = storage.getItem(pin);
     }
     // get number of screens
-    else if(eventPayload['dataValues'][i].dataElement === 'RrIe9CA11n6'){
+    else if (eventPayload['dataValues'][i].dataElement === 'RrIe9CA11n6') {
       eventPayload['dataValues'][i].value = getNumberOfScreens();
     }
     // number of times app was started
-    else if(eventPayload['dataValues'][i].dataElement === 'BgzISR1GmP8'){
+    else if (eventPayload['dataValues'][i].dataElement === 'BgzISR1GmP8') {
       eventPayload['dataValues'][i].value = storage.getItem("appLaunches");
     }
     // number of times there was network usage
-    else if(eventPayload['dataValues'][i].dataElement === 'qbT1F1k8cD7'){
+    else if (eventPayload['dataValues'][i].dataElement === 'qbT1F1k8cD7') {
       eventPayload['dataValues'][i].value = networkUsage;
 
     }
@@ -1233,29 +1245,51 @@ function postEventData() {
   // clearPayloadValues();
 }
 
-function clearPayloadValues(){
-  // resetting values
-  networkUsage = 1;
-  storage.setItem("appLaunches", JSON.stringify(0));
-  setupPageVisits();
-  storage.setItem(app.data.user.pin,JSON.stringify(0));
-  storage.setItem("timeOffline",null);
-}
 
 function postPayload(){
-  var eventServer = appServer + "26/events/";
-  app.storage.get(function (value) {
-    console.log(app.data.user.username + value);
-    app.request.post(eventServer, { username:app.data.user.username, password: value, data: eventPayload}, function (data) {
-      console.log('data was posted');
-    });
-  }, function (error) {
-    console.log("Could not post data " + error);
-  }, 'password');
+// get password and then post payload
+  app.storage.get(
+    function (value) {
+      makeEventPostRequest(value);
+    },
+    function (error) { console.log('Error ' + error); },
+    'password');
 }
 
-function getNumberOfScreens(){
-  var numberOfScreens = 0;
+function makeEventPostRequest(password) {
+  var eventServer = appServer + "26/events";
+  app.request({
+    url: eventServer,
+    dataType: 'json',
+    data: eventPayload,
+    method: 'POST',
+    contentType: 'application/json',
+    'Content-Type': 'application/json',
+    beforeSend: function () {
+      //This method will be called before webservice call initiate
+    },
+    success: function (data, status, xhr) {
+      console.log("Success" + data);
+      //Post request completed
+    },
+    error: function (xhr, status) {
+      console.log("Failure" + JSON.stringify(xhr));
+    }
+  });
+
+}
+
+// can use to reset values after we send payload
+  function clearPayloadValues() {
+    networkUsage = 1;
+    storage.setItem("appLaunches", JSON.stringify(0));
+    setupPageVisits();
+    storage.setItem(pin, JSON.stringify(0));
+    storage.setItem("timeOffline", null);
+  }
+
+  function getNumberOfScreens() {
+    var numberOfScreens = 0;
     for (var i in this.app.routes) {
       var pageName;
       var route = this.app.routes[i];
@@ -1263,47 +1297,47 @@ function getNumberOfScreens(){
         if (route.url.includes("pages")) {
           pageName = route.url.split("/").pop();
           pageName = pageName.substring(0, pageName.indexOf(".html"));
-          if(storage.getItem(pageName)!=0) {
+          if (storage.getItem(pageName) != 0) {
             numberOfScreens++;
           }
         }
       }
+    }
+    return numberOfScreens;
   }
-  return numberOfScreens;
-}
 
-function convertSecondsToMinutes(seconds){
-  return Math.round(seconds/60);
-}
+  function convertSecondsToMinutes(seconds) {
+    return Math.round(seconds / 60);
+  }
 
-function clearStorage(){
-  storage.setItem("elapsedTime",null);
-}
+  function clearStorage() {
+    storage.setItem("elapsedTime", null);
+  }
 
 // combine stored seconds and minutes offline
-function getStoredTimeOffline() {
-  var elapsedTimes = storage.getItem('timeOffline');
-  var elapsedTimeArr = elapsedTimes.split(",");
-  var minutes = 0;
-  var seconds = 0;
+  function getStoredTimeOffline() {
+    var elapsedTimes = storage.getItem('timeOffline');
+    var elapsedTimeArr = elapsedTimes.split(",");
+    var minutes = 0;
+    var seconds = 0;
 
-  for (var t in elapsedTimeArr) {
-    if (elapsedTimeArr[t].includes("s")) {
-      // accumulate seconds
-      seconds += parseInt(elapsedTimeArr[t].substring(0, elapsedTimeArr[t].length - 1));
-    }
-    else {
-      // accumulate minutes
-      if (!isNaN(parseInt(elapsedTimeArr[t]))) {
-        minutes += parseInt(elapsedTimeArr[t]);
+    for (var t in elapsedTimeArr) {
+      if (elapsedTimeArr[t].includes("s")) {
+        // accumulate seconds
+        seconds += parseInt(elapsedTimeArr[t].substring(0, elapsedTimeArr[t].length - 1));
+      }
+      else {
+        // accumulate minutes
+        if (!isNaN(parseInt(elapsedTimeArr[t]))) {
+          minutes += parseInt(elapsedTimeArr[t]);
+        }
       }
     }
-  }
 
 // if the seconds make up more than a minute, add it to minutes offline
-  if (seconds > 60) {
-    minutes += convertSecondsToMinutes(seconds);
-  }
+    if (seconds > 60) {
+      minutes += convertSecondsToMinutes(seconds);
+    }
 
-  return minutes;
-}
+    return minutes;
+  }
