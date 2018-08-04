@@ -5,19 +5,21 @@ var app = new Framework7({
   id: 'io.framework7.testapp', // App bundle ID
   name: 'Framework7', // App name
   theme: 'auto',
+  init: false,
   // Automatic theme detection
   // App root data
   data: function () {
     return {
       user: {
         username: 'DemoUser',
-        // pin: null
+        pin: null
       },
       // secure local storage to hold credentials
       storage: {},
       // video and PDF content
       pdfList: [],
       videoList: [],
+      //pins: ['M5zQapPyTZI'],
       offlineMode: false,
       timeOffline: {
         startTime: Date,
@@ -51,6 +53,9 @@ var app = new Framework7({
   routes: routes,
 });
 
+// initialize app manually, ensures app.data attributes are instantiated from the start
+app.init();
+
 // local declarations
 var secureParamsStored = 0;
 var myPhotoBrowserPopupDark;
@@ -73,11 +78,11 @@ var tempCredentials = {
 var download = false;
 var storage = window.localStorage;
 
-
 // Init/Create views
 var homeView = app.views.create('#view-home', {
   url: '/'
 });
+
 var viewFavorites = app.views.create('#view-favorites', {
   url: '/favorites/'
 });
@@ -86,6 +91,48 @@ var guideView = app.views.create('#view-guide', {
 });
 var view = app.views.create('#view-videoList', {
   url: '/videoList/'
+});
+
+// show login screen
+var ls = app.loginScreen.create({ el: '#login-screen' });
+ls.open(false);
+
+// login
+$$('.login-button').on('click', function () {
+  setupPageVisits();
+  setupCheckBoxValues();
+  setUpCheckBoxListeners();
+  setUpPageEvents();
+  setupTimeOffline();
+
+  /*
+    // shows data property but
+    console.log(app);
+    // undefined
+    console.log(app.data);
+
+    /* does not show data property
+  for(var propName in this.app) {
+    var propValue = this.app[propName];
+    console.log("app: " + propName,propValue);
+  }
+
+*/
+  // if we don't have tempCredentials, send a broadcast, store them, and log the user in
+  if (ssInactive) {
+    console.log("firing APP");
+    $$("#updateFavorites").hide();
+    window.plugins.intentShim.onIntent(onIntent);
+
+    app.preloader.show('blue');
+    // set up secure storage
+    //this.app.storage = ss();
+    app.data.storage = ss();
+  }
+
+  app.views.create('#view-home', { url: '/' });
+  ls.close();
+
 });
 
 //todo: change to tei org unit
@@ -804,6 +851,7 @@ document.addEventListener("deviceready", function (e) {
   document.addEventListener("offline", wentOffline, false);
   document.addEventListener("online", wentOnline, false);
   document.addEventListener("pause", onPause, false);
+  document.addEventListener("resume", onResume, false);
 });
 
 onPause = function () {
@@ -811,6 +859,9 @@ onPause = function () {
   paused++;
 };
 
+onResume = function() {
+  console.log("on Resume");
+}
 
 wentOffline = function (e) {
   // if we started the app and have never been online, networkUsage = 0,
@@ -857,38 +908,7 @@ function calculateElapsedTime(startTime, endTime) {
 
 // set intent listener, send broadcast
 function onLoad() {
-  console.log("loading app ");
-  setupPageVisits();
-  setupCheckBoxValues();
-  setUpCheckBoxListeners();
-  setUpPageEvents();
-  setupTimeOffline();
-
-  /*
-    // shows data property but
-    console.log(app);
-    // undefined
-    console.log(app.data);
-
-      /* does not show data property
-    for(var propName in this.app) {
-      var propValue = this.app[propName];
-      console.log("app: " + propName,propValue);
-    }
-    */
-
-  // if we don't have tempCredentials, send a broadcast, store them, and log the user in
-  if (ssInactive) {
-    console.log("firing APP");
-    $$("#updateFavorites").hide();
-
-    window.plugins.intentShim.onIntent(onIntent);
-
-    app.preloader.show('blue');
-    // set up secure storage
-    this.app.storage = ss();
-    sendBroadcastToTracker();
-  }
+  ls.open(true);
 }
 
 
@@ -929,8 +949,9 @@ var securityFunction = function () {
 var ss = function () {
   return new cordova.plugins.SecureStorage(
     function () {
-      console.log("Storage Created");
-    },
+      // we have storage so broadcast for login info
+      sendBroadcastToTracker();
+      },
     securityFunction,
     'mHBS_Hybridapp');
 };
@@ -977,7 +998,7 @@ function clearCredentials() {
 // set user name for our app
 function setAppUsername() {
   console.log("setAppUsername");
-  app.storage.get(function (value) {
+  app.data.storage.get(function (value) {
     app.data.user.username = value;
     trackNumLoginsByPin();
   }, function (error) {
@@ -1001,8 +1022,8 @@ function trackNumLoginsByPin() {
 
 // handle any incoming intent
 function onIntent(intent) {
-
-  //` clear out the intent handler
+  console.log("got intent");
+  // clear out the intent handler
   var credentialsArr = parseCredentials(intent);
   if (credentialsArr != null) {
     if (credentialsArr.length === 3) {
@@ -1036,7 +1057,7 @@ function isEmpty(str) {
 
 // set tempCredentials
 function storeCredentials() {
-  app.storage.set(function () {
+  app.data.storage.set(function () {
     // set username for our app
     setAppUsername();
     app.emit('storedCredential', "username");
@@ -1044,13 +1065,13 @@ function storeCredentials() {
     console.log(error);
   }, 'username', tempCredentials.username);
 
-  app.storage.set(function () {
+  app.data.storage.set(function () {
     app.emit('storedCredential', "password");
   }, function (error) {
     console.log(error);
   }, 'password', tempCredentials.password);
 
-  app.storage.set(function () {
+  app.data.storage.set(function () {
     app.emit('storedCredential', "serverURL");
   }, function (error) {
     console.log(error);
@@ -1059,19 +1080,19 @@ function storeCredentials() {
 
 
 function getCredentials() {
-  app.storage.get(function (value) {
+  app.data.storage.get(function (value) {
     app.emit('gotCredential', "username", value);
   }, function (error) {
     console.log("username" + error);
   }, 'username');
 
-  app.storage.get(function (value) {
+  app.data.storage.get(function (value) {
     app.emit('gotCredential', "password", value);
   }, function (error) {
     console.log("password" + error);
   }, 'password');
 
-  app.storage.get(function (value) {
+  app.data.storage.get(function (value) {
     app.emit('gotCredential', "serverURL", value);
   }, function (error) {
     console.log("serverURL" + error);
@@ -1248,7 +1269,7 @@ function postEventData() {
 
 function postPayload(){
 // get password and then post payload
-  app.storage.get(
+  app.data.storage.get(
     function (value) {
       makeEventPostRequest(value);
     },
@@ -1287,6 +1308,7 @@ function makeEventPostRequest(password) {
     storage.setItem(pin, JSON.stringify(0));
     storage.setItem("timeOffline", null);
   }
+
 
   function getNumberOfScreens() {
     var numberOfScreens = 0;
@@ -1341,3 +1363,6 @@ function makeEventPostRequest(password) {
 
     return minutes;
   }
+
+  //todo: optimize page visits variable
+  //todo: remove template related items
