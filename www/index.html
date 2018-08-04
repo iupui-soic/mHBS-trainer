@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="css/icons.css">
   <link rel="stylesheet" href="css/app.css">
 </head>
-<body onload="onLoad()">
+<body>
 <div id="app">
   <!-- Status bar overlay for fullscreen mode-->
   <div class="statusbar"></div>
@@ -181,46 +181,46 @@
 </div>
 
 
-
-  <div class="login-screen" id="login-screen">
-    <div class="view">
-      <div class="page">
-        <div class="page-content login-screen-content">
-          <div class="login-screen-title"><img src="img/mHBSlogo.svg" style="width:200px;height:240px;display: block;margin: 0 auto;">
-          </div>
-          <div class="list inset">
-            <ul>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">Enter Pin</div>
-                  <div class="item-input-wrap inset">
-                    <input type="text" name="selectPin" placeholder="pin...">
-                  </div>
+<div class="login-screen" id="login-screen">
+  <div class="view">
+    <div class="page">
+      <div class="page-content login-screen-content">
+        <div class="login-screen-title"><img src="img/mHBSlogo.svg"
+                                             style="width:200px;height:240px;display: block;margin: 0 auto;">
+        </div>
+        <div class="list inset">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Enter Pin</div>
+                <div class="item-input-wrap inset">
+                  <input type="text" name="selectPin" placeholder="pin...">
                 </div>
-              </li>
-            </ul>
-          </div>
-          <div class="list">
-            <ul>
-              <li>
-                <a href="#" class="item-link list-button login-button">Sign in with pin</a>
-              </li>
-            </ul>
-            <div class="block-footer">To retrieve pin, contact administration<br>@.com</div>
-          </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="list">
+          <ul>
+            <li>
+              <a href="#" class="item-link list-button login-button">Sign in with pin</a>
+            </li>
+          </ul>
+          <div class="block-footer">To retrieve pin, contact administration<br>@.com</div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-    <!-- Framework7 library -->
-    <script src="framework7/js/framework7.min.js"></script>
+<!-- Framework7 library -->
+<script src="framework7/js/framework7.min.js"></script>
 
-    <!-- App routes -->
-    <script src="js/routes.js"></script>
+<!-- App routes -->
+<script src="js/routes.js"></script>
 
-    <!-- Your custom app scripts -->
-    <script type="text/javascript" src="js/app.js"></script>
+<!-- Your custom app scripts -->
+<script type="text/javascript" src="js/app.js"></script>
 
 </body>
 </html>

@@ -12,14 +12,13 @@ var app = new Framework7({
     return {
       user: {
         username: 'DemoUser',
-        pin: null
+        pin: ''
       },
       // secure local storage to hold credentials
       storage: {},
       // video and PDF content
       pdfList: [],
       videoList: [],
-      //pins: ['M5zQapPyTZI'],
       offlineMode: false,
       timeOffline: {
         startTime: Date,
@@ -42,7 +41,7 @@ var app = new Framework7({
         console.log("Other credentials Read");
         // reset flag since we are done reading
         downloadAble = true;
-        setHeaders();
+        //setHeaders();
       }
     },
     initialize: function () {
@@ -64,17 +63,17 @@ var videoCaption = "";
 var appServer = 'https://mhbs.info/api/';
 var documentList = [];
 var downloadAble = false;
-var ssInactive = true;
+var secureStorageInactive = true;
 var currentID;
 var appLaunches = 0;
 var networkUsage = 1;
 var paused = 0;
-var pin = null;
 var tempCredentials = {
   username: '',
   password: '',
   serverURL: '',
 };
+
 var download = false;
 var storage = window.localStorage;
 
@@ -93,8 +92,14 @@ var view = app.views.create('#view-videoList', {
   url: '/videoList/'
 });
 
+// swiper for images
+var swiper = app.swiper.create('.swiper-container', {
+  speed: 400,
+  spaceBetween: 100
+});
+
 // show login screen
-var ls = app.loginScreen.create({ el: '#login-screen' });
+var ls = app.loginScreen.create({el: '#login-screen'});
 ls.open(false);
 
 // login
@@ -105,41 +110,28 @@ $$('.login-button').on('click', function () {
   setUpPageEvents();
   setupTimeOffline();
 
-  /*
-    // shows data property but
-    console.log(app);
-    // undefined
-    console.log(app.data);
-
-    /* does not show data property
-  for(var propName in this.app) {
-    var propValue = this.app[propName];
-    console.log("app: " + propName,propValue);
-  }
-
-*/
-  // if we don't have tempCredentials, send a broadcast, store them, and log the user in
-  if (ssInactive) {
+  // if we don't have credentials in secure storage, send a broadcast, store them, and log the user in
+  if (secureStorageInactive) {
+    // todo: remove
     console.log("firing APP");
     $$("#updateFavorites").hide();
+    // intent callback received from tracker-capture
     window.plugins.intentShim.onIntent(onIntent);
-
+    // show the preloader while we wait for credentials from tracker-capture
     app.preloader.show('blue');
-    // set up secure storage
-    //this.app.storage = ss();
+    // set up secure storage, in the callback, broadcast to tracker
     app.data.storage = ss();
   }
-
-  app.views.create('#view-home', { url: '/' });
+  // when we are logged in, create our home view and close the login
+  app.views.create('#view-home', {url: '/'});
   ls.close();
-
 });
 
-//todo: change to tei org unit
+//todo: change to correct org unit, fill in eventDate, coordinates, storedBy
+// Event Payload with params relating to mHBS training app posted to the program events on DHIS2
 var eventPayload = {
   "program": "dbEHq0V0V5j",
   "orgUnit": "Hm0rRRXqFi5",
-  //todo
   "eventDate": "",
   "status": "COMPLETED",
   "storedBy": "admin",
@@ -163,7 +155,9 @@ var eventPayload = {
   ]
 };
 
-// todo: automate
+// Local storage setup ------------------
+
+// checkboxes pertaining to the mHBS guide
 var checkboxVals = {
   'check1a1': false,
   'check1a2': false,
@@ -274,8 +268,9 @@ var checkboxVals = {
   'check4e10': false,
 };
 
-// gets all the pages defined in pages/ and adds to page visits
+// gets all the pages defined in pages/ and adds to page visits when we first initialize
 function setupPageVisits() {
+  // "pageVisits" is a pseudo storage item to check if we initialized all the pages
   if (storage.getItem("pageVisits") === null) {
     for (var i in this.app.routes) {
       var pageName;
@@ -290,16 +285,16 @@ function setupPageVisits() {
     }
     storage.setItem("pageVisits", "true");
   }
-
 }
 
+// sets the storage item which holds time we have been without internet on app initialize
 function setupTimeOffline() {
   if (storage.getItem("timeOffline") === null) {
     storage.setItem("timeOffline", JSON.stringify(0));
   }
 }
 
-// set up checkbox values and pages to collect metrics
+// set up checkbox values pertaining to mHBS guide on app initialize
 function setupCheckBoxValues() {
   if (localStorage.getItem("checkboxVals") === null) {
     for (var checkBoxName in checkboxVals) {
@@ -308,21 +303,25 @@ function setupCheckBoxValues() {
   }
 }
 
-//*swiper
-var swiper = app.swiper.create('.swiper-container', {
-  speed: 400,
-  spaceBetween: 100
-});
+// Events ------------------
 
-// Events
+// event where all three credentials were correctly read, so we can set the download access token
 app.on('credentialsRead', function () {
+  // we still have tempCredentials, which means we haven't logged in yet
+  if (tempCredentials != null) {
+    // clear the temp credentials, since we stored them in secure storage
+    clearTempCredentials();
+    // login
+    getPasswordFromSecure(logIn);
+  }
   if (downloadAble) {
     app.preloader.hide();
+    // todo: optimize
     download = true;
   }
 });
 
-// Events
+// event triggered when network goes online, calculates time between offline and online and sets to storage
 app.on('wentOnline', function () {
   var timeElapsed = calculateElapsedTime(app.data.timeOffline.startTime, app.data.timeOffline.endTime);
   var storedOfflineTime = storage.getItem("timeOffline");
@@ -334,37 +333,23 @@ app.on('wentOnline', function () {
     console.log("stored offline time: " + storedOfflineTime);
     storage.setItem("timeOffline", storedOfflineTime);
   }
+  // reset start and end times for next round where we go offline/online
   app.data.timeOffline.startTime = null;
   app.data.timeOffline.endTime = null;
 });
 
-// Events
-app.on('launch', function () {
-  storage.setItem("appLaunches", JSON.stringify(appLaunches++));
-  // always post when app launches if the app pin is set
-  console.log("We launched the app");
-  //todo: figure out null error
-  /* if (app.data.user.pin != null) {
-     postEventData();
-   }
-   */
-  if (pin != null) {
-    postEventData();
-  }
-});
-
 // set basic auth request header
 function setHeaders() {
+  // todo: remove
   console.log("Setting Headers");
   app.request.setup({
     headers: {
       'Authorization': 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password)
     }
   });
-//  app.emit('setHeader');
 }
 
-// track writing credentials from secure storage
+// track writing credentials to secure storage, only continue with three calls, which emits to 'downloadOk'
 app.on('storedCredential', function (key) {
   console.log("We triggered storedCredential Event");
   if (key === "username") {
@@ -380,7 +365,7 @@ app.on('storedCredential', function (key) {
   }
 });
 
-// track reading credentials from secure storage
+// track reading credentials from secure storage, only continue with three calls, which emits to 'credentials read'
 app.on('gotCredential', function (key, value) {
   console.log("We triggered gotCredential Event");
   if (key === "username") {
@@ -399,19 +384,10 @@ app.on('gotCredential', function (key, value) {
   }
 });
 
-// can also trigger to download new video/pdf content
-app.on('downloadOk', function () {
-  if (downloadAble) {
-    console.log("download Ok");
-    getCredentials();
-  }
-});
 
-app.on('login', function () {
-  logCount += 1;
-  if (logCount === 2) {
-    clearCredentials();
-  }
+// we are positive credentials were written, so we can get them and login
+app.on('wroteCredentials', function () {
+  getCredentials();
 });
 
 /* triggered when document id, title and content type
@@ -429,26 +405,32 @@ app.on('contentType', function () {
       app.data.pdfList.push(documentList[i]);
     }
   }
+  /* currently have it set so the favorites tab shows only if there are lists of videos downloaded,
+  // todo: suggest to improve this functionality to something more user friendly
+   */
   if (app.data.videoList.length > 0) {
     $$("#updateFavorites").show();
   }
+  // todo: remove
   console.log(app.data.videoList);
   console.log(app.data.pdfList);
-
+  // routes user to video list once lists of content are loaded
   homeView.router.navigate('/videoList/');
 });
 
-
-app.on("fileStatus", function (filePath) {
+// takes the file name of the path to access if we found the file on device or wrote the file to device
+app.on("fileOnDevice", function (filePath) {
+  // todo: remove
   console.log("FULL FILE PATH TO ACCESS:" + "/data/data/com.example.mHBS/files/files" + filePath);
-
+  /* this variable must be named photos, if the name is changed, this will not work.
+   That is because it is defined in photo browser in framework7
+  */
   var photos = [
     {
       html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files' + filePath + '" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
       captions: '',
     }
   ];
-
   myPhotoBrowserPopupDark = app.photoBrowser.create({
     photos,
     theme: 'dark',
@@ -457,68 +439,29 @@ app.on("fileStatus", function (filePath) {
     navbarOfText: "/",
     toolbar: false,
   });
+  // ready to show video
   app.preloader.hide();
   myPhotoBrowserPopupDark.open();
 });
 
 
-function setXMLRequestHeaders() {
-  if (downloadAble) {
-    // set this access token to false while we are accessing user information to log them into server
-    downloadAble = false;
-    getCredentials();
-  } else {
-    console.log("something went wrong");
-  }
-}
+// Click Events ------------
 
-function checkFile() {
-  console.log("Checking if File Exists");
-  var path = '/' + currentID + ".webm";
-  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
-    console.log("Path to check " + JSON.stringify(fileSystem.root));
-    fileSystem.root.getFile(path, {create: false}, fileExists, fileDoesNotExist);
-  }, getFSFail); //of requestFileSystem
-
-}
-
-/* synchronize write and read to secure storage,
-   makes sure if username, password, serverURL set,
-   then we can get the credentials/download content
-*/
-function wroteToSecure() {
-  secureParamsStored += 1;
-  if (secureParamsStored < 3) {
-    return;
-  }
-  console.log("stored 3 secured params, set downloadable = True");
-  secureParamsStored = 0;
-  downloadAble = true;
-  // if we wrote three credentials, proceed to download
-  app.emit("downloadOk");
-}
-
-// read values from secure storage
-function readFromSecure() {
-  secureParamsStored += 1;
-  if (secureParamsStored < 3) {
-    return;
-  }
-  console.log("got 3 secured params");
-  secureParamsStored = 0;
-  // three credentials read
-  app.emit("credentialsRead");
-}
-
-
+/* triggered when we click on a video item in the list in /videoList/
+// get the id of the video, check if it exists already, get permission to download
+ */
 $$(document).on('click', ".pb-standalone-video", function () {
+  // todo: remove
   console.log(this);
   currentID = this.id;
   videoCaption = this.innerText;
   checkFile();
-  setXMLRequestHeaders();
+  getDownloadAccessToken();
 });
 
+/* triggered when we click on mhbs tracker in the left panel sidebar of index.html
+   ues darryncampbell intent plugin
+*/
 $$(document).on('click', ".mHBSTracker", function () {
   window.plugins.intentShim.startActivity(
     {
@@ -537,6 +480,85 @@ $$(document).on('click', ".mHBSTracker", function () {
   );
 });
 
+/* triggered when we open favorites in /favoritesList/ because we need to make sure we
+  show the most recently added favorites
+*/
+$$(document).on('click', "#updateFavorites", function () {
+  var favorites = storage.getItem(app.data.user.username + "favorites");
+  if (favorites != null) {
+    var favoritesToArr = favorites.split(',');
+
+    for (var i in app.data.videoList) {
+      for (var j in favoritesToArr) {
+        if (app.data.videoList[i].id === favoritesToArr[j]) {
+          if (!app.data.videoList[i].isFavorite) {
+            app.data.videoList[i].isFavorite = true;
+          }
+        }
+      }
+    }
+  }
+});
+
+/* basically while we are downloading shows the preloader
+   //todo @liz soon will probably remove this, but will need to modify
+ */
+function getDownloadAccessToken() {
+  if (downloadAble) {
+    // set this access token to false while we are accessing user information to log them into server
+    downloadAble = false;
+    getCredentials();
+  } else {
+    console.log("could not get permission to download content");
+  }
+}
+
+// checks if file exists on device
+function checkFile() {
+  // todo: remove
+  console.log("Checking if File Exists");
+  var path = '/' + currentID + ".webm";
+  window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+    // todo: remove
+    console.log("Path to check " + JSON.stringify(fileSystem.root));
+    fileSystem.root.getFile(path, {create: false},
+      // callbacks
+      fileExists,
+      fileDoesNotExist);
+  }, getFSFail); //of requestFileSystem
+
+}
+
+/* synchronize write and read to secure storage,
+   makes sure if username, password, serverURL set,
+   then we can get the credentials/download content
+*/
+function wroteToSecure() {
+  secureParamsStored += 1;
+  if (secureParamsStored < 3) {
+    return;
+  }
+  console.log("stored 3 secured params, set downloadable = True");
+  secureParamsStored = 0;
+  downloadAble = true;
+  // if we wrote three credentials, proceed to download
+  app.emit("wroteCredentials");
+}
+
+// read values from secure storage
+function readFromSecure() {
+  secureParamsStored += 1;
+  if (secureParamsStored < 3) {
+    return;
+  }
+  console.log("got 3 secured params");
+  secureParamsStored = 0;
+  // three credentials read
+  app.emit("credentialsRead");
+}
+
+// Toasts & Alerts -----------
+
 // toasts to alert when user has added to favorites
 var favoriteToastSuccess = app.toast.create({
   icon: app.theme === 'ios' ? '<i class="f7-icons">star</i>' : '<i class="material-icons">star</i>',
@@ -545,13 +567,13 @@ var favoriteToastSuccess = app.toast.create({
   closeTimeout: 2000,
 });
 
+// toast when item is already added to favorites and user tries to add again
 var favoriteToastErr = app.toast.create({
   icon: app.theme === 'ios' ? '<i class="f7-icons">star</i>' : '<i class="material-icons">star</i>',
   text: 'Item is already added to favorites',
   position: 'center',
   closeTimeout: 2000,
 });
-
 
 // add to favorites when we click favorites button
 function addToFavorites(id) {
@@ -581,27 +603,6 @@ function addToFavorites(id) {
   }
 }
 
-// triggered when we open favorites
-$$(document).on('click', "#updateFavorites", function () {
-  // get storage
-  var storage = window.localStorage;
-
-  var favorites = storage.getItem(app.data.user.username + "favorites");
-  if (favorites != null) {
-    var favoritesToArr = favorites.split(',');
-
-    for (var i in app.data.videoList) {
-      for (var j in favoritesToArr) {
-        if (app.data.videoList[i].id === favoritesToArr[j]) {
-          if (!app.data.videoList[i].isFavorite) {
-            app.data.videoList[i].isFavorite = true;
-          }
-        }
-      }
-    }
-  }
-});
-
 // remove from favorites
 function removeFromFavorites(param) {
   // holds the index and id of element
@@ -626,25 +627,35 @@ function removeFromFavorites(param) {
   }
 }
 
-
+// if file exists we can display it
 function fileExists(fileEntry) {
-  app.emit("fileStatus", fileEntry.fullPath);
+  app.emit("fileOnDevice", fileEntry.fullPath);
 }
 
-//TODO: need to prevent anything other than binary data writing to file
+//TODO @liz: need to prevent anything other than binary data writing to file
 function fileDoesNotExist() {
   console.log("File does not Exist");
   app.preloader.show('blue');
   downloadContent();
 }
 
+// write to file fail event
 function getFSFail(evt) {
   console.log("ERROR COULD NOT GET FILE" + evt.target.error.code);
 }
 
+// get password with downloadBlob callback
 function downloadContent() {
+  getPasswordFromSecure(downloadBlob);
+}
+
+/* download video/pdf content housed on mhbs.info/api/documents/
+this function only gets called if the file does not already exist on the device, and after retrieving
+password from secure storage
+ */
+function downloadBlob(password) {
+  // holds the id of the video that was clicked
   var id = currentID;
-  console.log("LOGIN INFO" + tempCredentials.username + " " + id + " " + tempCredentials.password);
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
     console.log('file system open: ' + fs.name);
     fs.root.getFile('bot.png', {create: true, exclusive: false}, function (fileEntry) {
@@ -653,7 +664,7 @@ function downloadContent() {
       var server = appServer + "documents/" + id + "/data";
       // Make sure you add the domain name to the Content-Security-Policy <meta> element.
       oReq.open("GET", server, true);
-      oReq.setRequestHeader('Authorization', 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password));
+      oReq.setRequestHeader('Authorization', 'Basic ' + btoa(app.data.user.username + ":" + password));
       // Define how you want the XHR data to come back
       oReq.responseType = "blob";
       oReq.onload = function (oEvent) {
@@ -679,7 +690,7 @@ function downloadContent() {
   });
 }
 
-// write the file
+// request file to write to
 function fileToWrite(obj, id) {
   console.log("Attempting to write file");
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
@@ -687,21 +698,19 @@ function fileToWrite(obj, id) {
     fs.root.getFile('/' + id + ".webm", {create: true, exclusive: false}, function (fileEntry) {
       writeFile(fileEntry, obj);
     }, function (fs) {
-      // successfully wrote file, display
-      //  console.log("Successfully wrote file " + fs.toString());
-      //    app.emit("fileStatus",fs);
+      console.log("Successfully wrote file" + fs);
     });
   }, function (fileError) {
     console.log("error writing to file" + fileError);
   });
 }
 
-
+// write file
 function writeFile(fileEntry, dataObj) {
   // Create a FileWriter object for our FileEntry (log.txt).
   fileEntry.createWriter(function (fileWriter) {
     fileWriter.onwriteend = function () {
-      app.emit("fileStatus", fileEntry.fullPath);
+      app.emit("fileOnDevice", fileEntry.fullPath);
     };
     fileWriter.onerror = function (e) {
       console.log("Failed file write: " + e.toString());
@@ -715,37 +724,33 @@ function writeFile(fileEntry, dataObj) {
   });
 }
 
-// log in to the server to get xml data
+// get password from local storage and then get docs from server
 function accessOnlineContent() {
+  getPasswordFromSecure(getDocsFromServer);
+}
+
+// get list of documents from mhbs.info/api/documents triggered when clicking on 'videos'
+function getDocsFromServer(password) {
   var rawDocuments = {
     rawXML: {}
   };
   var server = appServer + "documents.xml";
+  // todo: remove
   console.log("Access Online Content");
   // send request
   app.request.get(server, {
-      username: tempCredentials.username,
-      password: tempCredentials.password
+      username: app.data.user.username,
+      password: password
     }, function (data) {
-      app.emit("login");
       rawDocuments.rawXML = data;
       // ready to download content
+      // todo: remove
       console.log("Getting list of elements");
       accessOnlineDocuments(rawDocuments.rawXML);
     },
     function (error) {
       alert(error + "The content is not retrievable");
     })
-}
-
-// use to re-download media content
-function syncOnlineContent() {
-  app.preloader.show('blue');
-  if (downloadAble) {
-    getCredentials();
-  } else {
-    alert('cannot synchronize data');
-  }
 }
 
 // get XML content from dhis2 web API
@@ -755,7 +760,9 @@ function accessOnlineDocuments(rawXML) {
     var xmlDoc = parser.parseFromString(rawXML.toString(), "text/xml");
     var documents = xmlDoc.getElementsByTagName("documents")[0].childNodes;
     var tempID;
-    // artificially make it so only one video shows
+    /* artificially make it so only one video shows, note: this needs to stay here for the day
+    when we need to show more than one video, do not remove, see below as well.
+    */
     var semaphoreCount = 0;
     var semaphore = function () {
       // semaphoreCount += 1;
@@ -765,6 +772,7 @@ function accessOnlineDocuments(rawXML) {
       // app.emit('contentType');
     };
     // get a list of ID's and titles
+    // swap these lines to change from showing one video to more than one
     //for (var i in documents) {
     for (var i = 0; i < 1; i++) {
       console.log(i);
@@ -782,8 +790,8 @@ function accessOnlineDocuments(rawXML) {
         // grabs video durations, but too time consuming currently
         parseMetaData(doc);
         doc.title = documents[i].textContent;
+        // todo: remove
         console.log(doc.title);
-
         getContentTypes(parser, doc, tempID, semaphore);
         documentList.push(doc);
       }
@@ -791,6 +799,7 @@ function accessOnlineDocuments(rawXML) {
   }
 }
 
+// gets video duration, can also grab other desired data here
 function parseMetaData(doc) {
   console.log("Parsing Meta Data");
   var video = document.createElement("video");
@@ -802,9 +811,11 @@ function parseMetaData(doc) {
 
     if (this.status === 200) {
       var videoBlob = this.response;
+      // todo: remove
       console.log("RESPONSE " + this.response);
+      // preload a video blob
       video.src = window.URL.createObjectURL(videoBlob);
-
+      // once meta data is loaded can be grabbed, but not before then
       video.addEventListener("loadedmetadata", function () {
         console.log("loaded meta Data");
         var minutes = Math.floor(video.duration / 60);
@@ -825,6 +836,7 @@ function parseMetaData(doc) {
   req.send();
 }
 
+// gets type of document, video/pdf/ etc
 function getContentTypes(parser, doc, id, callback) {
   var server = appServer + "documents/" + id + ".xml";
   // send request
@@ -846,7 +858,7 @@ function getContentTypes(parser, doc, id, callback) {
 }
 
 
-// check offline/online mode
+// add event listeners
 document.addEventListener("deviceready", function (e) {
   document.addEventListener("offline", wentOffline, false);
   document.addEventListener("online", wentOnline, false);
@@ -854,19 +866,28 @@ document.addEventListener("deviceready", function (e) {
   document.addEventListener("resume", onResume, false);
 });
 
-onPause = function () {
+// event callbacks -----------
+var onPause = function () {
   console.log("app was paused");
   paused++;
 };
 
-onResume = function() {
-  console.log("on Resume");
-}
+var onResume = function () {
+  // show the login screen (Pin screen)
+  ls.open(true);
+  // store app launches on resume, how many times we launched gets sent to server
+  storage.setItem("appLaunches", JSON.stringify(appLaunches++));
+  // always post when app launches if the app pin is set
+  console.log("We launched the app");
+  if (app.data.user.pin !== '') {
+    postEventData();
+  }
+};
 
+// for when network is offline
 wentOffline = function (e) {
   // if we started the app and have never been online, networkUsage = 0,
   // otherwise it starts at 1.
-  //todo: test
   if ((parseInt(storage.getItem("appLaunches")) === 0)) {
     networkUsage = 0;
   }
@@ -877,6 +898,7 @@ wentOffline = function (e) {
   app.data.offlineMode = true;
 };
 
+// for when network is online
 wentOnline = function (e) {
   networkUsage++;
   app.preloader.hide();
@@ -887,7 +909,7 @@ wentOnline = function (e) {
   app.emit("wentOnline");
 };
 
-
+// calculates elapsed time in minutes
 function calculateElapsedTime(startTime, endTime) {
   console.log("start and end: " + startTime + " " + endTime);
   if (startTime <= endTime) {
@@ -905,15 +927,7 @@ function calculateElapsedTime(startTime, endTime) {
   }
 }
 
-
-// set intent listener, send broadcast
-function onLoad() {
-  ls.open(true);
-}
-
-
-// send broadcast to tracker capture
-// send broadcast to tracker capture
+/* send broadcast to tracker capture, uses darryncampbell plugin */
 function sendBroadcastToTracker() {
   window.plugins.intentShim.sendBroadcast({
       action: 'com.example.mHBS.MainActivity'
@@ -945,33 +959,39 @@ var securityFunction = function () {
   );
 };
 
-// create secure storage
+// create secure storage, set as app.data.storage
 var ss = function () {
   return new cordova.plugins.SecureStorage(
     function () {
       // we have storage so broadcast for login info
       sendBroadcastToTracker();
-      },
+    },
     securityFunction,
     'mHBS_Hybridapp');
 };
 
-// login
+// get password from secure storage and login
 function logIn() {
-  var server = tempCredentials.serverURL + "api/26/me/";
-  console.log(tempCredentials.username);
-  console.log(tempCredentials.password);
-  console.log(tempCredentials.serverURL);
+  getPasswordFromSecure(loginOk);
+}
+
+// we got password, we can login
+function loginOk(password) {
+  var server = appServer + "26/me/";
+  // todo: remove
+  console.log(app.data.user.username);
+  console.log(password);
+  console.log(server);
   // send request
   app.request.get(server, {
-      username: tempCredentials.username,
-      password: tempCredentials.password
+      username: app.data.user.username,
+      password: password
     }, function (data) {
-      app.emit("login");
-      if (!data.includes(tempCredentials.username)) {
+      //app.emit("login");
+      if (!data.includes(app.data.user.username)) {
         credentialsFailAlert();
       } else {
-        ssInactive = false;
+        secureStorageInactive = false;
       }
     },
     function (error) {
@@ -980,53 +1000,57 @@ function logIn() {
         credentialsFailAlert();
       }
     });
-
 }
 
+// something went wrong, if we are offline, it will display a different message
 function credentialsFailAlert() {
   alert('Login was not successful, please login mHBS tracker-capture ');
 }
 
-// clear tempCredentials
-function clearCredentials() {
-  console.log("Clearing Credentials");
-  tempCredentials.username = '';
-  tempCredentials.password = '';
+// clear tempCredentials since they are stored in secure storage, which is more secure
+function clearTempCredentials() {
+  tempCredentials.username = null;
+  tempCredentials.password = null;
   tempCredentials.serverURL = '';
+  //todo: remove
+  console.log("Cleared Temp Credentials")
 }
 
-// set user name for our app
+// set user name for our app when we stored credentials upon login
 function setAppUsername() {
   console.log("setAppUsername");
   app.data.storage.get(function (value) {
     app.data.user.username = value;
+    // todo: @liz move to appropriate location, simply here for testing
     trackNumLoginsByPin();
   }, function (error) {
     console.log(error);
   }, 'username');
 }
 
+// tracks how many times each person / pin logged in
 function trackNumLoginsByPin() {
   console.log("TRACKING PINS");
   // todo: pass over from tracker
-  pin = "M5zQapPyTZI";
-  var numLogins = storage.getItem(pin);
+  app.data.user.pin = "M5zQapPyTZI";
+  var numLogins = storage.getItem(app.data.user.pin);
   console.log("stored logins " + numLogins);
   if (isNaN(parseInt(numLogins)) || parseInt(numLogins) === 0) {
     numLogins = 1;
   } else {
     numLogins = parseInt(numLogins) + 1;
   }
-  storage.setItem(pin, JSON.stringify(numLogins));
+  storage.setItem(app.data.user.pin, JSON.stringify(numLogins));
 }
 
-// handle any incoming intent
+/* handle any incoming intent, uses darryncampbell intent plugin */
 function onIntent(intent) {
   console.log("got intent");
-  // clear out the intent handler
   var credentialsArr = parseCredentials(intent);
+  // if the intent had data, need to log in
   if (credentialsArr != null) {
     if (credentialsArr.length === 3) {
+      // todo: remove
       console.log("length of tempCredentials " + credentialsArr.length);
       tempCredentials.username = credentialsArr[0];
       tempCredentials.password = credentialsArr[1];
@@ -1034,51 +1058,46 @@ function onIntent(intent) {
       // set app headers
       setHeaders();
       if (!isEmpty(tempCredentials.username) && !isEmpty(tempCredentials.password) && !isEmpty(tempCredentials.serverURL)) {
-        //todo: errors out if attempting to use app.data.tempCredentials
         // storeCredentials
         storeCredentials();
         // login
-        logIn();
       }
     } else {
       loginAlert();
     }
   }
-  app.emit("launch");
 }
 
+// we got an intent with credentials but it did not contain all the credentials (most likely)
 function loginAlert() {
   alert("Please login tracker-capture");
 }
 
-function isEmpty(str) {
-  return (!str || 0 === str.length);
-}
-
-// set tempCredentials
+// store tempCredentials received from tracker-capture to local storage
 function storeCredentials() {
   app.data.storage.set(function () {
     // set username for our app
     setAppUsername();
     app.emit('storedCredential', "username");
   }, function (error) {
-    console.log(error);
+    console.log("storedCredential" + error);
   }, 'username', tempCredentials.username);
 
   app.data.storage.set(function () {
     app.emit('storedCredential', "password");
   }, function (error) {
-    console.log(error);
+    console.log("storedCredential" + error);
   }, 'password', tempCredentials.password);
 
   app.data.storage.set(function () {
+    console.log("here in setting");
     app.emit('storedCredential', "serverURL");
   }, function (error) {
-    console.log(error);
+    console.log("storedCredential Error" + error);
   }, 'serverURL', tempCredentials.serverURL);
 }
 
-
+// get credentials from storage, and makes sure all 3 are validly set using gotCredential event tokens
 function getCredentials() {
   app.data.storage.get(function (value) {
     app.emit('gotCredential', "username", value);
@@ -1099,7 +1118,7 @@ function getCredentials() {
   }, 'serverURL');
 }
 
-// get the tempCredentials from the JSON
+// get the credentials from the JSON via tracker-capture
 function parseCredentials(intent) {
   if (intent != null) {
     console.log(intent);
@@ -1112,6 +1131,10 @@ function parseCredentials(intent) {
 }
 
 // Helpers ----------
+
+function isEmpty(str) {
+  return (!str || 0 === str.length);
+}
 
 function getDateStamp() {
   var currentDate = new Date();
@@ -1126,6 +1149,71 @@ function getDateTimeStamp() {
 function getTimeStamp() {
   var currentDate = new Date();
   return currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
+}
+
+function convertSecondsToMinutes(seconds) {
+  return Math.round(seconds / 60);
+}
+
+// gets password from secure, pass any function as a success callback
+var getPasswordFromSecure = function (callback) {
+  app.data.storage.get(
+    function (value) {
+      callback(value);
+      // todo: remove
+      console.log("Got password from secure");
+    },
+    function (error) {
+      console.log('Error' + error);
+    },
+    'password');
+};
+
+// Metric capture ------------------
+function getNumberOfScreens() {
+  var numberOfScreens = 0;
+  for (var i in this.app.routes) {
+    var pageName;
+    var route = this.app.routes[i];
+    if (route.url != null) {
+      if (route.url.includes("pages")) {
+        pageName = route.url.split("/").pop();
+        pageName = pageName.substring(0, pageName.indexOf(".html"));
+        if (storage.getItem(pageName) != 0) {
+          numberOfScreens++;
+        }
+      }
+    }
+  }
+  return numberOfScreens;
+}
+
+// combine stored seconds and minutes offline
+function getStoredTimeOffline() {
+  var elapsedTimes = storage.getItem('timeOffline');
+  var elapsedTimeArr = elapsedTimes.split(",");
+  var minutes = 0;
+  var seconds = 0;
+
+  for (var t in elapsedTimeArr) {
+    if (elapsedTimeArr[t].includes("s")) {
+      // accumulate seconds
+      seconds += parseInt(elapsedTimeArr[t].substring(0, elapsedTimeArr[t].length - 1));
+    }
+    else {
+      // accumulate minutes
+      if (!isNaN(parseInt(elapsedTimeArr[t]))) {
+        minutes += parseInt(elapsedTimeArr[t]);
+      }
+    }
+  }
+
+// if the seconds make up more than a minute, add it to minutes offline
+  if (seconds > 60) {
+    minutes += convertSecondsToMinutes(seconds);
+  }
+
+  return minutes;
 }
 
 // send to fabric
@@ -1222,15 +1310,9 @@ function setUpAfterOutEvent(pageName) {
   });
 }
 
-
 function postEventData() {
-
-  ///console.log("PIN " + app.data.user.pin);
-
-
   eventPayload['eventDate'] = getDateStamp();
   console.log("sending Payload: " + JSON.stringify(eventPayload));
-
   for (var i in eventPayload['dataValues']) {
     // todo: check this val
     // Number of abrupt exits or incomplete workflow for mHBS training app
@@ -1243,7 +1325,7 @@ function postEventData() {
     }
     // send logins by pin
     else if (eventPayload['dataValues'][i].dataElement === 'getqONgfDtE') {
-      eventPayload['dataValues'][i].value = storage.getItem(pin);
+      eventPayload['dataValues'][i].value = storage.getItem(app.data.user.pin);
     }
     // get number of screens
     else if (eventPayload['dataValues'][i].dataElement === 'RrIe9CA11n6') {
@@ -1261,20 +1343,14 @@ function postEventData() {
     console.log("EVENT PAY: " + eventPayload['dataValues'][i].value);
     console.log("-----------------");
   }
-
   postPayload();
+  // todo: @liz
   // clearPayloadValues();
 }
 
-
-function postPayload(){
 // get password and then post payload
-  app.data.storage.get(
-    function (value) {
-      makeEventPostRequest(value);
-    },
-    function (error) { console.log('Error ' + error); },
-    'password');
+function postPayload() {
+  getPasswordFromSecure(makeEventPostRequest);
 }
 
 function makeEventPostRequest(password) {
@@ -1301,68 +1377,11 @@ function makeEventPostRequest(password) {
 }
 
 // can use to reset values after we send payload
-  function clearPayloadValues() {
-    networkUsage = 1;
-    storage.setItem("appLaunches", JSON.stringify(0));
-    setupPageVisits();
-    storage.setItem(pin, JSON.stringify(0));
-    storage.setItem("timeOffline", null);
-  }
+function clearPayloadValues() {
+  networkUsage = 1;
+  storage.setItem("appLaunches", JSON.stringify(0));
+  setupPageVisits();
+  storage.setItem(app.data.user.pin, JSON.stringify(0));
+  storage.setItem("timeOffline", null);
+}
 
-
-  function getNumberOfScreens() {
-    var numberOfScreens = 0;
-    for (var i in this.app.routes) {
-      var pageName;
-      var route = this.app.routes[i];
-      if (route.url != null) {
-        if (route.url.includes("pages")) {
-          pageName = route.url.split("/").pop();
-          pageName = pageName.substring(0, pageName.indexOf(".html"));
-          if (storage.getItem(pageName) != 0) {
-            numberOfScreens++;
-          }
-        }
-      }
-    }
-    return numberOfScreens;
-  }
-
-  function convertSecondsToMinutes(seconds) {
-    return Math.round(seconds / 60);
-  }
-
-  function clearStorage() {
-    storage.setItem("elapsedTime", null);
-  }
-
-// combine stored seconds and minutes offline
-  function getStoredTimeOffline() {
-    var elapsedTimes = storage.getItem('timeOffline');
-    var elapsedTimeArr = elapsedTimes.split(",");
-    var minutes = 0;
-    var seconds = 0;
-
-    for (var t in elapsedTimeArr) {
-      if (elapsedTimeArr[t].includes("s")) {
-        // accumulate seconds
-        seconds += parseInt(elapsedTimeArr[t].substring(0, elapsedTimeArr[t].length - 1));
-      }
-      else {
-        // accumulate minutes
-        if (!isNaN(parseInt(elapsedTimeArr[t]))) {
-          minutes += parseInt(elapsedTimeArr[t]);
-        }
-      }
-    }
-
-// if the seconds make up more than a minute, add it to minutes offline
-    if (seconds > 60) {
-      minutes += convertSecondsToMinutes(seconds);
-    }
-
-    return minutes;
-  }
-
-  //todo: optimize page visits variable
-  //todo: remove template related items
