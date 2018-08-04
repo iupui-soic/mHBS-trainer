@@ -127,6 +127,16 @@ $$('.login-button').on('click', function () {
   setUpCheckBoxListeners();
   setUpPageEvents();
   setupTimeOffline();
+  
+  /*
+  can be used to preload pin text if desired feature
+  if(app.data.user.pin!==''){
+    var pinPlaceholder = $$('#inputPin');
+    pinPlaceholder.html("<input type=\"text\" name=\"selectPin\" placeholder="+app.data.user.pin+">");
+    console.log("---------------------------------------------------");
+    }
+    */
+
   // when we are logged in, create our home view and close the login
   app.views.create('#view-home', {url: '/'});
   ls.close();
@@ -323,7 +333,6 @@ app.on('credentialsRead', function () {
     getPasswordFromSecure(logIn);
   }
   if (downloadAble) {
-    console.log("WE ARE HERE-----------HIDING PRELOADER");
     app.preloader.hide();
     // todo: optimize
     download = true;
@@ -1041,7 +1050,6 @@ function setAppUsername() {
 function trackNumLoginsByPin() {
   console.log("TRACKING PINS");
   // todo: pass over from tracker
-  app.data.user.pin = "M5zQapPyTZI";
   var numLogins = storage.getItem(app.data.user.pin);
   console.log("stored logins " + numLogins);
   if (isNaN(parseInt(numLogins)) || parseInt(numLogins) === 0) {
