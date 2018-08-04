@@ -328,8 +328,7 @@ routes = [
           componentUrl: './pages/videoList.html'
         });
       }
-        else{
-
+      else{
         if(app.data.offlineMode){
           alert("Please activate wifi to download content");
         }else{
@@ -338,7 +337,7 @@ routes = [
         reject({
           url: routeFrom
         })
-        }
+      }
     }
   },
   {

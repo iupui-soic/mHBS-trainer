@@ -102,13 +102,9 @@ var swiper = app.swiper.create('.swiper-container', {
 var ls = app.loginScreen.create({el: '#login-screen'});
 ls.open(false);
 
-// login
-$$('.login-button').on('click', function () {
-  setupPageVisits();
-  setupCheckBoxValues();
-  setUpCheckBoxListeners();
-  setUpPageEvents();
-  setupTimeOffline();
+
+function onLoad(){
+  console.log("onLoad");
 
   // if we don't have credentials in secure storage, send a broadcast, store them, and log the user in
   if (secureStorageInactive) {
@@ -118,13 +114,25 @@ $$('.login-button').on('click', function () {
     // intent callback received from tracker-capture
     window.plugins.intentShim.onIntent(onIntent);
     // show the preloader while we wait for credentials from tracker-capture
-    app.preloader.show('blue');
     // set up secure storage, in the callback, broadcast to tracker
     app.data.storage = ss();
   }
+}
+
+// login
+$$('.login-button').on('click', function () {
+  app.preloader.show('blue');
+  setupPageVisits();
+  setupCheckBoxValues();
+  setUpCheckBoxListeners();
+  setUpPageEvents();
+  setupTimeOffline();
   // when we are logged in, create our home view and close the login
   app.views.create('#view-home', {url: '/'});
   ls.close();
+  if(downloadAble){
+    app.preloader.hide();
+  }
 });
 
 //todo: change to correct org unit, fill in eventDate, coordinates, storedBy
@@ -315,6 +323,7 @@ app.on('credentialsRead', function () {
     getPasswordFromSecure(logIn);
   }
   if (downloadAble) {
+    console.log("WE ARE HERE-----------HIDING PRELOADER");
     app.preloader.hide();
     // todo: optimize
     download = true;
@@ -930,7 +939,7 @@ function calculateElapsedTime(startTime, endTime) {
 /* send broadcast to tracker capture, uses darryncampbell plugin */
 function sendBroadcastToTracker() {
   window.plugins.intentShim.sendBroadcast({
-      action: 'com.example.mHBS.MainActivity'
+      action: 'edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity'
     },
     function () {
       console.log('sent broadcast');
@@ -1045,16 +1054,16 @@ function trackNumLoginsByPin() {
 
 /* handle any incoming intent, uses darryncampbell intent plugin */
 function onIntent(intent) {
-  console.log("got intent");
   var credentialsArr = parseCredentials(intent);
   // if the intent had data, need to log in
   if (credentialsArr != null) {
-    if (credentialsArr.length === 3) {
+    if (credentialsArr.length === 4) {
       // todo: remove
       console.log("length of tempCredentials " + credentialsArr.length);
       tempCredentials.username = credentialsArr[0];
       tempCredentials.password = credentialsArr[1];
       tempCredentials.serverURL = credentialsArr[2];
+      app.data.user.pin = credentialsArr[3];
       // set app headers
       setHeaders();
       if (!isEmpty(tempCredentials.username) && !isEmpty(tempCredentials.password) && !isEmpty(tempCredentials.serverURL)) {
@@ -1120,6 +1129,7 @@ function getCredentials() {
 
 // get the credentials from the JSON via tracker-capture
 function parseCredentials(intent) {
+  console.log("Parsing Credentials");
   if (intent != null) {
     console.log(intent);
     if (intent.extras != null) {
