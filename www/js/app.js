@@ -127,16 +127,18 @@ $$('.login-button').on('click', function () {
   setUpCheckBoxListeners();
   setUpPageEvents();
   setupTimeOffline();
-  
-  /*
-  can be used to preload pin text if desired feature
-  if(app.data.user.pin!==''){
-    var pinPlaceholder = $$('#inputPin');
-    pinPlaceholder.html("<input type=\"text\" name=\"selectPin\" placeholder="+app.data.user.pin+">");
-    console.log("---------------------------------------------------");
-    }
-    */
+  trackNumLoginsByPin();
+  var pinPlaceholder = $$('#inputPin input');
 
+  /*
+  if(app.data.user.pin!==''){
+     // can be used to fill in the value of the pin placeholder
+    // pinPlaceholder.html("<input type=\"text\" name=\"selectPin\" placeholder="+app.data.user.pin+">");
+    // can be used to fill in the value of the pin input box
+    pinPlaceholder.val(app.data.user.pin);
+  }
+  */
+  
   // when we are logged in, create our home view and close the login
   app.views.create('#view-home', {url: '/'});
   ls.close();
@@ -893,12 +895,14 @@ var onPause = function () {
 var onResume = function () {
   // show the login screen (Pin screen)
   ls.open(true);
+  appLaunches = appLaunches + 1;
   // store app launches on resume, how many times we launched gets sent to server
-  storage.setItem("appLaunches", JSON.stringify(appLaunches++));
+  storage.setItem("appLaunches", JSON.stringify(appLaunches));
+
   // always post when app launches if the app pin is set
-  console.log("We launched the app");
+  console.log("We launched the app" + storage.getItem("appLaunches"));
   if (app.data.user.pin !== '') {
-    postEventData();
+    trackNumLoginsByPin();
   }
 };
 
@@ -1039,8 +1043,6 @@ function setAppUsername() {
   console.log("setAppUsername");
   app.data.storage.get(function (value) {
     app.data.user.username = value;
-    // todo: @liz move to appropriate location, simply here for testing
-    trackNumLoginsByPin();
   }, function (error) {
     console.log(error);
   }, 'username');
@@ -1050,14 +1052,17 @@ function setAppUsername() {
 function trackNumLoginsByPin() {
   console.log("TRACKING PINS");
   // todo: pass over from tracker
+
   var numLogins = storage.getItem(app.data.user.pin);
-  console.log("stored logins " + numLogins);
   if (isNaN(parseInt(numLogins)) || parseInt(numLogins) === 0) {
     numLogins = 1;
   } else {
     numLogins = parseInt(numLogins) + 1;
   }
+  console.log("stored logins " + numLogins);
+
   storage.setItem(app.data.user.pin, JSON.stringify(numLogins));
+  postEventData();
 }
 
 /* handle any incoming intent, uses darryncampbell intent plugin */
@@ -1339,7 +1344,7 @@ function postEventData() {
     }
     // send time offline in minutes
     else if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
-      //   eventPayload['dataValues'][i].value = getStoredTimeOffline();
+         eventPayload['dataValues'][i].value = getStoredTimeOffline();
     }
     // send logins by pin
     else if (eventPayload['dataValues'][i].dataElement === 'getqONgfDtE') {
@@ -1356,6 +1361,7 @@ function postEventData() {
     // number of times there was network usage
     else if (eventPayload['dataValues'][i].dataElement === 'qbT1F1k8cD7') {
       eventPayload['dataValues'][i].value = networkUsage;
+
 
     }
     console.log("EVENT PAY: " + eventPayload['dataValues'][i].value);
