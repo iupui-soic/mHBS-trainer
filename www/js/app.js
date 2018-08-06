@@ -14,6 +14,7 @@ var app = new Framework7({
         username: 'DemoUser',
         pin: ''
       },
+      intentReceived: false,
       // secure local storage to hold credentials
       storage: {},
       // video and PDF content
@@ -126,9 +127,7 @@ $$('.login-button').on('click', function () {
   setupCheckBoxValues();
   setUpCheckBoxListeners();
   setUpPageEvents();
-  trackNumLoginsByPin();
   var pinPlaceholder = $$('#inputPin input');
-
   /*
   if(app.data.user.pin!==''){
      // can be used to fill in the value of the pin placeholder
@@ -139,8 +138,12 @@ $$('.login-button').on('click', function () {
   */
 
   // when we are logged in, create our home view and close the login
-  app.views.create('#view-home', {url: '/'});
-  ls.close();
+  if(!app.data.intentReceived){
+    loginAlert();
+  }else {
+    app.views.create('#view-home', {url: '/'});
+    ls.close();
+  }
   if(downloadAble){
     app.preloader.hide();
   }
@@ -800,6 +803,7 @@ function accessOnlineDocuments(rawXML) {
         id: '',
         contentType: '',
         duration: '',
+        thumbnail: '',
         isFavorite: false
       };
       tempID = documents[i].id;
@@ -834,8 +838,10 @@ function parseMetaData(doc) {
       console.log("RESPONSE " + this.response);
       // preload a video blob
       video.src = window.URL.createObjectURL(videoBlob);
+      video.preload = 'metadata';
       // once meta data is loaded can be grabbed, but not before then
       video.addEventListener("loadedmetadata", function () {
+        video.currentTime = 5;
         console.log("loaded meta Data");
         var minutes = Math.floor(video.duration / 60);
         var seconds = (video.duration % 60).toFixed(0);
@@ -844,8 +850,15 @@ function parseMetaData(doc) {
         }
         doc.duration = minutes + ":" + seconds;
         console.log("Duration " + doc.duration);
-        app.emit('contentType');
       });
+
+      video.addEventListener('loadeddata', function() {
+        var myImage = '<img width="80" height="80" src="'+thumbnail(video)+'">';
+        console.log(myImage);
+        doc.thumbnail = myImage;
+        app.emit('contentType');
+      }, false);
+
 
     }
   };
@@ -853,6 +866,16 @@ function parseMetaData(doc) {
     console.log(e);
   };
   req.send();
+}
+
+
+
+function thumbnail(video){
+  var canvas = document.createElement('canvas');
+  canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+  var img = document.createElement("img");
+  img.src = canvas.toDataURL('image/jpeg');
+  return img.src
 }
 
 // gets type of document, video/pdf/ etc
@@ -901,6 +924,7 @@ var onResume = function () {
   // always post when app launches if the app pin is set
   console.log("We launched the app" + storage.getItem("appLaunches"));
   if (app.data.user.pin !== '') {
+    console.log("PIN " + app.data.user.pin);
     setupTimeOffline();
     trackNumLoginsByPin();
   }
@@ -955,7 +979,7 @@ function sendBroadcastToTracker() {
       action: 'edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity'
     },
     function () {
-      console.log('sent broadcast');
+    console.log("sentBroadcast");
     },
     function () {
       alert('Please install and launch this app through mHBS tracker-capture')
@@ -1009,7 +1033,6 @@ function loginOk(password) {
       username: app.data.user.username,
       password: password
     }, function (data) {
-      //app.emit("login");
       if (!data.includes(app.data.user.username)) {
         credentialsFailAlert();
       } else {
@@ -1051,8 +1074,6 @@ function setAppUsername() {
 // tracks how many times each person / pin logged in
 function trackNumLoginsByPin() {
   console.log("TRACKING PINS");
-  // todo: pass over from tracker
-
   var numLogins = storage.getItem(app.data.user.pin);
   if (isNaN(parseInt(numLogins)) || parseInt(numLogins) === 0) {
     numLogins = 1;
@@ -1068,6 +1089,7 @@ function trackNumLoginsByPin() {
 
 /* handle any incoming intent, uses darryncampbell intent plugin */
 function onIntent(intent) {
+  app.data.intentReceived = true;
   var credentialsArr = parseCredentials(intent);
   // if the intent had data, need to log in
   if (credentialsArr != null) {
