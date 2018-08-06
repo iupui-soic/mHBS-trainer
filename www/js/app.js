@@ -142,6 +142,7 @@ $$('.login-button').on('click', function () {
     loginAlert();
   }else {
     app.views.create('#view-home', {url: '/'});
+    app.data.intentReceived = false;
     ls.close();
   }
   if(downloadAble){
@@ -858,10 +859,9 @@ function parseMetaData(doc) {
         doc.thumbnail = myImage;
         app.emit('contentType');
       }, false);
-
-
     }
   };
+
   req.onerror = function (e) {
     console.log(e);
   };
