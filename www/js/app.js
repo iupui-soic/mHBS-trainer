@@ -138,7 +138,7 @@ $$('.login-button').on('click', function () {
     pinPlaceholder.val(app.data.user.pin);
   }
   */
-  
+
   // when we are logged in, create our home view and close the login
   app.views.create('#view-home', {url: '/'});
   ls.close();
@@ -1247,8 +1247,8 @@ function sendAnswerToFabric(pageName) {
 // log page visits
 function logPageVisit(pageName) {
   var numberOfPageVisits = localStorage.getItem(pageName);
-  console.log("Page Name: " + pageName);
-  console.log("Number of Page Visits: " + numberOfPageVisits);
+  // console.log("Page Name: " + pageName);
+  // console.log("Number of Page Visits: " + numberOfPageVisits);
   numberOfPageVisits = parseInt(numberOfPageVisits) + 1;
   storage.setItem(pageName, numberOfPageVisits);
 }
@@ -1262,9 +1262,9 @@ function initCheckboxesToFalse() {
 function initCheckboxesToStoredVal(checkBoxes) {
   for (var i = 0; i < checkBoxes.length; i++) {
     var checkBoxVal = storage.getItem(checkBoxes[i].id);
-    if (checkBoxVal === true) {
+    if(checkBoxVal.toString()==="true"){
       document.getElementById(checkBoxes[i].id).checked = true;
-    } else {
+    }else{
       document.getElementById(checkBoxes[i].id).checked = false;
     }
   }
@@ -1272,17 +1272,18 @@ function initCheckboxesToStoredVal(checkBoxes) {
 
 // set up checkbox listeners for whole app
 function setUpCheckBoxListeners() {
-  for (var key in checkboxVals) {
+  for (var key in checkboxVals){
     var checkboxDomID = "#" + key;
     $$(document).on('change', checkboxDomID, function () {
-      var checkboxVal = storage.getItem(key);
+      var thisID = this.id;
+      var checkboxVal = storage.getItem(thisID);
       if (this.checked) {
         checkboxVal = true;
       } else {
         checkboxVal = false;
       }
-      storage.setItem(key, JSON.stringify(checkboxVal));
-    })
+      storage.setItem(thisID, JSON.stringify(checkboxVal));
+    });
   }
 }
 
@@ -1305,13 +1306,13 @@ function setUpPageEvents() {
 
 // set up page before in events
 function setUpPageBeforeInEvent(pageName) {
+  console.log("Setting up Page Before in Event");
   $$(document).on('page:beforein', '.page[data-name="' + pageName + '"]', function (e, page) {
     // sendAnswerToFabric(page.name);
     logPageVisit(page.name);
     // if the page has checkboxes, init checkboxes to stored value
     var checkBoxes = $$('input[type="checkbox"]');
     if (checkBoxes.length > 0) {
-      console.log("this page has checkboxes");
       initCheckboxesToStoredVal(checkBoxes);
     } else {
       console.log("this page does not have checkboxes");
