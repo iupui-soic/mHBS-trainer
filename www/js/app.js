@@ -126,7 +126,6 @@ $$('.login-button').on('click', function () {
   setupCheckBoxValues();
   setUpCheckBoxListeners();
   setUpPageEvents();
-  setupTimeOffline();
   trackNumLoginsByPin();
   var pinPlaceholder = $$('#inputPin input');
 
@@ -902,6 +901,7 @@ var onResume = function () {
   // always post when app launches if the app pin is set
   console.log("We launched the app" + storage.getItem("appLaunches"));
   if (app.data.user.pin !== '') {
+    setupTimeOffline();
     trackNumLoginsByPin();
   }
 };
@@ -1062,6 +1062,7 @@ function trackNumLoginsByPin() {
   console.log("stored logins " + numLogins);
 
   storage.setItem(app.data.user.pin, JSON.stringify(numLogins));
+  setupTimeOffline();
   postEventData();
 }
 
@@ -1235,7 +1236,6 @@ function getStoredTimeOffline() {
   if (seconds > 60) {
     minutes += convertSecondsToMinutes(seconds);
   }
-
   return minutes;
 }
 
@@ -1365,7 +1365,7 @@ function postEventData() {
 
 
     }
-    console.log("EVENT PAY: " + eventPayload['dataValues'][i].value);
+    console.log("EVENT PAY: " + eventPayload['dataValues'][i].dataElement + " " + eventPayload['dataValues'][i].value);
     console.log("-----------------");
   }
   postPayload();
