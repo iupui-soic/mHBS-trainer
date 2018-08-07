@@ -67,6 +67,7 @@ var downloadAble = false;
 var secureStorageInactive = true;
 var currentID;
 var appLaunches = 0;
+var metaDataLoaded = 0;
 var networkUsage = 1;
 var paused = 0;
 var tempCredentials = {
@@ -140,11 +141,9 @@ $$('.login-button').on('click', function () {
   // when we are logged in, create our home view and close the login
   if(!app.data.intentReceived){
     app.preloader.show('blue');
-
     // try to send another broadcast
     sendBroadcastToTracker();
     // simulate login click
-    this.click();
   }else {
     console.log("Intent received " + app.data.intentReceived);
     app.views.create('#view-home', {url: '/'});
@@ -424,6 +423,12 @@ app.on('wroteCredentials', function () {
    parse to separate arrays by content type.
 */
 app.on('contentType', function () {
+  metaDataLoaded = metaDataLoaded + 1;
+  if(metaDataLoaded<2){
+    return;
+  }else{
+    metaDataLoaded = 0;
+  }
   console.log("got content types");
   // hide pre-loader once we downloaded content
   app.preloader.hide();
@@ -856,6 +861,7 @@ function parseMetaData(doc) {
           seconds = seconds.toString().concat("0");
         }
         doc.duration = minutes + ":" + seconds;
+        app.emit('contentType');
         console.log("Duration " + doc.duration);
       });
 
