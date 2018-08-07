@@ -139,8 +139,14 @@ $$('.login-button').on('click', function () {
 
   // when we are logged in, create our home view and close the login
   if(!app.data.intentReceived){
-    loginAlert();
+    app.preloader.show('blue');
+
+    // try to send another broadcast
+    sendBroadcastToTracker();
+    // simulate login click
+    this.click();
   }else {
+    console.log("Intent received " + app.data.intentReceived);
     app.views.create('#view-home', {url: '/'});
     app.data.intentReceived = false;
     ls.close();
