@@ -11,7 +11,7 @@ var app = new Framework7({
   data: function () {
     return {
       user: {
-        username: 'DemoUser',
+        username: '',
         pin: ''
       },
       intentReceived: false,
@@ -105,7 +105,7 @@ var ls = app.loginScreen.create({el: '#login-screen'});
 ls.open(false);
 
 
-function onLoad(){
+function onLoad() {
   console.log("onLoad");
 
   // if we don't have credentials in secure storage, send a broadcast, store them, and log the user in
@@ -139,18 +139,18 @@ $$('.login-button').on('click', function () {
   */
 
   // when we are logged in, create our home view and close the login
-  if(!app.data.intentReceived){
+  if (!app.data.intentReceived) {
     app.preloader.show('blue');
     // try to send another broadcast
     sendBroadcastToTracker();
-    // simulate login click
-  }else {
+    loginAlert();
+  } else {
     console.log("Intent received " + app.data.intentReceived);
     app.views.create('#view-home', {url: '/'});
     app.data.intentReceived = false;
     ls.close();
   }
-  if(downloadAble){
+  if (downloadAble) {
     app.preloader.hide();
   }
 });
@@ -158,28 +158,29 @@ $$('.login-button').on('click', function () {
 //todo: change to correct org unit, fill in eventDate, coordinates, storedBy
 // Event Payload with params relating to mHBS training app posted to the program events on DHIS2
 var eventPayload = {
-  "program": "dbEHq0V0V5j",
-  "orgUnit": "Hm0rRRXqFi5",
-  "eventDate": "",
-  "status": "COMPLETED",
-  "storedBy": "admin",
-  "coordinate": {
-    "latitude": 59.8,
-    "longitude": 10.9
-  },
-  "dataValues": [
+  program: "dbEHq0V0V5j",
+  // orgUnit: "Hm0rRRXqFi5",
+  trackedEntityInstance: "R7LmsRRt74D",
+  //eventDate: "2013-05-17",
+  //status: "COMPLETED",
+  //storedBy: "admin",
+  //coordinate: {
+  //  "latitude": 59.8,
+  //  "longitude": 10.9
+  //},
+  dataValues: [
     // Number of abrupt exits or incomplete workflow for mHBS training app
-    {"dataElement": "ZYQJ87n45ye", "value": ""},
+    {dataElement: "ZYQJ87n45ye", "value": ""},
     // Number of mHBS training app logins by pin
-    {"dataElement": "getqONgfDtE", "value": ""},
+    {dataElement: "getqONgfDtE", "value": ""},
     // Number of minutes mHBS training app was used offline
-    {"dataElement": "qOyP28eirAx", "value": ""},
+    {dataElement: "qOyP28eirAx", "value": ""},
     // Number of screens used in mHBS training app
-    {"dataElement": "RrIe9CA11n6", "value": ""},
+    {dataElement: "RrIe9CA11n6", "value": ""},
     // Number of times mHBS training app was started
-    {"dataElement": "BgzISR1GmP8", "value": ""},
+    {dataElement: "BgzISR1GmP8", "value": ""},
     // Number of times mHBS training app was with network usage
-    {"dataElement": "qbT1F1k8cD7", "value": ""},
+    {dataElement: "qbT1F1k8cD7", "value": ""},
   ]
 };
 
@@ -423,10 +424,11 @@ app.on('wroteCredentials', function () {
    parse to separate arrays by content type.
 */
 app.on('contentType', function () {
+  /* make sure we got both thumbnail and duration */
   metaDataLoaded = metaDataLoaded + 1;
-  if(metaDataLoaded<2){
+  if (metaDataLoaded < 2) {
     return;
-  }else{
+  } else {
     metaDataLoaded = 0;
   }
   console.log("got content types");
@@ -535,7 +537,6 @@ $$(document).on('click', "#updateFavorites", function () {
 });
 
 /* basically while we are downloading shows the preloader
-   //todo @liz soon will probably remove this, but will need to modify
  */
 function getDownloadAccessToken() {
   if (downloadAble) {
@@ -865,15 +866,14 @@ function parseMetaData(doc) {
         console.log("Duration " + doc.duration);
       });
 
-      video.addEventListener('loadeddata', function() {
-        var myImage = '<img width="80" height="80" src="'+thumbnail(video)+'">';
-        console.log(myImage);
-        doc.thumbnail = myImage;
-        app.emit('contentType');
+      video.addEventListener('loadeddata', function () {
+        // specify as lazy load so we only proceed when image is ready.
+        var myThumbnail = '<img class="lazy" width="80" height="80" data-src="' + thumbnail(video) + '">';
+        doc.thumbnail = myThumbnail;
+        app.emit('contentType')
       }, false);
     }
   };
-
   req.onerror = function (e) {
     console.log(e);
   };
@@ -881,8 +881,7 @@ function parseMetaData(doc) {
 }
 
 
-
-function thumbnail(video){
+function thumbnail(video) {
   var canvas = document.createElement('canvas');
   canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
   var img = document.createElement("img");
@@ -991,7 +990,7 @@ function sendBroadcastToTracker() {
       action: 'edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity'
     },
     function () {
-    console.log("sentBroadcast");
+      console.log("sentBroadcast");
     },
     function () {
       alert('Please install and launch this app through mHBS tracker-capture')
@@ -1101,11 +1100,12 @@ function trackNumLoginsByPin() {
 
 /* handle any incoming intent, uses darryncampbell intent plugin */
 function onIntent(intent) {
-  app.data.intentReceived = true;
   var credentialsArr = parseCredentials(intent);
   // if the intent had data, need to log in
   if (credentialsArr != null) {
     if (credentialsArr.length === 4) {
+      app.data.intentReceived = true;
+
       // todo: remove
       console.log("length of tempCredentials " + credentialsArr.length);
       tempCredentials.username = credentialsArr[0];
@@ -1296,9 +1296,9 @@ function initCheckboxesToFalse() {
 function initCheckboxesToStoredVal(checkBoxes) {
   for (var i = 0; i < checkBoxes.length; i++) {
     var checkBoxVal = storage.getItem(checkBoxes[i].id);
-    if(checkBoxVal.toString()==="true"){
+    if (checkBoxVal.toString() === "true") {
       document.getElementById(checkBoxes[i].id).checked = true;
-    }else{
+    } else {
       document.getElementById(checkBoxes[i].id).checked = false;
     }
   }
@@ -1306,7 +1306,7 @@ function initCheckboxesToStoredVal(checkBoxes) {
 
 // set up checkbox listeners for whole app
 function setUpCheckBoxListeners() {
-  for (var key in checkboxVals){
+  for (var key in checkboxVals) {
     var checkboxDomID = "#" + key;
     $$(document).on('change', checkboxDomID, function () {
       var thisID = this.id;
@@ -1379,7 +1379,7 @@ function postEventData() {
     }
     // send time offline in minutes
     else if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
-         eventPayload['dataValues'][i].value = getStoredTimeOffline();
+      eventPayload['dataValues'][i].value = getStoredTimeOffline();
     }
     // send logins by pin
     else if (eventPayload['dataValues'][i].dataElement === 'getqONgfDtE') {
@@ -1403,7 +1403,6 @@ function postEventData() {
     console.log("-----------------");
   }
   postPayload();
-  // todo: @liz
   // clearPayloadValues();
 }
 
@@ -1413,14 +1412,27 @@ function postPayload() {
 }
 
 function makeEventPostRequest(password) {
-  var eventServer = appServer + "26/events";
+
+  var testPayload = {
+    program: "dbEHq0V0V5j",
+    //orgUnit: "Hm0rRRXqFi5",
+    trackedEntityInstance: "R7LmsRRt74D"
+  };
+
+  var eventServer = appServer + "26/events/";
   app.request({
     url: eventServer,
     dataType: 'json',
-    data: eventPayload,
+    crossDomain: true,
+    // something in the payload might be causing the conflict.
+    data: testPayload,
     method: 'POST',
     contentType: 'application/json',
-    'Content-Type': 'application/json',
+    user: "ezmeyers",
+    password: password,
+    xhrFields: {
+      'withCredentials': true
+    },
     beforeSend: function () {
       //This method will be called before webservice call initiate
     },
@@ -1429,9 +1441,10 @@ function makeEventPostRequest(password) {
       //Post request completed
     },
     error: function (xhr, status) {
-      console.log("Failure" + JSON.stringify(xhr));
+      console.log("Failure: " + JSON.stringify(xhr));
     }
   });
+
 
 }
 
