@@ -107,7 +107,6 @@ ls.open(false);
 
 function onLoad() {
   console.log("onLoad");
-
   // if we don't have credentials in secure storage, send a broadcast, store them, and log the user in
   if (secureStorageInactive) {
     // todo: remove
@@ -128,8 +127,8 @@ $$('.login-button').on('click', function () {
   setupCheckBoxValues();
   setUpCheckBoxListeners();
   setUpPageEvents();
-  var pinPlaceholder = $$('#inputPin input');
   /*
+  var pinPlaceholder = $$('#inputPin input');
   if(app.data.user.pin!==''){
      // can be used to fill in the value of the pin placeholder
     // pinPlaceholder.html("<input type=\"text\" name=\"selectPin\" placeholder="+app.data.user.pin+">");
@@ -137,19 +136,9 @@ $$('.login-button').on('click', function () {
     pinPlaceholder.val(app.data.user.pin);
   }
   */
-
-  // when we are logged in, create our home view and close the login
-  if (!app.data.intentReceived) {
-    app.preloader.show('blue');
-    // try to send another broadcast
-    sendBroadcastToTracker();
-    loginAlert();
-  } else {
-    console.log("Intent received " + app.data.intentReceived);
     app.views.create('#view-home', {url: '/'});
     app.data.intentReceived = false;
     ls.close();
-  }
   if (downloadAble) {
     app.preloader.hide();
   }
@@ -359,7 +348,6 @@ app.on('wentOnline', function () {
   }
   else {
     storedOfflineTime = storedOfflineTime + "," + timeElapsed;
-    console.log("stored offline time: " + storedOfflineTime);
     storage.setItem("timeOffline", storedOfflineTime);
   }
   // reset start and end times for next round where we go offline/online
@@ -370,7 +358,6 @@ app.on('wentOnline', function () {
 // set basic auth request header
 function setHeaders() {
   // todo: remove
-  console.log("Setting Headers");
   app.request.setup({
     headers: {
       'Authorization': 'Basic ' + btoa(tempCredentials.username + ":" + tempCredentials.password)
@@ -380,16 +367,12 @@ function setHeaders() {
 
 // track writing credentials to secure storage, only continue with three calls, which emits to 'downloadOk'
 app.on('storedCredential', function (key) {
-  console.log("We triggered storedCredential Event");
   if (key === "username") {
-    console.log("We are incrementing secureParams in stored credential based on username");
     wroteToSecure();
   } else if (key === "password") {
-    console.log("We are incrementing secureParams in stored credential based on password");
     wroteToSecure();
   }
   else if (key === "serverURL") {
-    console.log("We are incrementing secureParams in stored credential based on serverURL");
     wroteToSecure();
   }
 });
@@ -398,16 +381,13 @@ app.on('storedCredential', function (key) {
 app.on('gotCredential', function (key, value) {
   console.log("We triggered gotCredential Event");
   if (key === "username") {
-    console.log("incrementing secure params in got credential by username");
     readFromSecure();
     tempCredentials.username = value;
   } else if (key === "password") {
-    console.log("incrementing secure params in got credential by password");
     readFromSecure();
     tempCredentials.password = value;
   }
   else if (key === "serverURL") {
-    console.log("incrementing secure params in got credential by serverURL");
     readFromSecure();
     tempCredentials.serverURL = value;
   }
@@ -431,7 +411,6 @@ app.on('contentType', function () {
   } else {
     metaDataLoaded = 0;
   }
-  console.log("got content types");
   // hide pre-loader once we downloaded content
   app.preloader.hide();
   for (var i in documentList) {
@@ -447,17 +426,12 @@ app.on('contentType', function () {
   if (app.data.videoList.length > 0) {
     $$("#updateFavorites").show();
   }
-  // todo: remove
-  console.log(app.data.videoList);
-  console.log(app.data.pdfList);
   // routes user to video list once lists of content are loaded
   homeView.router.navigate('/videoList/');
 });
 
 // takes the file name of the path to access if we found the file on device or wrote the file to device
 app.on("fileOnDevice", function (filePath) {
-  // todo: remove
-  console.log("FULL FILE PATH TO ACCESS:" + "/data/data/com.example.mHBS/files/files" + filePath);
   /* this variable must be named photos, if the name is changed, this will not work.
    That is because it is defined in photo browser in framework7
   */
@@ -487,8 +461,6 @@ app.on("fileOnDevice", function (filePath) {
 // get the id of the video, check if it exists already, get permission to download
  */
 $$(document).on('click', ".pb-standalone-video", function () {
-  // todo: remove
-  console.log(this);
   currentID = this.id;
   videoCaption = this.innerText;
   checkFile();
@@ -550,12 +522,9 @@ function getDownloadAccessToken() {
 
 // checks if file exists on device
 function checkFile() {
-  // todo: remove
-  console.log("Checking if File Exists");
   var path = '/' + currentID + ".webm";
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
     // todo: remove
-    console.log("Path to check " + JSON.stringify(fileSystem.root));
     fileSystem.root.getFile(path, {create: false},
       // callbacks
       fileExists,
@@ -573,7 +542,6 @@ function wroteToSecure() {
   if (secureParamsStored < 3) {
     return;
   }
-  console.log("stored 3 secured params, set downloadable = True");
   secureParamsStored = 0;
   downloadAble = true;
   // if we wrote three credentials, proceed to download
@@ -586,7 +554,6 @@ function readFromSecure() {
   if (secureParamsStored < 3) {
     return;
   }
-  console.log("got 3 secured params");
   secureParamsStored = 0;
   // three credentials read
   app.emit("credentialsRead");
@@ -654,7 +621,6 @@ function removeFromFavorites(param) {
     var favoritesToArr = favorites.split(',');
     var newValue = "";
     favoritesToArr = favoritesToArr.filter(item => item !== id);
-    console.log("favorites arr length" + favoritesToArr.length);
     for (var i in favoritesToArr) {
       newValue += "," + favoritesToArr[i];
     }
@@ -667,9 +633,8 @@ function fileExists(fileEntry) {
   app.emit("fileOnDevice", fileEntry.fullPath);
 }
 
-//TODO @liz: need to prevent anything other than binary data writing to file
+//TODO: need to prevent anything other than binary data writing to file
 function fileDoesNotExist() {
-  console.log("File does not Exist");
   app.preloader.show('blue');
   downloadContent();
 }
@@ -692,9 +657,7 @@ function downloadBlob(password) {
   // holds the id of the video that was clicked
   var id = currentID;
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-    console.log('file system open: ' + fs.name);
     fs.root.getFile('bot.png', {create: true, exclusive: false}, function (fileEntry) {
-      console.log('fileEntry is file? ' + fileEntry.isFile.toString());
       var oReq = new XMLHttpRequest();
       var server = appServer + "documents/" + id + "/data";
       // Make sure you add the domain name to the Content-Security-Policy <meta> element.
@@ -727,9 +690,7 @@ function downloadBlob(password) {
 
 // request file to write to
 function fileToWrite(obj, id) {
-  console.log("Attempting to write file");
   window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-    console.log('file system open: ' + fs.name);
     fs.root.getFile('/' + id + ".webm", {create: true, exclusive: false}, function (fileEntry) {
       writeFile(fileEntry, obj);
     }, function (fs) {
@@ -770,8 +731,6 @@ function getDocsFromServer(password) {
     rawXML: {}
   };
   var server = appServer + "documents.xml";
-  // todo: remove
-  console.log("Access Online Content");
   // send request
   app.request.get(server, {
       username: app.data.user.username,
@@ -779,8 +738,6 @@ function getDocsFromServer(password) {
     }, function (data) {
       rawDocuments.rawXML = data;
       // ready to download content
-      // todo: remove
-      console.log("Getting list of elements");
       accessOnlineDocuments(rawDocuments.rawXML);
     },
     function (error) {
@@ -810,7 +767,6 @@ function accessOnlineDocuments(rawXML) {
     // swap these lines to change from showing one video to more than one
     //for (var i in documents) {
     for (var i = 0; i < 1; i++) {
-      console.log(i);
       var doc = {
         title: '',
         id: '',
@@ -820,14 +776,11 @@ function accessOnlineDocuments(rawXML) {
         isFavorite: false
       };
       tempID = documents[i].id;
-      console.log(tempID);
       if (tempID != null) {
         doc.id = tempID;
         // grabs video durations, but too time consuming currently
         parseMetaData(doc);
         doc.title = documents[i].textContent;
-        // todo: remove
-        console.log(doc.title);
         getContentTypes(parser, doc, tempID, semaphore);
         documentList.push(doc);
       }
@@ -837,7 +790,6 @@ function accessOnlineDocuments(rawXML) {
 
 // gets video duration, can also grab other desired data here
 function parseMetaData(doc) {
-  console.log("Parsing Meta Data");
   var video = document.createElement("video");
   var server = appServer + "documents/" + doc.id + "/data";
   var req = new XMLHttpRequest();
@@ -847,15 +799,12 @@ function parseMetaData(doc) {
 
     if (this.status === 200) {
       var videoBlob = this.response;
-      // todo: remove
-      console.log("RESPONSE " + this.response);
       // preload a video blob
       video.src = window.URL.createObjectURL(videoBlob);
       video.preload = 'metadata';
       // once meta data is loaded can be grabbed, but not before then
       video.addEventListener("loadedmetadata", function () {
         video.currentTime = 5;
-        console.log("loaded meta Data");
         var minutes = Math.floor(video.duration / 60);
         var seconds = (video.duration % 60).toFixed(0);
         if (seconds.toString().length === 1) {
@@ -863,7 +812,6 @@ function parseMetaData(doc) {
         }
         doc.duration = minutes + ":" + seconds;
         app.emit('contentType');
-        console.log("Duration " + doc.duration);
       });
 
       video.addEventListener('loadeddata', function () {
@@ -921,11 +869,11 @@ document.addEventListener("deviceready", function (e) {
 
 // event callbacks -----------
 var onPause = function () {
-  console.log("app was paused");
   paused++;
 };
 
 var onResume = function () {
+  console.log("app Resumed");
   // show the login screen (Pin screen)
   ls.open(true);
   appLaunches = appLaunches + 1;
@@ -933,9 +881,7 @@ var onResume = function () {
   storage.setItem("appLaunches", JSON.stringify(appLaunches));
 
   // always post when app launches if the app pin is set
-  console.log("We launched the app" + storage.getItem("appLaunches"));
   if (app.data.user.pin !== '') {
-    console.log("PIN " + app.data.user.pin);
     setupTimeOffline();
     trackNumLoginsByPin();
   }
@@ -949,7 +895,6 @@ wentOffline = function (e) {
     networkUsage = 0;
   }
   app.preloader.show('blue');
-  console.log(e + "Went offline");
   app.data.timeOffline.startTime = new Date();
   alert("Please connect to the internet to use the mHBS training app");
   app.data.offlineMode = true;
@@ -960,7 +905,6 @@ wentOnline = function (e) {
   networkUsage++;
   app.preloader.hide();
   app.data.timeOffline.endTime = new Date();
-  console.log(e + "Went online");
   app.data.offlineMode = false;
   //trigger
   app.emit("wentOnline");
@@ -968,15 +912,12 @@ wentOnline = function (e) {
 
 // calculates elapsed time in minutes
 function calculateElapsedTime(startTime, endTime) {
-  console.log("start and end: " + startTime + " " + endTime);
   if (startTime <= endTime) {
     var seconds = Math.round((endTime - startTime) / 1000);
-    console.log("seconds in calculation: " + seconds);
     if (seconds <= 60) {
       return seconds + "s";
     } else {
       var minutes = Math.round(seconds / 60);
-      console.log("minutes in calculation: " + minutes);
       return minutes;
     }
   } else {
@@ -990,9 +931,10 @@ function sendBroadcastToTracker() {
       action: 'edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity'
     },
     function () {
-      console.log("sentBroadcast");
+      console.log("sent Broadcast");
     },
     function () {
+      console.log(" failed to send broadcast");
       alert('Please install and launch this app through mHBS tracker-capture')
     }
   );
@@ -1068,13 +1010,10 @@ function clearTempCredentials() {
   tempCredentials.username = null;
   tempCredentials.password = null;
   tempCredentials.serverURL = '';
-  //todo: remove
-  console.log("Cleared Temp Credentials")
 }
 
 // set user name for our app when we stored credentials upon login
 function setAppUsername() {
-  console.log("setAppUsername");
   app.data.storage.get(function (value) {
     app.data.user.username = value;
   }, function (error) {
@@ -1084,15 +1023,12 @@ function setAppUsername() {
 
 // tracks how many times each person / pin logged in
 function trackNumLoginsByPin() {
-  console.log("TRACKING PINS");
   var numLogins = storage.getItem(app.data.user.pin);
   if (isNaN(parseInt(numLogins)) || parseInt(numLogins) === 0) {
     numLogins = 1;
   } else {
     numLogins = parseInt(numLogins) + 1;
   }
-  console.log("stored logins " + numLogins);
-
   storage.setItem(app.data.user.pin, JSON.stringify(numLogins));
   setupTimeOffline();
   postEventData();
@@ -1104,10 +1040,6 @@ function onIntent(intent) {
   // if the intent had data, need to log in
   if (credentialsArr != null) {
     if (credentialsArr.length === 4) {
-      app.data.intentReceived = true;
-
-      // todo: remove
-      console.log("length of tempCredentials " + credentialsArr.length);
       tempCredentials.username = credentialsArr[0];
       tempCredentials.password = credentialsArr[1];
       tempCredentials.serverURL = credentialsArr[2];
@@ -1147,7 +1079,6 @@ function storeCredentials() {
   }, 'password', tempCredentials.password);
 
   app.data.storage.set(function () {
-    console.log("here in setting");
     app.emit('storedCredential', "serverURL");
   }, function (error) {
     console.log("storedCredential Error" + error);
@@ -1177,10 +1108,9 @@ function getCredentials() {
 
 // get the credentials from the JSON via tracker-capture
 function parseCredentials(intent) {
-  console.log("Parsing Credentials");
   if (intent != null) {
-    console.log(intent);
     if (intent.extras != null) {
+      app.data.intentReceived = true;
       return intent.extras['key:loginRequest'];
     }
   } else {
@@ -1218,8 +1148,6 @@ var getPasswordFromSecure = function (callback) {
   app.data.storage.get(
     function (value) {
       callback(value);
-      // todo: remove
-      console.log("Got password from secure");
     },
     function (error) {
       console.log('Error' + error);
@@ -1281,8 +1209,6 @@ function sendAnswerToFabric(pageName) {
 // log page visits
 function logPageVisit(pageName) {
   var numberOfPageVisits = localStorage.getItem(pageName);
-  // console.log("Page Name: " + pageName);
-  // console.log("Number of Page Visits: " + numberOfPageVisits);
   numberOfPageVisits = parseInt(numberOfPageVisits) + 1;
   storage.setItem(pageName, numberOfPageVisits);
 }
@@ -1340,7 +1266,6 @@ function setUpPageEvents() {
 
 // set up page before in events
 function setUpPageBeforeInEvent(pageName) {
-  console.log("Setting up Page Before in Event");
   $$(document).on('page:beforein', '.page[data-name="' + pageName + '"]', function (e, page) {
     // sendAnswerToFabric(page.name);
     logPageVisit(page.name);
@@ -1348,8 +1273,6 @@ function setUpPageBeforeInEvent(pageName) {
     var checkBoxes = $$('input[type="checkbox"]');
     if (checkBoxes.length > 0) {
       initCheckboxesToStoredVal(checkBoxes);
-    } else {
-      console.log("this page does not have checkboxes");
     }
   });
 }
@@ -1370,7 +1293,7 @@ function setUpAfterOutEvent(pageName) {
 
 function postEventData() {
   eventPayload['eventDate'] = getDateStamp();
-  console.log("sending Payload: " + JSON.stringify(eventPayload));
+  //console.log("sending Payload: " + JSON.stringify(eventPayload));
   for (var i in eventPayload['dataValues']) {
     // todo: check this val
     // Number of abrupt exits or incomplete workflow for mHBS training app
@@ -1399,8 +1322,10 @@ function postEventData() {
 
 
     }
+    /*
     console.log("EVENT PAY: " + eventPayload['dataValues'][i].dataElement + " " + eventPayload['dataValues'][i].value);
     console.log("-----------------");
+    */
   }
   postPayload();
   // clearPayloadValues();
@@ -1441,7 +1366,7 @@ function makeEventPostRequest(password) {
       //Post request completed
     },
     error: function (xhr, status) {
-      console.log("Failure: " + JSON.stringify(xhr));
+     // console.log("Failure: " + JSON.stringify(xhr));
     }
   });
 
