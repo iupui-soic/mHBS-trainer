@@ -7,7 +7,7 @@
 ## Usage
 ### 1. Clone the Repository
 ```
-git clone https://github.com/TBD
+git clone https://github.com/iupui-soic/mHBS_tracker
 ```
 ### 2. Install Dependencies
 Also required for initializing plugins
@@ -23,10 +23,7 @@ Go to the downloaded repository folder and run:
 ```
 cordova add platform android
 ```
-For IOS:
-```
-cordova add platform android
-```
+
 ### 4. Build the app
 (plugins will be automatically built)
 ```

@@ -1,11 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.example.mHBS" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>mHBS</name>
+<widget id="edu.iupui.soic.biohealth.plhi.mhbs" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>mHBS Training</name>
     <description>
-        A sample Apache Cordova application that responds to the deviceready event.
+      The mobile Helping Babies Survive (mHBS) app is a digital health tool, developed by collaborators at
+      Indiana University (School of Medicine and School of Informatics and Computing), which consists of
+      3 separate apps, serving functions related to data collection and reporting, access to educational
+      resources, including other apps and data visualization. The mHBS apps are powered by the
+      District Health Information Software (DHIS 2) in the back-end for data storage and tracking of health workers.
     </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
+    <author email="sunbiz@gmail.com" href="https://www.iupui.edu/~plhi">
+      Indiana University - SoIC & IUSM
     </author>
     <content src="index.html" />
     <access origin="*" />

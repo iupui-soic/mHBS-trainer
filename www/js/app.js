@@ -136,9 +136,9 @@ $$('.login-button').on('click', function () {
     pinPlaceholder.val(app.data.user.pin);
   }
   */
-    app.views.create('#view-home', {url: '/'});
-    app.data.intentReceived = false;
-    ls.close();
+  app.views.create('#view-home', {url: '/'});
+  app.data.intentReceived = false;
+  ls.close();
   if (downloadAble) {
     app.preloader.hide();
   }
