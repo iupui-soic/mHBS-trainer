@@ -144,35 +144,6 @@ $$('.login-button').on('click', function () {
   }
 });
 
-//todo: change to correct org unit, fill in eventDate, coordinates, storedBy
-// Event Payload with params relating to mHBS training app posted to the program events on DHIS2
-var eventPayload = {
-  program: "dbEHq0V0V5j",
-  // orgUnit: "Hm0rRRXqFi5",
-  trackedEntityInstance: "R7LmsRRt74D",
-  //eventDate: "2013-05-17",
-  //status: "COMPLETED",
-  //storedBy: "admin",
-  //coordinate: {
-  //  "latitude": 59.8,
-  //  "longitude": 10.9
-  //},
-  dataValues: [
-    // Number of abrupt exits or incomplete workflow for mHBS training app
-    {dataElement: "ZYQJ87n45ye", "value": ""},
-    // Number of mHBS training app logins by pin
-    {dataElement: "getqONgfDtE", "value": ""},
-    // Number of minutes mHBS training app was used offline
-    {dataElement: "qOyP28eirAx", "value": ""},
-    // Number of screens used in mHBS training app
-    {dataElement: "RrIe9CA11n6", "value": ""},
-    // Number of times mHBS training app was started
-    {dataElement: "BgzISR1GmP8", "value": ""},
-    // Number of times mHBS training app was with network usage
-    {dataElement: "qbT1F1k8cD7", "value": ""},
-  ]
-};
-
 // Local storage setup ------------------
 
 // checkboxes pertaining to the mHBS guide
@@ -1293,7 +1264,7 @@ function setUpAfterOutEvent(pageName) {
 
 function postEventData() {
   eventPayload['eventDate'] = getDateStamp();
-  //console.log("sending Payload: " + JSON.stringify(eventPayload));
+  console.log("sending Payload: " + JSON.stringify(eventPayload));
   for (var i in eventPayload['dataValues']) {
     // todo: check this val
     // Number of abrupt exits or incomplete workflow for mHBS training app
@@ -1319,13 +1290,10 @@ function postEventData() {
     // number of times there was network usage
     else if (eventPayload['dataValues'][i].dataElement === 'qbT1F1k8cD7') {
       eventPayload['dataValues'][i].value = networkUsage;
-
-
     }
-    /*
     console.log("EVENT PAY: " + eventPayload['dataValues'][i].dataElement + " " + eventPayload['dataValues'][i].value);
     console.log("-----------------");
-    */
+
   }
   postPayload();
   // clearPayloadValues();
@@ -1336,28 +1304,46 @@ function postPayload() {
   getPasswordFromSecure(makeEventPostRequest);
 }
 
+//todo: change to correct org unit, fill in eventDate, coordinates, storedBy
+// Event Payload with params relating to mHBS training app posted to the program events on DHIS2
+var eventPayload = {
+  "program": "dbEHq0V0V5j",
+  // orgUnit: "Hm0rRRXqFi5",
+  "trackedEntityInstance": "vmhlccEpW4Q",
+  //"eventDate": "2013-05-17",
+  //"status": "COMPLETED",
+  //"storedBy": "admin",
+  //"coordinate": {
+  //  "latitude": 59.8,
+  //  "longitude": 10.9
+  //},
+  "dataValues": [
+    // Number of abrupt exits or incomplete workflow for mHBS training app
+    {"dataElement": "ZYQJ87n45ye", "value": ""},
+    // Number of mHBS training app logins by pin
+    {"dataElement": "getqONgfDtE", "value": ""},
+    // Number of minutes mHBS training app was used offline
+    {"dataElement": "qOyP28eirAx", "value": ""},
+    // Number of screens used in mHBS training app
+    {"dataElement": "RrIe9CA11n6", "value": ""},
+    // Number of times mHBS training app was started
+    {"dataElement": "BgzISR1GmP8", "value": ""},
+    // Number of times mHBS training app was with network usage
+    {"dataElement": "qbT1F1k8cD7", "value": ""},
+  ]
+};
+
 function makeEventPostRequest(password) {
-
-  var testPayload = {
-    program: "dbEHq0V0V5j",
-    //orgUnit: "Hm0rRRXqFi5",
-    trackedEntityInstance: "R7LmsRRt74D"
-  };
-
   var eventServer = appServer + "26/events/";
   app.request({
     url: eventServer,
     dataType: 'json',
+    processData: false,
     crossDomain: true,
     // something in the payload might be causing the conflict.
-    data: testPayload,
+    data: eventPayload,
     method: 'POST',
     contentType: 'application/json',
-    user: "ezmeyers",
-    password: password,
-    xhrFields: {
-      'withCredentials': true
-    },
     beforeSend: function () {
       //This method will be called before webservice call initiate
     },
@@ -1366,7 +1352,7 @@ function makeEventPostRequest(password) {
       //Post request completed
     },
     error: function (xhr, status) {
-     // console.log("Failure: " + JSON.stringify(xhr));
+      console.log("Failure: " + JSON.stringify(xhr));
     }
   });
 
