@@ -200,11 +200,6 @@ routes = [
       }
     }
   },
-  {
-    path: '/favorites/',
-    id: 'favorites',
-    componentUrl: './pages/favorites.html'
-  },
   // Default route (404 page). MUST BE THE LAST
   {
     path: '(.*)',

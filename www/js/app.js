@@ -104,12 +104,8 @@ ls.open(false);
 
 
 function onLoad() {
-  console.log("onLoad");
   // if we don't have credentials in secure storage, send a broadcast, store them, and log the user in
   if (secureStorageInactive) {
-    // todo: remove
-    console.log("firing APP");
-    $$("#updateFavorites").hide();
     // intent callback received from tracker-capture
     window.plugins.intentShim.onIntent(onIntent);
     // show the preloader while we wait for credentials from tracker-capture
@@ -389,12 +385,7 @@ app.on('contentType', function () {
       app.data.pdfList.push(documentList[i]);
     }
   }
-  /* currently have it set so the favorites tab shows only if there are lists of videos downloaded,
-  // todo: suggest to improve this functionality to something more user friendly
-   */
-  if (app.data.videoList.length > 0) {
-    $$("#updateFavorites").show();
-  }
+
   // routes user to video list once lists of content are loaded
   homeView.router.navigate('/videoList/');
 });
@@ -457,26 +448,6 @@ $$(document).on('click', ".mHBSTracker", function () {
   );
 });
 
-/* triggered when we open favorites in /favoritesList/ because we need to make sure we
-  show the most recently added favorites
-*/
-$$(document).on('click', "#updateFavorites", function () {
-  var favorites = storage.getItem(app.data.user.username + "favorites");
-  if (favorites != null) {
-    var favoritesToArr = favorites.split(',');
-
-    for (var i in app.data.videoList) {
-      for (var j in favoritesToArr) {
-        if (app.data.videoList[i].id === favoritesToArr[j]) {
-          if (!app.data.videoList[i].isFavorite) {
-            app.data.videoList[i].isFavorite = true;
-          }
-        }
-      }
-    }
-  }
-});
-
 /* basically while we are downloading shows the preloader
  */
 function getDownloadAccessToken() {
@@ -526,77 +497,6 @@ function readFromSecure() {
   secureParamsStored = 0;
   // three credentials read
   app.emit("credentialsRead");
-}
-
-// Toasts & Alerts -----------
-
-// toasts to alert when user has added to favorites
-var favoriteToastSuccess = app.toast.create({
-  icon: app.theme === 'ios' ? '<i class="f7-icons">star</i>' : '<i class="material-icons">star</i>',
-  text: 'Successfully added to favorites',
-  position: 'center',
-  closeTimeout: 2000,
-});
-
-// toast when item is already added to favorites and user tries to add again
-var favoriteToastErr = app.toast.create({
-  icon: app.theme === 'ios' ? '<i class="f7-icons">star</i>' : '<i class="material-icons">star</i>',
-  text: 'Item is already added to favorites',
-  position: 'center',
-  closeTimeout: 2000,
-});
-
-// add to favorites when we click favorites button
-function addToFavorites(id) {
-  // grab the id of the item to add
-  var id = id.slice(1, -1);
-  // get local storage
-  var storage = window.localStorage;
-  // get favorites list of user
-  var storedFavorites = storage.getItem(app.data.user.username + "favorites");
-  // item to append
-  var appendToFavorites;
-  var favoritesArray = [];
-  // if this is the first favorite for the user, create a key/value pair
-  if (storedFavorites === null) {
-    appendToFavorites = id;
-  } else {
-    appendToFavorites = storedFavorites + "," + id;
-    // turn to array
-    favoritesArray = storedFavorites.split(',');
-  }
-  // check if the id passed in is already in the favorites list
-  if (favoritesArray.includes(id)) {
-    favoriteToastErr.open();
-  } else {
-    storage.setItem(app.data.user.username + "favorites", appendToFavorites);
-    favoriteToastSuccess.open();
-  }
-}
-
-// remove from favorites
-function removeFromFavorites(param) {
-  // holds the index and id of element
-  var arr = param.split(",");
-  var id = arr[0];
-  var index = arr[1];
-
-  // un-mark this element from favorites
-  app.data.videoList[index].isFavorite = false;
-
-  // updating storage
-  var favorites = storage.getItem(app.data.user.username + "favorites");
-  if (favorites != null) {
-    var favoritesToArr = favorites.split(',');
-    var newValue = "";
-    favoritesToArr = favoritesToArr.filter(function (item) {
-      return item !== id
-    });
-    for (var i in favoritesToArr) {
-      newValue += "," + favoritesToArr[i];
-    }
-    storage.setItem(app.data.user.username + "favorites", newValue);
-  }
 }
 
 // if file exists we can display it
@@ -743,8 +643,7 @@ function accessOnlineDocuments(rawXML) {
         id: '',
         contentType: '',
         duration: '',
-        thumbnail: '',
-        isFavorite: false
+        thumbnail: ''
       };
       tempID = documents[i].id;
       if (tempID != null) {
@@ -960,7 +859,7 @@ function loginOk(password) {
       username: app.data.user.username,
       password: password
     }, function (data) {
-      if (!data.includes(app.data.user.username)) {
+      if (data.indexOf(app.data.user.username) === -1) {
         credentialsFailAlert();
       } else {
         secureStorageInactive = false;
@@ -1136,7 +1035,7 @@ function getNumberOfScreens() {
     var pageName;
     var route = this.app.routes[i];
     if (route.url != null) {
-      if (route.url.includes("pages")) {
+      if (route.url.indexOf("pages") !== -1) {
         pageName = route.url.split("/").pop();
         pageName = pageName.substring(0, pageName.indexOf(".html"));
         if (storage.getItem(pageName) != 0) {
@@ -1156,7 +1055,7 @@ function getStoredTimeOffline() {
   var seconds = 0;
 
   for (var t in elapsedTimeArr) {
-    if (elapsedTimeArr[t].includes("s")) {
+    if (elapsedTimeArr[t].indexOf("s") !== -1) {
       // accumulate seconds
       seconds += parseInt(elapsedTimeArr[t].substring(0, elapsedTimeArr[t].length - 1));
     }
@@ -1358,8 +1257,6 @@ function makeEventPostRequest(password) {
       console.log("Failure: " + JSON.stringify(xhr));
     }
   });
-
-
 }
 
 // can use to reset values after we send payload
