@@ -13,7 +13,8 @@
   -->
   <!--meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:"-->
   <meta http-equiv="Content-Security-Policy" script-src='unsafe-inline'>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#2196f3">
   <meta name="format-detection" content="telephone=no">
   <meta name="format-detection" content="email=no">
@@ -73,104 +74,55 @@
   </div>
 
   <!-- Views/Tabs container -->
-  <div class="views tabs ios-edges">
+  <div class="views tabs">
     <!-- Tabbar for switching views-tabs -->
     <div class="toolbar tabbar-labels toolbar-bottom-md">
       <div class="toolbar-inner">
-        <a href="/" class="tab-link tab-link-active" data-route-tab-id="home">
-          <i class="icon f7-icons ios-only">home</i>
-          <i class="icon f7-icons ios-only icon-ios-fill">home_fill</i>
+        <a href="#view-home" class="tab-link tab-link-active">
           <i class="icon material-icons md-only">home</i>
           <span class="tabbar-label">Home</span>
         </a>
-        <a href="/favorites/" class="tab-link" id="updateFavorites" data-route-tab-id="favorites">
-          <i class="icon f7-icons ios-only">list</i>
-          <i class="icon f7-icons ios-only icon-ios-fill">list_fill</i>
-          <i class="icon material-icons md-only">view_list</i>
-          <span class="tabbar-label">Favorites</span>
-        </a>
-        <a href="/videoList/" class="tab-link" data-route-tab-id="videoList">
-          <i class="icon f7-icons ios-only">play</i>
-          <i class="icon f7-icons ios-only icon-ios-fill">videocam_fill</i>
+        <a href="#view-videoList" class="tab-link">
           <i class="icon material-icons md-only">videocam</i>
           <span class="tabbar-label">Videos</span>
         </a>
-        <a href="/mhbsmain/" class="tab-link" data-route-tab-id="mhbsmain">
-          <i class="icon f7-icons ios-only">book</i>
-          <i class="icon f7-icons ios-only icon-ios-fill">book_fill</i>
+        <a href="#view-guide" class="tab-link">
           <i class="icon material-icons md-only">book</i>
           <span class="tabbar-label">Guide</span>
         </a>
-        <!--a href="#view-settings" class="tab-link">
-          <i class="icon f7-icons ios-only">settings</i>
-          <i class="icon f7-icons ios-only icon-ios-fill">settings_fill</i>
-          <i class="icon material-icons md-only">settings</i>
-          <span class="tabbar-label">Settings</span>
-        </a-->
       </div>
     </div>
-    <!-- Your main view/tab, should have "view-main" class. It also has "tab-active" class -->
+
+    <!-- Home View content here directly -->
     <div id="view-home" class="view view-main tab tab-active">
-      <!-- Page, data-name contains page name which can be used in page callbacks -->
       <div class="page" data-name="home">
         <!-- Top Navbar -->
         <div class="navbar">
           <div class="navbar-inner">
             <div class="left">
               <a href="#" class="link icon-only panel-open" data-panel="left">
-                <i class="icon f7-icons ios-only">menu</i>
                 <i class="icon material-icons md-only">menu</i>
               </a>
             </div>
-            <div class="title sliding">mHBS</div>
+            <div class="title">mHBS Training</div>
           </div>
         </div>
 
         <!-- Scrollable page content-->
         <div class="page-content">
-          <img src="img/mHBSlogo.svg" style="width:200px;height:240px;display: block;margin: 0 auto;">
+          <img src="img/ic_launcher.png" style="display: block;margin: 0 auto;">
         </div>
-      </div>
-
-
-      <!-- Settings View -->
-      <div id="view-settings" class="view tab">
-        <!-- Settings page will be loaded here dynamically from /settings/ route -->
-      </div>
-      <div id="view-video" class="view tab">
-        <!-- Settings page will be loaded here dynamically from /mhbsvideos/ route -->
-      </div>
-      <div id="view-guide" class="view tab">
-        <!-- Settings page will be loaded here dynamically from /mhbsmain/ route -->
-      </div>
-      <div id="view-favorites" class="view tab">
-        <!-- Settings page will be loaded here dynamically from /favorites/ route -->
-      </div>
-      <!-- video List View-->
-      <div id="view-videoList" class="view tab">
-        <!-- videoList page will be loaded here dynamically from /videoList/ route -->
       </div>
     </div>
 
-    <!-- Popup -->
-    <div class="popup" id="my-popup">
-      <div class="view">
-        <div class="page">
-          <div class="navbar">
-            <div class="navbar-inner">
-              <div class="title">Popup</div>
-              <div class="right">
-                <a href="#" class="link popup-close">Close</a>
-              </div>
-            </div>
-          </div>
-          <div class="page-content">
-            <div class="block">
-              <p>Popup content goes here.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- VideoList View configured in app.js -->
+    <div id="view-videoList" class="view tab">
+      <!-- VideoList page will be loaded here dynamically from /videoList/ route -->
+    </div>
+
+    <!-- Guide View configured in app.js -->
+    <div id="view-guide" class="view tab">
+      <!-- Guide page will be loaded here dynamically from /mhbsmain/ route -->
     </div>
   </div>
 </div>
@@ -180,16 +132,15 @@
   <div class="view">
     <div class="page">
       <div class="page-content login-screen-content">
-        <div class="login-screen-title"><img src="img/mHBSlogo.svg"
-                                             style="width:200px;height:240px;display: block;margin: 0 auto;">
+        <div class="login-screen-title"><img src="img/ic_launcher.png" style="display: block;margin: 0 auto;">
         </div>
         <div class="list inset">
           <ul>
             <li class="item-content item-input">
               <div class="item-inner">
-                <div class="item-title item-label">Enter Pin</div>
+                <div class="item-title item-label">Please enter your PIN</div>
                 <div id="inputPin" class="item-input-wrap inset">
-                  <input type="text" name="selectPin" placeholder="pin...">
+                  <input type="text" name="selectPin" placeholder="PIN...">
                 </div>
               </div>
             </li>
@@ -198,10 +149,16 @@
         <div class="list">
           <ul>
             <li>
-              <a href="#" class="item-link list-button login-button">Sign in with pin</a>
+              <div class="row">
+                <div class="col-20"></div>
+                <div class="col-60">
+                  <a href="#" class="login-button button button-round button-fill">Sign
+                    in with pin</a></div>
+                <div class="col-20"></div>
+              </div>
             </li>
           </ul>
-          <div class="block-footer">To retrieve pin, contact administration<br>@.com</div>
+          <div class="block-footer">To retrieve pin, contact administrator</div>
         </div>
       </div>
     </div>

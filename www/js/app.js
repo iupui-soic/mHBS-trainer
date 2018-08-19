@@ -84,14 +84,12 @@ var homeView = app.views.create('#view-home', {
   url: '/'
 });
 
-var viewFavorites = app.views.create('#view-favorites', {
-  url: '/favorites/'
+var videoListView = app.views.create('#view-videoList', {
+  url: '/videoList/'
 });
+
 var guideView = app.views.create('#view-guide', {
   url: '/mhbsmain/'
-});
-var view = app.views.create('#view-videoList', {
-  url: '/videoList/'
 });
 
 // swiper for images
