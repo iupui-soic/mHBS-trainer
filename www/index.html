@@ -13,11 +13,10 @@
   -->
   <!--meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:"-->
   <meta http-equiv="Content-Security-Policy" script-src='unsafe-inline'>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" >
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#2196f3">
   <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="email=no">
   <meta name="msapplication-tap-highlight" content="no">
 
   <!-- Cordova -->
@@ -31,10 +30,8 @@
 </head>
 <body onload="onLoad()">
 <div id="app">
-  <!-- Status bar overlay for fullscreen mode-->
-  <div class="statusbar"></div>
   <!-- Left panel with cover effect-->
-  <div class="panel panel-left">
+  <div class="panel panel-left panel-cover">
     <div class="view">
       <div class="page">
         <div class="navbar">
@@ -47,21 +44,21 @@
             <div class="list">
               <ul>
                 <li>
-                  <a href="/" class="item-content item-link">
+                  <a href="/" class="item-content item-link panel-close">
                     <div class="item-inner">
                       <div class="item-title">Home</div>
                     </div>
                   </a>
                 </li>
                 <li>
-                  <a href="/about/" class="item-content item-link">
+                  <a href="/about/" class="item-content item-link panel-close">
                     <div class="item-inner">
                       <div class="item-title">About</div>
                     </div>
                   </a>
                 </li>
                 <li>
-                  <a href="" class="item-content item-link mHBSTracker">
+                  <a href="" class="item-content item-link mHBSTracker panel-close">
                     <div class="item-inner">
                       <div class="item-title">mHBS Tracker</div>
                     </div>
