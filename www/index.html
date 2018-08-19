@@ -28,6 +28,20 @@
   <link rel="stylesheet" href="framework7/css/framework7.min.css">
   <link rel="stylesheet" href="css/icons.css">
   <link rel="stylesheet" href="css/app.css">
+  <style>
+    .home .scroll-content {
+      display: table !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin-top: -50px; /* the height of the centered content */
+      text-align: center;
+    }
+
+    .home .scroll {
+      display: table-cell;
+      vertical-align: middle;
+    }
+  </style>
 </head>
 <body onload="onLoad()">
 <div id="app">
@@ -102,24 +116,7 @@
 
     <!-- Home View content here directly -->
     <div id="view-home" class="view view-main tab tab-active">
-      <div class="page" data-name="home">
-        <!-- Top Navbar -->
-        <div class="navbar">
-          <div class="navbar-inner">
-            <div class="left">
-              <a href="#" class="link icon-only panel-open" data-panel="left">
-                <i class="icon material-icons md-only">menu</i>
-              </a>
-            </div>
-            <div class="title">mHBS Training</div>
-          </div>
-        </div>
-
-        <!-- Scrollable page content-->
-        <div class="page-content">
-          <img src="img/ic_launcher.png" style="display: block;margin: 0 auto;">
-        </div>
-      </div>
+      <!-- Home page will be loaded here dynamically from / route -->
     </div>
 
     <!-- VideoList View configured in app.js -->
@@ -159,7 +156,7 @@
               <div class="row">
                 <div class="col-20"></div>
                 <div class="col-60">
-                  <a href="#" class="login-button button button-round button-fill">Sign
+                  <a href="/" data-clear-previous-history="true" class="login-button button button-round button-fill">Sign
                     in with pin</a></div>
                 <div class="col-20"></div>
               </div>

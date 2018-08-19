@@ -130,7 +130,6 @@ $$('.login-button').on('click', function () {
     pinPlaceholder.val(app.data.user.pin);
   }
   */
-  app.views.create('#view-home', {url: '/'});
   app.data.intentReceived = false;
   ls.close();
   if (downloadAble) {
@@ -735,8 +734,8 @@ document.addEventListener("deviceready", function (e) {
   document.addEventListener("online", wentOnline, false);
   document.addEventListener("pause", onPause, false);
   document.addEventListener("resume", onResume, false);
-  document.addEventListener("backbutton", function(e){
-      homeView.router.back();
+  document.addEventListener("backbutton", function (e) {
+    homeView.router.back();
   }, false);
 });
 
