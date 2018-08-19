@@ -66,3 +66,5 @@ plugins/
 # intellij
 .idea/*
 hooks/.idea/
+package.json
+package-lock.json

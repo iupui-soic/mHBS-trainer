@@ -9,7 +9,7 @@
       District Health Information Software (DHIS 2) in the back-end for data storage and tracking of health workers.
     </description>
     <author email="sunbiz@gmail.com" href="https://www.iupui.edu/~plhi">
-      Indiana University - SoIC & IUSM
+      Indiana University - SoIC and IUSM
     </author>
     <content src="index.html" />
     <access origin="*" />
@@ -23,12 +23,13 @@
         <access origin="cdvfile://*" />
         <preference name="loadUrlTimeoutValue" value="700000" />
         <preference name="AndroidPersistentFileLocation" value="Internal" />
+        <icon density="ldpi" src="res/icon/android/mipmap-ldpi/ic_launcher.png" />
+        <icon density="mdpi" src="res/icon/android/mipmap-mdpi/ic_launcher.png" />
+        <icon density="hdpi" src="res/icon/android/mipmap-hdpi/ic_launcher.png" />
+        <icon density="xhdpi" src="res/icon/android/mipmap-xhdpi/ic_launcher.png" />
+        <icon density="xxhdpi" src="res/icon/android/mipmap-xxhdpi/ic_launcher.png" />
+        <icon density="xxxhdpi" src="res/icon/android/mipmap-xxxhdpi/ic_launcher.png" />
     </platform>
-    <platform name="ios">
-        <allow-intent href="itms:*" />
-        <allow-intent href="itms-apps:*" />
-    </platform>
-    <engine name="android" spec="^6.3.0" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
     <plugin name="com-darryncampbell-cordova-plugin-intent" spec="^1.0.2" />
     <plugin name="cordova-plugin-dialogs" spec="^2.0.1" />
@@ -39,4 +40,5 @@
         <variable name="FABRIC_API_KEY" value="b40e830e776f80dffd15e8df6ba58733a36b1e48" />
         <variable name="FABRIC_API_SECRET" value="c308c5f1b372bab0c488e92c997d17ee8930b538bb5cf2d514818ff1fe7f84ba" />
     </plugin>
+    <engine name="android" spec="^7.0.0" />
 </widget>

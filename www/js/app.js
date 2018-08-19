@@ -265,7 +265,7 @@ function setupPageVisits() {
       var pageName;
       var route = this.app.routes[i];
       if (route.url != null) {
-        if (route.url.includes("pages")) {
+        if (route.url.indexOf("pages") !== -1) {
           pageName = route.url.split("/").pop();
           pageName = pageName.substring(0, pageName.indexOf(".html"));
           storage.setItem(pageName, JSON.stringify(0));
@@ -413,7 +413,7 @@ app.on("fileOnDevice", function (filePath) {
     }
   ];
   myPhotoBrowserPopupDark = app.photoBrowser.create({
-    photos,
+    photos: photos,
     theme: 'dark',
     type: 'popup',
     navbar: true,
@@ -591,7 +591,9 @@ function removeFromFavorites(param) {
   if (favorites != null) {
     var favoritesToArr = favorites.split(',');
     var newValue = "";
-    favoritesToArr = favoritesToArr.filter(item => item !== id);
+    favoritesToArr = favoritesToArr.filter(function (item) {
+      return item !== id
+    });
     for (var i in favoritesToArr) {
       newValue += "," + favoritesToArr[i];
     }
@@ -1224,7 +1226,7 @@ function setUpPageEvents() {
     var pageName;
     var route = this.app.routes[i];
     if (route.url != null) {
-      if (route.url.includes("pages")) {
+      if (route.url.indexOf("pages") !== -1) {
         pageName = route.url.split("/").pop();
         pageName = pageName.substring(0, pageName.indexOf(".html"));
         setUpPageBeforeInEvent(pageName);
