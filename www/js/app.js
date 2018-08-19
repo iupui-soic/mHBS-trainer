@@ -838,6 +838,9 @@ document.addEventListener("deviceready", function (e) {
   document.addEventListener("online", wentOnline, false);
   document.addEventListener("pause", onPause, false);
   document.addEventListener("resume", onResume, false);
+  document.addEventListener("backbutton", function(e){
+      homeView.router.back();
+  }, false);
 });
 
 // event callbacks -----------
