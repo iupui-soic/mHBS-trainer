@@ -396,7 +396,7 @@ app.on("fileOnDevice", function (filePath) {
   */
   var photos = [
     {
-      html: '<video controls autoplay><source id="myVideo" src="/data/data/com.example.mHBS/files/files' + filePath + '" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
+      html: '<video controls autoplay><source id="myVideo" src="/data/data/edu.iupui.soic.biohealth.plhi.mhbs/files/files' + filePath + '" type=\'video/webm;codecs="vp8, vorbis"\'></video>',
       captions: '',
     }
   ];
@@ -430,21 +430,10 @@ $$(document).on('click', ".pb-standalone-video", function () {
    ues darryncampbell intent plugin
 */
 $$(document).on('click', ".mHBSTracker", function () {
-  window.plugins.intentShim.startActivity(
-    {
-      component:
-        {
-          "package": "org.hisp.dhis.android.trackercapture",
-          "class": "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"
-        }
-    },
-    function (intent) {
-      console.log("success" + intent);
-    },
-    function () {
-      console.log("fail");
-    }
-  );
+  var sApp = startApp.set({
+    "component": ["org.hisp.dhis.android.trackercapture", "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"],
+    "flags": ["FLAG_ACTIVITY_NEW_TASK"]
+  }).start();
 });
 
 /* basically while we are downloading shows the preloader

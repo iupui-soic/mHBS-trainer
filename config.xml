@@ -48,5 +48,6 @@
         <variable name="FABRIC_API_SECRET" value="c308c5f1b372bab0c488e92c997d17ee8930b538bb5cf2d514818ff1fe7f84ba" />
     </plugin>
     <plugin name="cordova-custom-config" spec="^5.0.2" />
+    <plugin name="com.lampa.startapp" spec="^6.1.6" />
     <engine name="android" spec="^7.0.0" />
 </widget>
