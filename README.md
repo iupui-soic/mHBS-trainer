@@ -18,7 +18,7 @@ git clone https://github.com/iupui-soic/mHBS_tracker
 For Android:
 Go to the downloaded repository folder and run:
 ```
-cordova add platform android
+cordova platform add android
 ```
 
 ### 3. Build the app
