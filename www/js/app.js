@@ -431,7 +431,7 @@ $$(document).on('click', ".pb-standalone-video", function () {
 */
 $$(document).on('click', ".mHBSTracker", function () {
   var sApp = startApp.set({
-    "component": ["org.hisp.dhis.android.trackercapture", "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"],
+    "component": ["edu.iupui.soic.bhi.plhi.mhbs.trackercapture", "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"],
     "flags": ["FLAG_ACTIVITY_NEW_TASK"]
   }).start();
 });
