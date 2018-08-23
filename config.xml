@@ -19,6 +19,7 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <preference name="orientation" value="portrait" />
     <platform name="android">
         <access origin="cdvfile://*" />
         <preference name="loadUrlTimeoutValue" value="700000" />
