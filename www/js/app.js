@@ -116,25 +116,34 @@ function onLoad() {
 
 // login
 $$('.login-button').on('click', function () {
-  app.preloader.show('blue');
+  //app.preloader.show('blue');
   setupPageVisits();
   setupCheckBoxValues();
   setUpCheckBoxListeners();
   setUpPageEvents();
-  /*
-  var pinPlaceholder = $$('#inputPin input');
-  if(app.data.user.pin!==''){
-     // can be used to fill in the value of the pin placeholder
-    // pinPlaceholder.html("<input type=\"text\" name=\"selectPin\" placeholder="+app.data.user.pin+">");
-    // can be used to fill in the value of the pin input box
-    pinPlaceholder.val(app.data.user.pin);
+  var pin = $$('#inputPin input').val();
+  if (pin !== "") {
+    var pinFound = false;
+    app.data.user.pin.split(',').forEach(function (element) {
+      if (pin === element) {
+        pinFound = true;
+      }
+    });
+    if (pinFound) {
+      $$('#inputPin input').val("");
+      ls.close();
+      if (downloadAble) {
+        app.preloader.hide();
+      }
+    } else {
+      alert('Incorrect PIN');
+    }
   }
-  */
+  // can be used to fill in the value of the pin placeholder
+  // pinPlaceholder.html("<input type=\"text\" name=\"selectPin\" placeholder="+app.data.user.pin+">");
+  // can be used to fill in the value of the pin input box
   app.data.intentReceived = false;
-  ls.close();
-  if (downloadAble) {
-    app.preloader.hide();
-  }
+
 });
 
 // Local storage setup ------------------
@@ -789,7 +798,7 @@ function calculateElapsedTime(startTime, endTime) {
 /* send broadcast to tracker capture, uses darryncampbell plugin */
 function sendBroadcastToTracker() {
   window.plugins.intentShim.sendBroadcast({
-      action: 'edu.iupui.soic.biohealth.plhi.mhbs.activities.SharedLoginActivity'
+      action: 'edu.iupui.soic.bhi.plhi.mhbs.training.activities.SharedLoginActivity'
     },
     function () {
       console.log("sent Broadcast");
