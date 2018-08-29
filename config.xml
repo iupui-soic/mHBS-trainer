@@ -1,16 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.iupui.soic.bhi.plhi.mhbs.training" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget android-versionCode="13" id="edu.iupui.soic.bhi.plhi.mhbs.training" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>mHBS Training</name>
     <description>
-      The mobile Helping Babies Survive (mHBS) app is a digital health tool, developed by collaborators at
-      Indiana University (School of Medicine and School of Informatics and Computing), which consists of
-      3 separate apps, serving functions related to data collection and reporting, access to educational
-      resources, including other apps and data visualization. The mHBS apps are powered by the
-      District Health Information Software (DHIS 2) in the back-end for data storage and tracking of health workers.
-    </description>
+    The mobile Helping Babies Survive (mHBS) app is a digital health tool, developed by collaborators at
+    Indiana University (School of Medicine and School of Informatics and Computing), which consists of
+    3 separate apps, serving functions related to data collection and reporting, access to educational
+    resources, including other apps and data visualization. The mHBS apps are powered by the
+    District Health Information Software (DHIS 2) in the back-end for data storage and tracking of health workers.
+  </description>
     <author email="sunbiz@gmail.com" href="https://www.iupui.edu/~plhi">
-      Indiana University - SoIC and IUSM
-    </author>
+    Indiana University - SoIC and IUSM
+  </author>
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
