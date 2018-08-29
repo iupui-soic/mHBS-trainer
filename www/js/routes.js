@@ -12,6 +12,10 @@ routes = [
   },
   //<editor-fold desc="mHBS Guide Routes" defaultstate="collapsed">
   {
+    path: '/testvideo/',
+    url: './pages/testvideo.html'
+  },
+  {
     path: '/page1/',
     url: './pages/page1.html',
     pushState: true

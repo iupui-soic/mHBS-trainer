@@ -85,7 +85,9 @@ var homeView = app.views.create('#view-home', {
 });
 
 var videoListView = app.views.create('#view-videoList', {
-  url: '/videoList/'
+  //change testvideo to videoList for furtur work.
+  //testvideo is for v 2.0
+  url: '/testvideo/'
 });
 
 var guideView = app.views.create('#view-guide', {
@@ -422,7 +424,25 @@ app.on("fileOnDevice", function (filePath) {
   myPhotoBrowserPopupDark.open();
 });
 
-
+//temporary video for plays
+$$(document).on('click', "#videoplay", function () {
+  var photos1 = [
+    {
+      html: '<video controls autoplay> <source id="myVideo" src="img/vid/keeping_the_baby_warm.webm" type="video/webm"> </video>',
+      captions: '',
+    }
+  ];
+  myPhotoBrowserPopupDark1 = app.photoBrowser.create({
+    photos: photos1,
+    theme: 'dark',
+    type: 'popup',
+    navbar: true,
+    navbarOfText: "/",
+    toolbar: false,
+  });
+  // ready to show video
+  myPhotoBrowserPopupDark1.open();
+});
 // Click Events ------------
 
 /* triggered when we click on a video item in the list in /videoList/
