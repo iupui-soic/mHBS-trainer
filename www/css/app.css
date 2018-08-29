@@ -2,10 +2,12 @@
 .ios .tabbar-labels .tab-link:not(.tab-link-active) .icon-ios-fill {
   display: none;
 }
+
 .ios .tabbar-labels .tab-link.tab-link-active .icon:not(.icon-ios-fill) {
   display: none;
 }
+
 #arrow_favorites {
-  padding-right:10%;
-  padding-left:10%;
+  padding-right: 10%;
+  padding-left: 10%;
 }
