@@ -428,7 +428,7 @@ app.on("fileOnDevice", function (filePath) {
 $$(document).on('click', "#videoplay", function () {
   var photos1 = [
     {
-      html: '<video controls autoplay> <source id="myVideo" src="img/vid/keeping_the_baby_warm.webm" type="video/webm"> </video>',
+	  html: '<iframe src="img/vid/keeping_the_baby_warm.webm" frameborder="0" allowfullscreen></iframe>',
       captions: '',
     }
   ];
