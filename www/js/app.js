@@ -784,9 +784,10 @@ wentOffline = function (e) {
   if ((parseInt(storage.getItem("appLaunches")) === 0)) {
     networkUsage = 0;
   }
-  app.preloader.show('blue');
+  //masked below lines app.preloader and alert temporarly
+  //app.preloader.show('blue');
   app.data.timeOffline.startTime = new Date();
-  alert("Please connect to the internet to use the mHBS training app");
+  //alert("Please connect to the internet to use the mHBS training app");
   app.data.offlineMode = true;
 };
 
