@@ -464,6 +464,11 @@ $$(document).on('click', ".mHBSTracker", function () {
     "flags": ["FLAG_ACTIVITY_NEW_TASK"]
   }).start();
 });
+$$(document).on('click', ".eHBBVR", function () {
+  var sApp = startApp.set({
+	"application":"uk.ac.ox.tropicalmedicine.eHBB"
+}).start();
+});
 
 /* basically while we are downloading shows the preloader
  */
