@@ -70,10 +70,11 @@ var appLaunches = 0;
 var metaDataLoaded = 0;
 var networkUsage = 1;
 var paused = 0;
+var userId = '';
 var tempCredentials = {
   username: '',
   password: '',
-  serverURL: '',
+  serverURL: ''
 };
 
 var download = false;
@@ -129,9 +130,12 @@ $$('.login-button').on('click', function () {
     app.data.user.pin.split(',').forEach(function (element) {
       if (pin === element) {
         pinFound = true;
+        userId = pin;
       }
     });
     if (pinFound) {
+      //if pin is correct , then call trackNumLoginsByPin();
+      trackNumLoginsByPin();
       $$('#inputPin input').val("");
       ls.close();
       if (downloadAble) {
@@ -778,7 +782,7 @@ var onResume = function () {
   // always post when app launches if the app pin is set
   if (app.data.user.pin !== '') {
     setupTimeOffline();
-    trackNumLoginsByPin();
+    //trackNumLoginsByPin();
   }
 };
 
@@ -872,7 +876,7 @@ function logIn() {
 
 // we got password, we can login
 function loginOk(password) {
-  var server = appServer + "26/me/";
+  var server = appServer + "26/";
   // todo: remove
   console.log(app.data.user.username);
   console.log(password);
@@ -935,11 +939,13 @@ function onIntent(intent) {
   var credentialsArr = parseCredentials(intent);
   // if the intent had data, need to log in
   if (credentialsArr != null) {
-    if (credentialsArr.length === 4) {
+    if (credentialsArr.length === 6) {
       tempCredentials.username = credentialsArr[0];
       tempCredentials.password = credentialsArr[1];
       tempCredentials.serverURL = credentialsArr[2];
       app.data.user.pin = credentialsArr[3];
+      app.data.user.orgUnit = credentialsArr[4];
+      app.data.user.trackerIds = credentialsArr[5];
       // set app headers
       setHeaders();
       if (!isEmpty(tempCredentials.username) && !isEmpty(tempCredentials.password) && !isEmpty(tempCredentials.serverURL)) {
@@ -1023,6 +1029,14 @@ function isEmpty(str) {
 function getDateStamp() {
   var currentDate = new Date();
   return currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
+}
+function getYesterdayDate(){
+  var currentDate = new Date();
+  return currentDate.getFullYear()+"-"+(currentDate.getMonth() + 1)+"-"+(currentDate.getDate()-1);
+}
+function getTodayDate(){
+  var currentDate = new Date();
+  return currentDate.getFullYear()+"-"+(currentDate.getMonth() + 1)+"-"+(currentDate.getDate());
 }
 
 function getDateTimeStamp() {
@@ -1186,42 +1200,54 @@ function setUpAfterOutEvent(pageName) {
     // sendAnswerToFabric(page.name);
   });
 }
+function setOrgUnit(userId){
+  var index = app.data.user.pin.split(',').indexOf(userId);
+  return app.data.user.orgUnit.split(',')[index];
+}
+function setTrackerIds(userId){
+  var index = app.data.user.pin.split(',').indexOf(userId);
+  return app.data.user.trackerIds.split(',')[index];
+}
 
 function postEventData() {
-  eventPayload['eventDate'] = getDateStamp();
+  registerInAppUsage();
+  eventPayload['eventDate'] = getTodayDate();
+  eventPayload['orgUnit'] = setOrgUnit(userId);
+  eventPayload['trackedEntityInstance'] = setTrackerIds(userId);
+  eventPayload['storedBy'] = app.data.user.username;
   console.log("sending Payload: " + JSON.stringify(eventPayload));
   for (var i in eventPayload['dataValues']) {
     // todo: check this val
     // Number of abrupt exits or incomplete workflow for mHBS training app
     if (eventPayload['dataValues'][i].dataElement === 'ZYQJ87n45ye') {
-      eventPayload['dataValues'][i].value = paused;
+      eventPayload['dataValues'][i].value = paused.toString();
     }
     // send time offline in minutes
     else if (eventPayload['dataValues'][i].dataElement === 'qOyP28eirAx') {
-      eventPayload['dataValues'][i].value = getStoredTimeOffline();
+      eventPayload['dataValues'][i].value = getStoredTimeOffline().toString();
     }
     // send logins by pin
     else if (eventPayload['dataValues'][i].dataElement === 'getqONgfDtE') {
-      eventPayload['dataValues'][i].value = storage.getItem(app.data.user.pin);
+      eventPayload['dataValues'][i].value = storage.getItem(app.data.user.pin).toString();
     }
     // get number of screens
     else if (eventPayload['dataValues'][i].dataElement === 'RrIe9CA11n6') {
-      eventPayload['dataValues'][i].value = getNumberOfScreens();
+      eventPayload['dataValues'][i].value = getNumberOfScreens().toString();
     }
     // number of times app was started
     else if (eventPayload['dataValues'][i].dataElement === 'BgzISR1GmP8') {
-      eventPayload['dataValues'][i].value = storage.getItem("appLaunches");
+      eventPayload['dataValues'][i].value = storage.getItem("appLaunches").toString();
     }
     // number of times there was network usage
     else if (eventPayload['dataValues'][i].dataElement === 'qbT1F1k8cD7') {
-      eventPayload['dataValues'][i].value = networkUsage;
+      eventPayload['dataValues'][i].value = networkUsage.toString();
     }
-    console.log("EVENT PAY: " + eventPayload['dataValues'][i].dataElement + " " + eventPayload['dataValues'][i].value);
-    console.log("-----------------");
+    //console.log("EVENT PAY: " + eventPayload['dataValues'][i].dataElement + " " + eventPayload['dataValues'][i].value);
+    //console.log("-----------------");
 
   }
   postPayload();
-  // clearPayloadValues();
+  clearPayloadValues();
 }
 
 // get password and then post payload
@@ -1229,19 +1255,20 @@ function postPayload() {
   getPasswordFromSecure(makeEventPostRequest);
 }
 
-//todo: change to correct org unit, fill in eventDate, coordinates, storedBy
 // Event Payload with params relating to mHBS training app posted to the program events on DHIS2
 var eventPayload = {
-  "program": "dbEHq0V0V5j",
-  // orgUnit: "Hm0rRRXqFi5",
-  "trackedEntityInstance": "vmhlccEpW4Q",
-  //"eventDate": "2013-05-17",
-  //"status": "COMPLETED",
-  //"storedBy": "admin",
-  //"coordinate": {
-  //  "latitude": 59.8,
-  //  "longitude": 10.9
-  //},
+  "program": "dbEHqQVQV5j",
+  "orgUnit": "",
+  "trackedEntityInstance": "",
+  "eventDate": "",
+  "programStage":"TLukEU2tvvB",
+  "status": "COMPLETED",
+  //"trackedEntityInstance": "vmhlccEpW4Q",
+  "storedBy": "",
+  "coordinate": {
+    "latitude": 59.8,
+    "longitude": 10.9
+  },
   "dataValues": [
     // Number of abrupt exits or incomplete workflow for mHBS training app
     {"dataElement": "ZYQJ87n45ye", "value": ""},
@@ -1257,20 +1284,49 @@ var eventPayload = {
     {"dataElement": "qbT1F1k8cD7", "value": ""},
   ]
 };
-
-function makeEventPostRequest(password) {
-  var eventServer = appServer + "26/events/";
+//this function registers trackedEntityInstance in app usage
+function registerInAppUsage(){
+  var registerpayload = {
+    "program": "dbEHqQVQV5j",
+    "orgUnit": setOrgUnit(userId),
+    "trackedEntityInstance": setTrackerIds(userId),
+    "enrollmentDate": getYesterdayDate(),
+    "incidentDate": getYesterdayDate()
+  }
+  var eventServer = appServer + "27/enrollments";
   app.request({
     url: eventServer,
     dataType: 'json',
     processData: false,
     crossDomain: true,
-    // something in the payload might be causing the conflict.
-    data: eventPayload,
+    data: JSON.stringify(registerpayload),
     method: 'POST',
     contentType: 'application/json',
     beforeSend: function () {
-      //This method will be called before webservice call initiate
+      //do anything before sending payload
+    },
+    success: function (data, status, xhr) {
+      console.log("Success" + data);
+      //Post request completed
+    },
+    error: function (xhr, status) {
+      console.log("Failure: " + JSON.stringify(xhr));
+    }
+  });
+}
+
+function makeEventPostRequest(password) {
+  var eventServer = appServer + "27/events";
+  app.request({
+    url: eventServer,
+    dataType: 'json',
+    processData: false,
+    crossDomain: true,
+    data: JSON.stringify(eventPayload),
+    method: 'POST',
+    contentType: 'application/json',
+    beforeSend: function () {
+      //function that triggers before running
     },
     success: function (data, status, xhr) {
       console.log("Success" + data);
@@ -1288,5 +1344,7 @@ function clearPayloadValues() {
   storage.setItem("appLaunches", JSON.stringify(0));
   setupPageVisits();
   storage.setItem(app.data.user.pin, JSON.stringify(0));
+  storage.setItem(app.data.user.orgUnit, JSON.stringify(0));
+  storage.setItem(app.data.user.trackerIds,JSON.stringify(0));
   storage.setItem("timeOffline", null);
 }
