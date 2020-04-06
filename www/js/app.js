@@ -436,16 +436,23 @@ $$(document).on('click', ".pb-standalone-video", function () {
 */
 $$(document).on('click', ".mHBSTracker", function () {
   var sApp = startApp.set({
-    "component": ["com.dhis2.debug", "org.dhis2.usescases.splash.SplashActivity"],
+    "component": ["edu.iupui.soic.bhi.plhi.mhbs.trackercapture", "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"],
     "flags": ["FLAG_ACTIVITY_NEW_TASK"]
   }).start( function() {
       console.log("mHBS Tracker App Started.");
     }, function(error) {
-      alert("Install mHBS Tracker Application!");
+      var sApp = startApp.set({
+        "component": ["com.dhis2.debug", "org.dhis2.usescases.splash.SplashActivity"],
+        "flags": ["FLAG_ACTIVITY_NEW_TASK"]
+      }).start( function() {
+          console.log("mHBS Tracker App Started.");
+        }, function(error) {
+          alert("Install mHBS Tracker Application!!!");
+        }
+      );
     }
   );
 });
-//TODO : change the package name based on debug or release flavour of the application
 
 /* basically while we are downloading shows the preloader
  */
