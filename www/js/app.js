@@ -438,7 +438,20 @@ $$(document).on('click', ".mHBSTracker", function () {
   var sApp = startApp.set({
     "component": ["edu.iupui.soic.bhi.plhi.mhbs.trackercapture", "org.hisp.dhis.android.sdk.ui.activities.SplashActivity"],
     "flags": ["FLAG_ACTIVITY_NEW_TASK"]
-  }).start();
+  }).start( function() {
+      console.log("mHBS Tracker App Started.");
+    }, function(error) {
+      var sApp = startApp.set({
+        "component": ["com.dhis2.debug", "org.dhis2.usescases.splash.SplashActivity"],
+        "flags": ["FLAG_ACTIVITY_NEW_TASK"]
+      }).start( function() {
+          console.log("mHBS Tracker App Started.");
+        }, function(error) {
+          alert("Install mHBS Tracker Application!!!");
+        }
+      );
+    }
+  );
 });
 
 /* basically while we are downloading shows the preloader
